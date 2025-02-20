@@ -1,0 +1,31 @@
+{
+  "template": "https://github.com/statisticsnorway/ssb-pypitemplate.git",
+  "commit": "0d33fca0d1c29c79aef9c7053e36d9e7cdd2bd20",
+  "checkout": "2025.2.19",
+  "context": {
+    "cookiecutter": {
+      "project_name": "ssb-kostra-python",
+      "package_name": "ssb_kostra_python",
+      "friendly_name": "SSB Kostra Python",
+      "copyright_owner": "Statistics Norway",
+      "copyright_year": "2025",
+      "author": "Magne Furuholmen Myhren",
+      "email": "mfm@ssb.no",
+      "github_organization": "statisticsnorway",
+      "version": "0.0.0",
+      "license": "MIT",
+      "development_status": "Development Status :: 4 - Beta",
+      "code_quality_level": "Medium",
+      "_copy_without_render": [
+        "*.rst_t"
+      ],
+      "_jinja2_env_vars": {
+        "lstrip_blocks": true,
+        "trim_blocks": true
+      },
+      "_template": "https://github.com/statisticsnorway/ssb-pypitemplate.git",
+      "_commit": "0d33fca0d1c29c79aef9c7053e36d9e7cdd2bd20"
+    }
+  },
+  "directory": null
+}
