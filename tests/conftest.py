@@ -25,9 +25,7 @@ def mock_klass_classification():
 
 @pytest.fixture
 def mock_klass_correspondence():
-    MockKlassCorrespondence = patch(
-        "ssb_kostra_python.kommunekorr.KlassCorrespondence"
-    )
+    MockKlassCorrespondence = patch("ssb_kostra_python.kommunekorr.KlassCorrespondence")
 
     def mock_init(
         self, source_classification_id, target_classification_id, from_date, to_date
