@@ -16,6 +16,8 @@ Changelog = "https://github.com/statisticsnorway/ssb-kostra-python/releases"
 [tool.poetry.dependencies]
 python = "^3.10"
 click = ">=8.0.1"
+pandas = "^2.2.3"
+ssb-klass-python = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pygments = ">=2.10.0"
