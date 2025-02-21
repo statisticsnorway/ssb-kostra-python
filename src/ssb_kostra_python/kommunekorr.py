@@ -120,8 +120,8 @@ def kostra_kommunekorr(year: str) -> pd.DataFrame:
     ).drop(columns=["sourceName", "sourceShortName", "targetShortName"])
 
     # Merge the data
-    kom = pd.merge(kom, kom_kostra_gr, on="kom_nr", how="left")
-    kom = pd.merge(kom, kom_fyl, on="kom_nr", how="left")
+    kom = pd.merge(kom, kom_kostra_gr, on="kom_nr", how="left", validate="1:m")
+    kom = pd.merge(kom, kom_fyl, on="kom_nr", how="left", validate="1:m")
 
     # Check for duplicate municipality numbers and raise an error if found
     if kom.duplicated("kom_nr").sum() > 0:
