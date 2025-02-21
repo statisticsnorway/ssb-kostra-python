@@ -13,13 +13,13 @@ delete the .rst file afterwards.
 
 ```{eval-rst}
 ssb\_kostra\_python package
-=============================================================================
+===========================
 
 
-ssb\_kostra\_python.functions module
------------------------------------------------------------------------------
+ssb\_kostra\_python.kommunekorr module
+--------------------------------------
 
-.. automodule:: ssb_kostra_python.functions
+.. automodule:: ssb_kostra_python.kommunekorr
    :members:
    :undoc-members:
    :show-inheritance:
