@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ssb-kostra-python"
-version = "0.0.2"
+version = "0.0.3"
 description = "SSB Kostra Python"
 authors = ["Magne Furuholmen Myhren <mfm@ssb.no>"]
 license = "MIT"

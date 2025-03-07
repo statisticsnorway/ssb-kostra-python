@@ -10,8 +10,8 @@ def test_kostra_kommunekorr(mock_klass_classification, mock_klass_correspondence
     assert result.shape[0] == 7
 
     exp_cols = [
-        "kom_nr",
-        "kom_navn",
+        "komm_nr",
+        "komm_navn",
         "fylke_nr",
         "fylke_navn",
         "fylke_nr_eka",
