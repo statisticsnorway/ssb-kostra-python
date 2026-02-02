@@ -25,14 +25,14 @@ logger = logging.getLogger(__name__)
 # %%
 def format_fil(file: pd.DataFrame) -> pd.DataFrame:
     """Dette er en funksjon du kan bruke til å formatere periode- og regionsvariabelen din. Funksjonen forutsetter at periodevariabelen er kalt 'periode'. Den forutsetter også at regionsvariabelen
-    heter enten 'bydelsregion', 'kommuneregion' eller 'fylkesregion'. Ellers får du feilmelding. Den setter 
+    heter enten 'bydelsregion', 'kommuneregion' eller 'fylkesregion'. Ellers får du feilmelding. Den setter
     - periode til 4-sifret string-variabel. Ledende null(er) legges til dersom antallet sifre er lavere enn 4.
     - bydelsregion til 6-sifret string-variabel. Ledende null(er) legges til dersom antallet sifre er lavere enn 4.
     - kommuneregion til 4-sifret string-variabel. Ledende null(er) legges til dersom antallet sifre er lavere enn 4.
     - fylkesregion til 6-sifret string-variabel. Ledende null(er) legges til dersom antallet sifre er lavere enn 4.
 
     Skriv funksjonen slik:
-    
+
     df_formatert = format_fil(df_uformatert)
 
     Her er "df_uformatert" den filen du ønsker å kjøre funksjonen på og rette formatet i. df_formatert er datasettet som spyttes ut, men du kan kalle den det du måtte ønske.
@@ -63,7 +63,9 @@ def format_fil(file: pd.DataFrame) -> pd.DataFrame:
     _conditional_pad("bydelsregion", 6)  # 6 for bydelsregion
 
     # If none of the region columns are present, raise
-    if not any(c in file.columns for c in ("kommuneregion", "fylkesregion", "bydelsregion")):
+    if not any(
+        c in file.columns for c in ("kommuneregion", "fylkesregion", "bydelsregion")
+    ):
         raise ValueError(
             "No valid region column ('kommuneregion', 'fylkesregion', or 'bydelsregion') found."
         )
@@ -84,8 +86,15 @@ def definere_klassifikasjonsvariable(inputfil):
     print(tot_cols)
 
     # Always-fixed variables (keep order, include only if present)
-    alltid_faste_klassifikasjonsvariable = ['periode', 'kommuneregion', 'fylkesregion', 'bydelsregion']
-    felles_klassifikasjonsvariable = [c for c in alltid_faste_klassifikasjonsvariable if c in tot_cols]
+    alltid_faste_klassifikasjonsvariable = [
+        "periode",
+        "kommuneregion",
+        "fylkesregion",
+        "bydelsregion",
+    ]
+    felles_klassifikasjonsvariable = [
+        c for c in alltid_faste_klassifikasjonsvariable if c in tot_cols
+    ]
 
     # Ask user for additional variables
     andre_klassifikasjonsvariable = input(
@@ -95,7 +104,9 @@ def definere_klassifikasjonsvariable(inputfil):
         "Trykk ganske enkelt 'enter' dersom du ikke har flere klassifikasjonsvariable å legge til."
     )
 
-    andre_klassifikasjonsvariable = [var.strip() for var in andre_klassifikasjonsvariable.split(",") if var.strip()]
+    andre_klassifikasjonsvariable = [
+        var.strip() for var in andre_klassifikasjonsvariable.split(",") if var.strip()
+    ]
     if len(andre_klassifikasjonsvariable) == 0:
         print("Ingen andre klassifikasjonsvariable valgt.")
     else:
@@ -113,14 +124,17 @@ def definere_klassifikasjonsvariable(inputfil):
         return out
 
     # Build lists while keeping order
-    klassifikasjonsvariable = uniq(felles_klassifikasjonsvariable + andre_klassifikasjonsvariable)
+    klassifikasjonsvariable = uniq(
+        felles_klassifikasjonsvariable + andre_klassifikasjonsvariable
+    )
     statistikkvariable = [c for c in tot_cols if c not in klassifikasjonsvariable]
 
     print("Klassifikasjonsvariable i datasettet:")
     print(klassifikasjonsvariable)
 
-    
-    inputfil[klassifikasjonsvariable] = inputfil[klassifikasjonsvariable].astype("string")
+    inputfil[klassifikasjonsvariable] = inputfil[klassifikasjonsvariable].astype(
+        "string"
+    )
 
     print("Statistikkvariable i datasettet:")
     print(statistikkvariable)
@@ -131,13 +145,12 @@ def definere_klassifikasjonsvariable(inputfil):
     return klassifikasjonsvariable, statistikkvariable
 
 
-
 # %%
 def konvertere_komma_til_punktdesimal(inputfil):
     df = inputfil.copy()
-    cols_with_commas = [col for col in df.columns if df[col].astype(str).str.contains(",").any()]
+    cols_with_commas = [
+        col for col in df.columns if df[col].astype(str).str.contains(",").any()
+    ]
     for col in cols_with_commas:
         df[col] = df[col].str.replace(",", ".", regex=False).astype(float)
     return df
-
-

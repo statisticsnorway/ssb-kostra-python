@@ -29,9 +29,12 @@ def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:
     """
     factor = 10**decimals
     # Cast to float to avoid issues with Int64 etc.
-    v = pd.to_numeric(values, errors="coerce").astype(float)
+    v = pd.Series(pd.to_numeric(values, errors="coerce").astype(float))
+    arr = v.to_numpy(dtype=float)
     # round half away from zero
-    return np.sign(v) * np.floor(np.abs(v) * factor + 0.5) / factor
+    rounded = np.sign(arr) * np.floor(np.abs(arr) * factor + 0.5) / factor
+
+    return pd.Series(rounded, index=v.index, name=v.name)
 
 
 def print_instruks_konverter_dtypes() -> str:
@@ -58,7 +61,7 @@ def print_instruks_konverter_dtypes() -> str:
 
 def konverter_dtypes(
     df: pd.DataFrame, dtype_mapping: dict[str, list[str]]
-) -> tuple[pd.DataFrame, dict[str, list[str]]]:
+) -> tuple[pd.DataFrame, pd.Series]:
     """ℹ️Bruk malen under for dtype_mapping. Du må angi denne mappingen i forkant for at funksjonen skal kunne konvertere variablene slik du ønsker.
 
     dtype_mapping = {

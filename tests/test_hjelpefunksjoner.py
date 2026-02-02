@@ -44,11 +44,13 @@ class TestFormatFil(unittest.TestCase):
         3) Run format_fil.
         4) Assert the formatted values and string dtypes.
         """
-        df = pd.DataFrame({
-            "periode": [1, "23", "2025"],
-            "alder": [7, "45", "123"],
-            "kommuneregion": ["301", "0301", "9999"],  # required so no ValueError
-        })
+        df = pd.DataFrame(
+            {
+                "periode": [1, "23", "2025"],
+                "alder": [7, "45", "123"],
+                "kommuneregion": ["301", "0301", "9999"],  # required so no ValueError
+            }
+        )
 
         out = format_fil(df.copy())
 
@@ -56,22 +58,22 @@ class TestFormatFil(unittest.TestCase):
         self.assertEqual(
             out["periode"].tolist(),
             ["0001", "0023", "2025"],
-            msg="periode should be zero-padded to 4 characters"
+            msg="periode should be zero-padded to 4 characters",
         )
         self.assertEqual(
             out["alder"].tolist(),
             ["007", "045", "123"],
-            msg="alder should be zero-padded to 3 characters"
+            msg="alder should be zero-padded to 3 characters",
         )
 
         # Assert: output dtypes are string dtype
         self.assertTrue(
             pd.api.types.is_string_dtype(out["periode"]),
-            msg="periode should be pandas string dtype"
+            msg="periode should be pandas string dtype",
         )
         self.assertTrue(
             pd.api.types.is_string_dtype(out["alder"]),
-            msg="alder should be pandas string dtype"
+            msg="alder should be pandas string dtype",
         )
 
     def test_kommuneregion_pads_only_digits_and_only_when_too_short(self):
@@ -96,21 +98,29 @@ class TestFormatFil(unittest.TestCase):
            * None     -> becomes <NA>
         2) Run format_fil and assert the final list.
         """
-        df = pd.DataFrame({
-            "periode": ["1", "1", "1", "1", "1"],  # length matches kommuneregion rows
-            "kommuneregion": ["301", "0301", "12A", "12345", None],
-        })
+        df = pd.DataFrame(
+            {
+                "periode": [
+                    "1",
+                    "1",
+                    "1",
+                    "1",
+                    "1",
+                ],  # length matches kommuneregion rows
+                "kommuneregion": ["301", "0301", "12A", "12345", None],
+            }
+        )
 
         out = format_fil(df.copy())
 
         self.assertEqual(
             out["kommuneregion"].tolist(),
             ["0301", "0301", "12A", "12345", pd.NA],
-            msg="kommuneregion should pad digits-only values shorter than 4; leave others unchanged"
+            msg="kommuneregion should pad digits-only values shorter than 4; leave others unchanged",
         )
         self.assertTrue(
             pd.api.types.is_string_dtype(out["kommuneregion"]),
-            msg="kommuneregion should be pandas string dtype"
+            msg="kommuneregion should be pandas string dtype",
         )
 
     def test_fylkesregion_pads_only_digits_and_only_when_too_short(self):
@@ -132,16 +142,18 @@ class TestFormatFil(unittest.TestCase):
           "AB"   -> unchanged (non-digit)
           ""     -> unchanged (empty)
         """
-        df = pd.DataFrame({
-            "fylkesregion": ["3", "03", "0301", "AB", ""],
-        })
+        df = pd.DataFrame(
+            {
+                "fylkesregion": ["3", "03", "0301", "AB", ""],
+            }
+        )
 
         out = format_fil(df.copy())
 
         self.assertEqual(
             out["fylkesregion"].tolist(),
             ["0003", "0003", "0301", "AB", ""],
-            msg="fylkesregion should pad digits-only values shorter than 4; leave non-digits/empty unchanged"
+            msg="fylkesregion should pad digits-only values shorter than 4; leave non-digits/empty unchanged",
         )
 
     def test_bydelsregion_pads_only_digits_and_only_when_too_short(self):
@@ -158,16 +170,18 @@ class TestFormatFil(unittest.TestCase):
           "12A"      -> unchanged (non-digit)
           "1234567"  -> unchanged (longer than 6, not truncated)
         """
-        df = pd.DataFrame({
-            "bydelsregion": ["301", "030101", "12A", "1234567"],
-        })
+        df = pd.DataFrame(
+            {
+                "bydelsregion": ["301", "030101", "12A", "1234567"],
+            }
+        )
 
         out = format_fil(df.copy())
 
         self.assertEqual(
             out["bydelsregion"].tolist(),
             ["000301", "030101", "12A", "1234567"],
-            msg="bydelsregion should pad digits-only values shorter than 6; leave others unchanged"
+            msg="bydelsregion should pad digits-only values shorter than 6; leave others unchanged",
         )
 
     def test_raises_if_no_valid_region_column_present(self):
@@ -188,7 +202,7 @@ class TestFormatFil(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError,
             r"No valid region column",
-            msg="Expected ValueError when no valid region column is present"
+            msg="Expected ValueError when no valid region column is present",
         ):
             format_fil(df.copy())
 
@@ -233,30 +247,40 @@ class TestDefinereKlassifikasjonsvariable(unittest.TestCase):
            - stats == ["value"]
            - dtype of periode/kommuneregion are string dtype (in-place conversion)
         """
-        df = pd.DataFrame({
-            "periode": [2025, 2026],
-            "kommuneregion": [301, 302],
-            "value": [1.2, 3.4],
-        })
+        df = pd.DataFrame(
+            {
+                "periode": [2025, 2026],
+                "kommuneregion": [301, 302],
+                "value": [1.2, 3.4],
+            }
+        )
 
         klass, stats = definere_klassifikasjonsvariable(df)
 
         self.assertEqual(
             klass,
             ["periode", "kommuneregion"],
-            msg="Should include only present fixed classification variables when no extras are provided"
+            msg="Should include only present fixed classification variables when no extras are provided",
         )
         self.assertEqual(
             stats,
             ["value"],
-            msg="Statistikkvariable should be all columns not in klassifikasjonsvariable"
+            msg="Statistikkvariable should be all columns not in klassifikasjonsvariable",
         )
 
         # dtype check: classification columns converted to pandas string dtype
-        self.assertTrue(pd.api.types.is_string_dtype(df["periode"]), msg="periode should be string dtype after function")
-        self.assertTrue(pd.api.types.is_string_dtype(df["kommuneregion"]), msg="kommuneregion should be string dtype after function")
+        self.assertTrue(
+            pd.api.types.is_string_dtype(df["periode"]),
+            msg="periode should be string dtype after function",
+        )
+        self.assertTrue(
+            pd.api.types.is_string_dtype(df["kommuneregion"]),
+            msg="kommuneregion should be string dtype after function",
+        )
 
-    @patch("builtins.input", return_value="kjonn, alder , kjonn,  ")  # duplicates + spaces
+    @patch(
+        "builtins.input", return_value="kjonn, alder , kjonn,  "
+    )  # duplicates + spaces
     def test_additional_variables_parsing_dedup_and_order(self, mock_input):
         """Purpose
         -------
@@ -277,30 +301,38 @@ class TestDefinereKlassifikasjonsvariable(unittest.TestCase):
         2) Patch input to return duplicates and whitespace.
         3) Assert order: fixed first, then extras deduped.
         """
-        df = pd.DataFrame({
-            "periode": [2025],
-            "kommuneregion": ["0301"],
-            "kjonn": ["1"],
-            "alder": ["007"],
-            "stat": [10],
-        })
+        df = pd.DataFrame(
+            {
+                "periode": [2025],
+                "kommuneregion": ["0301"],
+                "kjonn": ["1"],
+                "alder": ["007"],
+                "stat": [10],
+            }
+        )
 
         klass, stats = definere_klassifikasjonsvariable(df)
 
         self.assertEqual(
             klass,
             ["periode", "kommuneregion", "kjonn", "alder"],
-            msg="Order should be fixed vars first, then extra vars; duplicates removed"
+            msg="Order should be fixed vars first, then extra vars; duplicates removed",
         )
         self.assertEqual(
             stats,
             ["stat"],
-            msg="Statistikkvariable should exclude all klassifikasjonsvariable"
+            msg="Statistikkvariable should exclude all klassifikasjonsvariable",
         )
 
         # dtype check for extras too
-        self.assertTrue(pd.api.types.is_string_dtype(df["kjonn"]), msg="Extra classification var 'kjonn' should become string dtype")
-        self.assertTrue(pd.api.types.is_string_dtype(df["alder"]), msg="Extra classification var 'alder' should become string dtype")
+        self.assertTrue(
+            pd.api.types.is_string_dtype(df["kjonn"]),
+            msg="Extra classification var 'kjonn' should become string dtype",
+        )
+        self.assertTrue(
+            pd.api.types.is_string_dtype(df["alder"]),
+            msg="Extra classification var 'alder' should become string dtype",
+        )
 
     @patch("builtins.input", return_value="alder")
     def test_fixed_vars_only_included_if_present(self, mock_input):
@@ -320,27 +352,35 @@ class TestDefinereKlassifikasjonsvariable(unittest.TestCase):
            - remaining columns become statistikkvariable
            - dtype conversion happened for chosen classification variables
         """
-        df = pd.DataFrame({
-            "fylkesregion": [3],
-            "alder": [7],
-            "value": [99],
-        })
+        df = pd.DataFrame(
+            {
+                "fylkesregion": [3],
+                "alder": [7],
+                "value": [99],
+            }
+        )
 
         klass, stats = definere_klassifikasjonsvariable(df)
 
         self.assertEqual(
             klass,
             ["fylkesregion", "alder"],
-            msg="Should include only present fixed vars; then user-provided extras"
+            msg="Should include only present fixed vars; then user-provided extras",
         )
         self.assertEqual(
             stats,
             ["value"],
-            msg="Remaining non-classification columns should be statistikkvariable"
+            msg="Remaining non-classification columns should be statistikkvariable",
         )
 
-        self.assertTrue(pd.api.types.is_string_dtype(df["fylkesregion"]), msg="fylkesregion should be string dtype after function")
-        self.assertTrue(pd.api.types.is_string_dtype(df["alder"]), msg="alder should be string dtype after function")
+        self.assertTrue(
+            pd.api.types.is_string_dtype(df["fylkesregion"]),
+            msg="fylkesregion should be string dtype after function",
+        )
+        self.assertTrue(
+            pd.api.types.is_string_dtype(df["alder"]),
+            msg="alder should be string dtype after function",
+        )
 
 
 class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
@@ -370,11 +410,11 @@ class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
 
         self.assertTrue(
             np.allclose(out["a"].values, [1.5, 2.0, 3.25]),
-            msg="Comma decimals were not correctly converted to float values"
+            msg="Comma decimals were not correctly converted to float values",
         )
         self.assertTrue(
             pd.api.types.is_float_dtype(out["a"]),
-            msg="Column 'a' should have float dtype after conversion"
+            msg="Column 'a' should have float dtype after conversion",
         )
 
     def test_leaves_columns_without_commas_unchanged(self):
@@ -391,20 +431,24 @@ class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
         2) Call conversion.
         3) Assert b and c are unchanged.
         """
-        df = pd.DataFrame({
-            "a": ["1,5", "2,0"],
-            "b": ["x", "y"],
-            "c": [10, 20],
-        })
+        df = pd.DataFrame(
+            {
+                "a": ["1,5", "2,0"],
+                "b": ["x", "y"],
+                "c": [10, 20],
+            }
+        )
         out = konvertere_komma_til_punktdesimal(df)
 
         self.assertEqual(
-            out["b"].tolist(), ["x", "y"],
-            msg="Non-numeric string columns without commas should remain unchanged"
+            out["b"].tolist(),
+            ["x", "y"],
+            msg="Non-numeric string columns without commas should remain unchanged",
         )
         self.assertEqual(
-            out["c"].tolist(), [10, 20],
-            msg="Numeric columns without commas should remain unchanged"
+            out["c"].tolist(),
+            [10, 20],
+            msg="Numeric columns without commas should remain unchanged",
         )
 
     def test_converts_column_if_any_value_contains_comma(self):
@@ -423,11 +467,11 @@ class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
 
         self.assertTrue(
             np.allclose(out["a"].values, [1.5, 2.0]),
-            msg="Column with mixed comma and non-comma values was not converted correctly"
+            msg="Column with mixed comma and non-comma values was not converted correctly",
         )
         self.assertTrue(
             pd.api.types.is_float_dtype(out["a"]),
-            msg="Column dtype should be float when any value contains a comma"
+            msg="Column dtype should be float when any value contains a comma",
         )
 
     def test_does_not_modify_input_dataframe(self):
