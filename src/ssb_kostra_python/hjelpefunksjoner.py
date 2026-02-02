@@ -24,7 +24,9 @@ logger = logging.getLogger(__name__)
 
 # %%
 def format_fil(file: pd.DataFrame) -> pd.DataFrame:
-    """Dette er en funksjon du kan bruke til å formatere periode- og regionsvariabelen din. Funksjonen forutsetter at periodevariabelen er kalt 'periode'. Den forutsetter også at regionsvariabelen
+    """Formatering av periode- og regionsvariabelen.
+
+    Dette er en funksjon du kan bruke til å formatere periode- og regionsvariabelen din. Funksjonen forutsetter at periodevariabelen er kalt 'periode'. Den forutsetter også at regionsvariabelen
     heter enten 'bydelsregion', 'kommuneregion' eller 'fylkesregion'. Ellers får du feilmelding. Den setter
     - periode til 4-sifret string-variabel. Ledende null(er) legges til dersom antallet sifre er lavere enn 4.
     - bydelsregion til 6-sifret string-variabel. Ledende null(er) legges til dersom antallet sifre er lavere enn 4.
@@ -74,8 +76,10 @@ def format_fil(file: pd.DataFrame) -> pd.DataFrame:
 
 
 # %%
-def definere_klassifikasjonsvariable(inputfil):
-    """Dette er en funksjon der du definerer klassifikasjonsvariablene i datasettet ditt. I KOMPIS ble klassifikasjonsvariablene automatisk identifisert fordi de var forhåndsdefinert og koplet til
+def definere_klassifikasjonsvariable(inputfil: pd.DataFrame):
+    """Definere klassifikasjonsvariablene i datasettet.
+
+    Dette er en funksjon der du definerer klassifikasjonsvariablene i datasettet ditt. I KOMPIS ble klassifikasjonsvariablene automatisk identifisert fordi de var forhåndsdefinert og koplet til
     en bestemt KLASS-kodeliste. Det er så langt ikke lagt til rette for dette på KOSTRA DAPLA.
     Dette er en funksjon som inngår i en annen, nemlig regionshierarkifunksjonen, så det er ikke meningen at du skal anvende denne direkte på et datasett, men det er mulig.
     For at hierarkifunksjonen skal fungere etter hensikten, er det nødvendig at du angir de klassifikasjonsvariablene som KOMMER I TILLEGG til periode- og regionsvariabelen.
@@ -146,7 +150,8 @@ def definere_klassifikasjonsvariable(inputfil):
 
 
 # %%
-def konvertere_komma_til_punktdesimal(inputfil):
+def konvertere_komma_til_punktdesimal(inputfil: pd.DataFrame):
+    """Konvertere komma til punktdesimal i datasettet."""
     df = inputfil.copy()
     cols_with_commas = [
         col for col in df.columns if df[col].astype(str).str.contains(",").any()

@@ -62,7 +62,9 @@ class FakeKlassClassification_bb_eab:
         self.include_future = include_future
 
     def get_codes(self, *args, **kwargs):
-        """mapping_bydeler_oslo calls get_codes(...) (possibly with a date string).
+        """Calls get_codes(...).
+
+        mapping_bydeler_oslo calls get_codes(...) (possibly with a date string).
         We ignore args/kwargs and return our fake codes object.
         """
         return FakeCodes_bb_eab(self.__class__.pivot_df)
@@ -83,7 +85,9 @@ class TestMappingBydelerOslo(unittest.TestCase):
         new=FakeKlassClassification_bb_eab,
     )
     def test_mapping_bydeler_oslo_filters_and_sets_to_EAB(self):
-        """Purpose
+        """Checks if the function maps and filters correctly.
+
+        Purpose
         -------
         Verify that mapping_bydeler_oslo:
           - filters out specific codes (030116, 030117, and EAB)
@@ -152,7 +156,9 @@ class TestMappingBydelerOslo(unittest.TestCase):
         new=FakeKlassClassification_bb_eab,
     )
     def test_mapping_bydeler_oslo_returns_empty_if_only_filtered_codes(self):
-        """Purpose
+        """Verify behavior when all available codes are filtered out.
+
+        Purpose
         -------
         Verify behavior when all available codes are filtered out:
           - output should be empty (0 rows)
@@ -290,7 +296,9 @@ class TestMappingFraKommuneTilLandet(unittest.TestCase):
         new=FakeKlassClassification_kk_eak,
     )
     def test_mapping_fra_kommune_til_landet_happy_path(self):
-        """Purpose
+        """Validate the main invariants of mapping_fra_kommune_til_landet.
+
+        Purpose
         -------
         Validate the main invariants of mapping_fra_kommune_til_landet:
 
@@ -367,7 +375,9 @@ class TestMappingFraKommuneTilLandet(unittest.TestCase):
         new=FakeKlassClassification_kk_eak,
     )
     def test_from_is_zero_padded_when_short(self):
-        """Purpose
+        """Specifically validate the zero-padding behavior.
+
+        Purpose
         -------
         Specifically validate the zero-padding behavior (.zfill(4)) for "from"
         when municipality codes are shorter than 4 characters.
@@ -443,7 +453,8 @@ class TestMappingFraKommuneTilFylkeskommune(unittest.TestCase):
         new=FakeKlassCorrespondence_kk_fk,
     )
     def test_mapping_filters_renames_and_pads(self):
-        """Steps
+        """Steps.
+
         -----
         1) Patch KlassCorrespondence to return deterministic correspondence data.
         2) Call mapping_fra_kommune_til_fylkeskommune("2024").
@@ -552,7 +563,8 @@ class TestMappingFraFylkeskommuneTilKostraregion(unittest.TestCase):
         new=FakeKlassClassification_fk_eafk,
     )
     def test_mapping_fra_fylkeskommune_til_kostraregion_happy_path(self):
-        """Steps
+        """Steps.
+
         -----
         1) Provide fake classification codes including:
            - "0300" (Oslo-like code)
@@ -634,6 +646,7 @@ class TestHierarki(unittest.TestCase):
 
     def test_raises_if_more_than_one_periode(self):
         """Hierarki expects exactly one unique periode.
+
         If more than one periode exists, it should raise.
         """
         df = pd.DataFrame(
@@ -648,6 +661,7 @@ class TestHierarki(unittest.TestCase):
 
     def test_raises_if_no_region_column(self):
         """Hierarki expects exactly one valid region column to exist.
+
         If none exists, it should raise.
         """
         df = pd.DataFrame({"periode": ["2025"], "personer": [1]})
@@ -656,6 +670,7 @@ class TestHierarki(unittest.TestCase):
 
     def test_raises_if_multiple_region_columns(self):
         """Hierarki expects exactly one region column.
+
         If multiple region columns are present, it should raise.
         """
         df = pd.DataFrame(
@@ -670,9 +685,7 @@ class TestHierarki(unittest.TestCase):
             hierarki(df)
 
     def test_raises_if_inconsistent_aggregeringstype(self):
-        """If the caller specifies an aggregeringstype that doesn't match the actual
-        region column in the DataFrame, hierarki should raise.
-        """
+        """If the caller specifies an aggregeringstype that doesn't match the actual region column in the DataFrame, hierarki should raise an error."""
         df = pd.DataFrame(
             {
                 "periode": ["2025"],
@@ -693,7 +706,8 @@ class TestHierarki(unittest.TestCase):
     def test_kommune_til_landet_default_appends_aggregated_rows(
         self, mock_map, mock_definer
     ):
-        """Purpose
+        """Purpose.
+
         -------
         When df has kommuneregion and aggregeringstype is None, hierarki should:
           - choose mapping_fra_kommune_til_landet
@@ -755,7 +769,8 @@ class TestHierarki(unittest.TestCase):
     def test_kommune_til_fylkeskommune_filters_to_endswith_00_and_renames(
         self, mock_map, mock_definer
     ):
-        """Purpose
+        """Purpose.
+
         -------
         If aggregeringstype="kommune_til_fylkeskommune", hierarki should:
           - use mapping_fra_kommune_til_fylkeskommune
@@ -806,7 +821,8 @@ class TestHierarki(unittest.TestCase):
         "ssb_kostra_python.regionshierarki.mapping_fra_fylkeskommune_til_kostraregion"
     )
     def test_fylkeskommune_til_kostraregion(self, mock_map, mock_definer):
-        """Purpose
+        """Purpose.
+
         -------
         If df contains fylkesregion, hierarki should auto-select the mapping
         fylkeskommune -> kostraregion and apply it.
@@ -852,7 +868,8 @@ class TestHierarki(unittest.TestCase):
     )
     @patch("ssb_kostra_python.regionshierarki.mapping_bydeler_oslo")
     def test_bydeler_til_EAB(self, mock_map, mock_definer):
-        """Purpose
+        """Purpose.
+
         -------
         If df contains bydelsregion, hierarki should auto-select the bydel->EAB mapping
         and aggregate all bydel codes into a single EAB total (per grouping keys).

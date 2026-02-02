@@ -28,7 +28,9 @@ class TestFormatFil(unittest.TestCase):
     """
 
     def test_formats_periode_and_alder_fixed_width(self):
-        """Purpose
+        """Checking correct conversions.
+
+        Purpose
         -------
         Verify that:
           - `periode` values are converted to 4-character zero-padded strings
@@ -77,7 +79,9 @@ class TestFormatFil(unittest.TestCase):
         )
 
     def test_kommuneregion_pads_only_digits_and_only_when_too_short(self):
-        """Purpose
+        """Verify the rules for kommuneregion formatting.
+
+        Purpose
         -------
         Verify the rules for kommuneregion formatting:
 
@@ -124,7 +128,9 @@ class TestFormatFil(unittest.TestCase):
         )
 
     def test_fylkesregion_pads_only_digits_and_only_when_too_short(self):
-        """Purpose
+        """Verify the fylkesregion padding rule.
+
+        Purpose
         -------
         Verify the fylkesregion padding rule:
           - digits-only values with length < 4 are padded to width 4
@@ -157,7 +163,9 @@ class TestFormatFil(unittest.TestCase):
         )
 
     def test_bydelsregion_pads_only_digits_and_only_when_too_short(self):
-        """Purpose
+        """Verify the bydelsregion padding rule.
+
+        Purpose
         -------
         Verify the bydelsregion padding rule:
           - digits-only values with length < 6 are padded to width 6
@@ -185,7 +193,9 @@ class TestFormatFil(unittest.TestCase):
         )
 
     def test_raises_if_no_valid_region_column_present(self):
-        """Purpose
+        """Checking if at least one valid region column exists.
+
+        Purpose
         -------
         format_fil should require that at least one valid region column exists:
           - kommuneregion OR fylkesregion OR bydelsregion
@@ -208,7 +218,9 @@ class TestFormatFil(unittest.TestCase):
 
 
 class TestDefinereKlassifikasjonsvariable(unittest.TestCase):
-    """Tests for `definere_klassifikasjonsvariable(df)`.
+    """Dfining klassifikasjonsvariable and statistikkvariable.
+
+    Tests for `definere_klassifikasjonsvariable(df)`.
 
     What the function appears to do (inferred from tests)
     -----------------------------------------------------
@@ -230,7 +242,9 @@ class TestDefinereKlassifikasjonsvariable(unittest.TestCase):
 
     @patch("builtins.input", return_value="")  # user presses Enter
     def test_no_additional_variables(self, mock_input):
-        """Purpose
+        """Checking df with no extra klassifikasjonsvariable.
+
+        Purpose
         -------
         If user provides no extra variables (empty input):
           - classification variables should be only the fixed ones that exist in df
@@ -282,7 +296,9 @@ class TestDefinereKlassifikasjonsvariable(unittest.TestCase):
         "builtins.input", return_value="kjonn, alder , kjonn,  "
     )  # duplicates + spaces
     def test_additional_variables_parsing_dedup_and_order(self, mock_input):
-        """Purpose
+        """Verify parsing.
+
+        Purpose
         -------
         Verify parsing of extra user-provided variables:
           - split on commas
@@ -336,7 +352,9 @@ class TestDefinereKlassifikasjonsvariable(unittest.TestCase):
 
     @patch("builtins.input", return_value="alder")
     def test_fixed_vars_only_included_if_present(self, mock_input):
-        """Purpose
+        """Verifying that fixed vars are included ONLY if present in the DataFrame.
+
+        Purpose
         -------
         Verify that fixed vars are included ONLY if present in the DataFrame.
         The fixed set is assumed to be:
@@ -395,7 +413,8 @@ class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
     """
 
     def test_converts_comma_decimal_to_float(self):
-        """Purpose
+        """Purpose.
+
         -------
         Verify that comma-decimal strings are converted to floats.
 
@@ -418,7 +437,9 @@ class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
         )
 
     def test_leaves_columns_without_commas_unchanged(self):
-        """Purpose
+        """Verifying that columns that do NOT contain comma decimals are unchanged.
+
+        Purpose
         -------
         Verify that columns that do NOT contain comma decimals are unchanged.
 
@@ -452,7 +473,9 @@ class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
         )
 
     def test_converts_column_if_any_value_contains_comma(self):
-        """Purpose
+        """Verifying the rule: if ANY value in a column contains a comma, convert the whole column.
+
+        Purpose
         -------
         Verify the rule: if ANY value in a column contains a comma, convert the whole column.
 
@@ -475,7 +498,9 @@ class TestKonvertereKommaTilPunktdesimal(unittest.TestCase):
         )
 
     def test_does_not_modify_input_dataframe(self):
-        """Purpose
+        """Verify that konvertere_komma_til_punktdesimal does NOT mutate the input DataFrame.
+
+        Purpose
         -------
         Verify that konvertere_komma_til_punktdesimal does NOT mutate the input DataFrame.
 

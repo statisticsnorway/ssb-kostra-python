@@ -11,7 +11,9 @@ from ssb_kostra_python.avrunding import konverter_dtypes
 
 
 class TestRoundingAndKonverterDtypes(unittest.TestCase):
-    """Test suite for:
+    """Testing the rounding helper and the DataFrame transformation function.
+
+    Test suite for:
       - _round_half_up(values, decimals)
       - konverter_dtypes(df, dtype_mapping)
 
@@ -34,7 +36,8 @@ class TestRoundingAndKonverterDtypes(unittest.TestCase):
     """
 
     def test_round_half_up_basic(self):
-        """Purpose
+        """Purpose.
+
         -------
         Verify the core rounding rule: "commercial rounding" / half-away-from-zero.
 
@@ -64,7 +67,8 @@ class TestRoundingAndKonverterDtypes(unittest.TestCase):
         )
 
     def test_round_half_up_with_decimals(self):
-        """Purpose
+        """Purpose.
+
         -------
         Verify rounding behavior when decimals != 0.
 
@@ -99,7 +103,8 @@ class TestRoundingAndKonverterDtypes(unittest.TestCase):
     def test_konverter_dtypes_converts_groups_correctly(
         self, mock_display, mock_logger
     ):
-        """Purpose
+        """Purpose.
+
         -------
         Verify that konverter_dtypes applies each conversion group correctly and
         preserves other columns.
@@ -225,7 +230,8 @@ class TestRoundingAndKonverterDtypes(unittest.TestCase):
     def test_konverter_dtypes_warns_for_missing_and_unknown_group(
         self, mock_display, mock_logger
     ):
-        """Purpose
+        """Purpose.
+
         -------
         Verify that konverter_dtypes:
           - prints warnings when:

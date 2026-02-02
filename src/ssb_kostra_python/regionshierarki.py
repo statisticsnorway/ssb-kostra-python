@@ -31,7 +31,9 @@ logger = logging.getLogger(__name__)
 # %%
 # def hierarki_bydeler_oslo(year : str | int = "2015"):
 def mapping_bydeler_oslo(year: str | int = "2015"):
-    """Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
+    """Mapping av bydelene i Oslo.
+
+    Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
     Her lages kun en mappingfil som viser hvordan Oslos bydeler inngår i samlebydelen "EAB".
     Dette er altså bare en hjelpefunksjon som inngår i en annen funksjon, hierarkifunksjonen, som aggregerer opp bydelsdata til "EAB" kun dersom inputfilen er en bydelsfil.
     """
@@ -54,7 +56,9 @@ def mapping_bydeler_oslo(year: str | int = "2015"):
 # %%
 # def hierarki_fra_kommune_til_landet(year : str | int):
 def mapping_fra_kommune_til_landet(year: str | int):
-    """Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
+    """Mapping av kommunene til landet.
+
+    Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
     Her lages kun en mappingfil som viser hvordan kommunene inngår i fylker, Kostra-grupper og landet et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp kommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er en kommunefil.
     """
@@ -133,7 +137,9 @@ def mapping_fra_kommune_til_landet(year: str | int):
 # %%
 # def hierarki_fra_kommune_til_fylkeskommune(year : str | int):
 def mapping_fra_kommune_til_fylkeskommune(year: str | int):
-    """Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
+    """Mapping fra kommune til fylkeskommune.
+
+    Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
     Her lages kun en mappingfil som viser hvordan kommunene inngår i de ulike fylkeskommunene et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp kommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er en kommunefil.
     """
@@ -167,7 +173,9 @@ def mapping_fra_kommune_til_fylkeskommune(year: str | int):
 
 # %%
 def mapping_fra_fylkeskommune_til_kostraregion(year: str | int):
-    """Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
+    """Mapping fra fylkeskommune til KOSTRA-region (EAFK).
+
+    Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
     Her lages kun en mappingfil som viser hvordan fylkeskommunene inngår i de ulike KOSTRA-fylkesgruppene et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp fylkeskommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er       en fylkeskommunefil.
     """
@@ -229,7 +237,9 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int):
 def hierarki(
     inputfil: pd.DataFrame, aggregeringstype: str | None = None
 ) -> pd.DataFrame:
-    """Utfører hierarkisk regionsaggregering av inputfilen brukeren angir. Det er forsøkt å gjøre funksjonen så lik hierarkifunksjonen i KOMPIS som mulig. Denne funksjonen dessverre krever litt
+    """Hierarkisk aggregering.
+
+    Utfører hierarkisk regionsaggregering av inputfilen brukeren angir. Det er forsøkt å gjøre funksjonen så lik hierarkifunksjonen i KOMPIS som mulig. Denne funksjonen dessverre krever litt
     ekstra arbeid, men ikke mye.
 
     Funksjonen fastslår regionsnivået i datasettet basert på kolonnetittelen for regionsvariabelen (som MÅ være "kommuneregion", "fylkesregion" eller "bydelsregion").
@@ -435,8 +445,10 @@ def hierarki(
 
 
 # %%
-def overfore_data_fra_fk_til_k(inputfil):
-    """Denne funksjonen brukes til å legge data som bare finnes på fylkes- eller fylkeskommunenivå over på enkeltkommunenivå. Dersom du har et fylkes(-kommune)datasett, kan dette
+def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
+    """Legge fylkeskommunedata over på alle tilhørende kommuner.
+
+    Denne funksjonen brukes til å legge data som bare finnes på fylkes- eller fylkeskommunenivå over på enkeltkommunenivå. Dersom du har et fylkes(-kommune)datasett, kan dette
     gjøres om til et kommunedatasett der verdiene for fylket/fylkeskommunen gjør seg gjeldende for hver kommune i fylket/fylkeskommunen.
 
     Det vil si at dersom forventet levealder for kvinner er
@@ -503,7 +515,9 @@ def gjennomsnitt_aggregerte_regioner(
     print_types: bool = True,
     return_report: bool = False,
 ):
-    """Denne funksjonen tar et datasett på kommune-, fylkeskommune- eller bydelsnivå, og aggregerer det til regionsgrupperinger.
+    """Gjennomsnitt i aggregrerte regioner.
+
+    Denne funksjonen tar et datasett på kommune-, fylkeskommune- eller bydelsnivå, og aggregerer det til regionsgrupperinger.
     Den beregner så gjennomnittsverdier for de kolonnene brukeren velger ut. De øvrige kolonnene blir summert. Funksjonen kan brukes til å
     beregne gjennomsnittet av summerbare variable (f.eks. folkemengde, antall_menn, antall_barn), men den passer IKKE til å beregne
     gjennomsnittet av andeler (f.eks. andel_skilte). Om andelen er 0.51 i en stor kommune og 0.49 i en liten kommune, vil denne
