@@ -20,6 +20,7 @@ from klass import KlassCorrespondence
 from pandas.api.types import is_bool_dtype
 from pandas.api.types import is_float_dtype
 from pandas.api.types import is_integer_dtype
+from typing import Any
 
 from ssb_kostra_python import hjelpefunksjoner
 
@@ -29,8 +30,8 @@ logger = logging.getLogger(__name__)
 
 
 # %%
-# def hierarki_bydeler_oslo(year : str | int = "2015"):
-def mapping_bydeler_oslo(year: str | int = "2015"):
+# def mapping_bydeler_oslo(year: str | int = "2015"):
+def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     """Mapping av bydelene i Oslo.
 
     Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
@@ -55,7 +56,7 @@ def mapping_bydeler_oslo(year: str | int = "2015"):
 
 # %%
 # def hierarki_fra_kommune_til_landet(year : str | int):
-def mapping_fra_kommune_til_landet(year: str | int):
+def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     """Mapping av kommunene til landet.
 
     Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
@@ -136,7 +137,7 @@ def mapping_fra_kommune_til_landet(year: str | int):
 
 # %%
 # def hierarki_fra_kommune_til_fylkeskommune(year : str | int):
-def mapping_fra_kommune_til_fylkeskommune(year: str | int):
+def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     """Mapping fra kommune til fylkeskommune.
 
     Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
@@ -172,7 +173,7 @@ def mapping_fra_kommune_til_fylkeskommune(year: str | int):
 
 
 # %%
-def mapping_fra_fylkeskommune_til_kostraregion(year: str | int):
+def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     """Mapping fra fylkeskommune til KOSTRA-region (EAFK).
 
     Denne funksjonen er ikke en funksjon du skal anvende direkte på et datasett.
@@ -374,13 +375,24 @@ def hierarki(
         post_filter = None
         rename_cols = {}
 
+    # elif aggregeringstype == "kommune_til_fylkeskommune":
+
+    #     mappingfil = mapping_fra_kommune_til_fylkeskommune(periode)
+    #     join_col = "kommuneregion"
+    #     replace_col = "kommuneregion"
+    #     # beholder filteret før evt. kolonnerename (bevarer din originale rekkefølge/semantikk)
+    #     post_filter = lambda df: df[df["kommuneregion"].str.endswith("00")]
+    #     rename_cols = {"kommuneregion": "fylkesregion"}
+
     elif aggregeringstype == "kommune_til_fylkeskommune":
 
         mappingfil = mapping_fra_kommune_til_fylkeskommune(periode)
         join_col = "kommuneregion"
         replace_col = "kommuneregion"
         # beholder filteret før evt. kolonnerename (bevarer din originale rekkefølge/semantikk)
-        post_filter = lambda df: df[df["kommuneregion"].str.endswith("00")]
+        def _post_filter_kommuner_til_fylke(df: pd.DataFrame) -> pd.DataFrame:
+            return df[df["kommuneregion"].str.endswith("00")]
+        post_filter = _post_filter_kommuner_til_fylke
         rename_cols = {"kommuneregion": "fylkesregion"}
 
     elif aggregeringstype == "fylkeskommune_til_kostraregion":
@@ -506,6 +518,12 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
 
 
 # %%
+def _nullable_int_for(dtype: Any) -> str:
+    name = str(dtype)
+    if name.startswith("int"):
+        return "I" + name[1:]
+    return "Int64"
+
 def gjennomsnitt_aggregerte_regioner(
     df: pd.DataFrame,
     cols: list,
@@ -514,7 +532,7 @@ def gjennomsnitt_aggregerte_regioner(
     restore_original_dtype: bool = True,
     print_types: bool = True,
     return_report: bool = False,
-):
+) -> pd.DataFrame | tuple[pd.DataFrame, dict]:
     """Gjennomsnitt i aggregrerte regioner.
 
     Denne funksjonen tar et datasett på kommune-, fylkeskommune- eller bydelsnivå, og aggregerer det til regionsgrupperinger.

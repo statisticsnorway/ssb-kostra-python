@@ -76,7 +76,12 @@ def format_fil(file: pd.DataFrame) -> pd.DataFrame:
 
 
 # %%
-def definere_klassifikasjonsvariable(inputfil: pd.DataFrame):
+# def definere_klassifikasjonsvariable(inputfil: pd.DataFrame):
+
+
+def definere_klassifikasjonsvariable(
+    inputfil: pd.DataFrame,
+) -> tuple[list[str], list[str]]:
     """Definere klassifikasjonsvariablene i datasettet.
 
     Dette er en funksjon der du definerer klassifikasjonsvariablene i datasettet ditt. I KOMPIS ble klassifikasjonsvariablene automatisk identifisert fordi de var forhåndsdefinert og koplet til
@@ -118,7 +123,8 @@ def definere_klassifikasjonsvariable(inputfil: pd.DataFrame):
         print(andre_klassifikasjonsvariable)
 
     # Helper to deduplicate while preserving order
-    def uniq(seq):
+    # def uniq(seq):
+    def uniq(seq: list[str]) -> list[str]:
         seen = set()
         out = []
         for x in seq:
@@ -150,7 +156,7 @@ def definere_klassifikasjonsvariable(inputfil: pd.DataFrame):
 
 
 # %%
-def konvertere_komma_til_punktdesimal(inputfil: pd.DataFrame):
+def konvertere_komma_til_punktdesimal(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Konvertere komma til punktdesimal i datasettet."""
     df = inputfil.copy()
     cols_with_commas = [
