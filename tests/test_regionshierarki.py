@@ -36,6 +36,7 @@ class FakeCodes_bb_eab:
     """
 
     def __init__(self, pivot_df: pd.DataFrame):
+        """Initialize fake with dataframe returned by pivot_level()."""
         self._pivot_df = pivot_df
 
     def pivot_level(self):
@@ -57,12 +58,13 @@ class FakeKlassClassification_bb_eab:
     pivot_df = None  # set per test
 
     def __init__(self, klass_id, language="nb", include_future=True):
+        """Initialize fake KlassClassification with expected constructor arguments."""
         self.klass_id = klass_id
         self.language = language
         self.include_future = include_future
 
     def get_codes(self, *args, **kwargs):
-        """Calls get_codes(...).
+        """Return fake codes object for testing.
 
         mapping_bydeler_oslo calls get_codes(...) (possibly with a date string).
         We ignore args/kwargs and return our fake codes object.
@@ -221,6 +223,11 @@ class FakeKlassCorrespondence_kk_eak:
     def __init__(
         self, source_classification_id, target_classification_id, from_date, to_date
     ):
+        """Initialize fake KlassCorrespondence with deterministic mapping data.
+
+        The returned mapping depends on target_classification_id to simulate
+        kommune-to-fylke and kommune-to-KOSTRA-group correspondences.
+        """
         self.source_classification_id = source_classification_id
         self.target_classification_id = target_classification_id
         self.from_date = from_date
@@ -248,6 +255,7 @@ class FakeCodes_kk_eak:
     """Fake codes object providing pivot_level(), used by FakeKlassClassification_kk_eak."""
 
     def __init__(self, pivot_df: pd.DataFrame):
+        """Fake codes object providing pivot_level(), used by FakeKlassClassification_kk_eak."""
         self._pivot_df = pivot_df
 
     def pivot_level(self):

@@ -13,6 +13,7 @@
 
 # %%
 import logging
+from typing import Any
 
 import pandas as pd
 from klass import KlassClassification
@@ -20,7 +21,6 @@ from klass import KlassCorrespondence
 from pandas.api.types import is_bool_dtype
 from pandas.api.types import is_float_dtype
 from pandas.api.types import is_integer_dtype
-from typing import Any
 
 from ssb_kostra_python import hjelpefunksjoner
 
@@ -389,9 +389,11 @@ def hierarki(
         mappingfil = mapping_fra_kommune_til_fylkeskommune(periode)
         join_col = "kommuneregion"
         replace_col = "kommuneregion"
+
         # beholder filteret før evt. kolonnerename (bevarer din originale rekkefølge/semantikk)
         def _post_filter_kommuner_til_fylke(df: pd.DataFrame) -> pd.DataFrame:
             return df[df["kommuneregion"].str.endswith("00")]
+
         post_filter = _post_filter_kommuner_til_fylke
         rename_cols = {"kommuneregion": "fylkesregion"}
 
@@ -523,6 +525,7 @@ def _nullable_int_for(dtype: Any) -> str:
     if name.startswith("int"):
         return "I" + name[1:]
     return "Int64"
+
 
 def gjennomsnitt_aggregerte_regioner(
     df: pd.DataFrame,
