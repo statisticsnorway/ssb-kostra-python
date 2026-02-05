@@ -276,6 +276,7 @@ class FakeKlassClassification_kk_eak:
     pivot_df = None
 
     def __init__(self, klass_id, language="nb", include_future=True):
+        """Initialize fake KlassClassification with expected constructor arguments."""
         self.klass_id = klass_id
         self.language = language
         self.include_future = include_future
@@ -438,6 +439,12 @@ class FakeKlassCorrespondence_kk_fk:
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialize fake correspondence with deterministic kommune-fylkeskommune mapping data.
+
+        Args:
+            *args: Ignored positional arguments for compatibility.
+            **kwargs: Ignored keyword arguments for compatibility.
+        """
         self.data = pd.DataFrame(
             {
                 "sourceCode": ["0301", "9999", "1103", "301"],
@@ -525,6 +532,14 @@ class FakeKlassCorrespondence_fk_eafk:
     def __init__(
         self, source_classification_id, target_classification_id, from_date, to_date
     ):
+        """Initialize fake correspondence with deterministic fylkes mapping data.
+
+        Args:
+            source_classification_id: The source classification ID (unused in fake).
+            target_classification_id: The target classification ID (unused in fake).
+            from_date: The start date for the correspondence (unused in fake).
+            to_date: The end date for the correspondence (unused in fake).
+        """
         self.data = pd.DataFrame(
             {
                 "sourceCode": ["0300", "4200", "9900"],
@@ -535,6 +550,11 @@ class FakeKlassCorrespondence_fk_eafk:
 
 class FakeCodes_fk_eafk:
     def __init__(self, pivot_df: pd.DataFrame):
+        """Initialize the fake codes object with a DataFrame for pivot_level().
+
+        Args:
+            pivot_df (pd.DataFrame): The DataFrame to be returned by pivot_level().
+        """
         self._pivot_df = pivot_df
 
     def pivot_level(self):
@@ -547,6 +567,7 @@ class FakeKlassClassification_fk_eafk:
     pivot_df = None
 
     def __init__(self, klass_id, language="nb", include_future=True):
+        """Initialize fake KlassClassification with expected constructor arguments."""
         self.klass_id = klass_id
 
     def get_codes(self, *args, **kwargs):
