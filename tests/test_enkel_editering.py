@@ -1,22 +1,13 @@
+import inspect
 import unittest
 from unittest.mock import patch
-import inspect
-import pandas as pd
-import numpy as np
-from pandas.api.types import (
-    is_integer_dtype, is_float_dtype, is_bool_dtype, is_extension_array_dtype
-)
-import ipywidgets as widgets
-from IPython.display import display, clear_output
-from datetime import datetime
-import getpass
 
+import pandas as pd
 from functions.funksjoner.enkel_editering import dataframe_cell_editor_mvp
 
 
 class TestDataframeCellEditorMVP(unittest.TestCase):
-    """
-    Test suite for `dataframe_cell_editor_mvp`.
+    """Test suite for `dataframe_cell_editor_mvp`.
 
     What `dataframe_cell_editor_mvp` appears to do (conceptually)
     ------------------------------------------------------------
@@ -48,8 +39,7 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
     """
 
     def setUp(self):
-        """
-        setUp runs before each test method.
+        """SetUp runs before each test method.
 
         We create a small representative DataFrame with:
           - identifier columns: periode, kommuneregion
@@ -60,25 +50,26 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
         Using extension dtypes (Int64, boolean, string) is important because
         notebook editors often need to handle them carefully.
         """
-        self.df = pd.DataFrame({
-            "periode": ["2024K4", "2024K4"],
-            "kommuneregion": ["0301", "0301"],
-            "utgifter": pd.Series([10, 20], dtype="Int64"),
-            "flag": pd.Series([True, False], dtype="boolean"),
-            "tekst": pd.Series(["ja", "nei"], dtype="string"),
-        })
+        self.df = pd.DataFrame(
+            {
+                "periode": ["2024K4", "2024K4"],
+                "kommuneregion": ["0301", "0301"],
+                "utgifter": pd.Series([10, 20], dtype="Int64"),
+                "flag": pd.Series([True, False], dtype="boolean"),
+                "tekst": pd.Series(["ja", "nei"], dtype="string"),
+            }
+        )
 
     @patch("functions.funksjoner.enkel_editering.display", autospec=True)
     @patch("functions.funksjoner.enkel_editering.clear_output", autospec=True)
-    @patch("functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable", autospec=True)
+    @patch(
+        "functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable",
+        autospec=True,
+    )
     def test_initial_get_results_returns_copy_and_empty_log(
-        self,
-        mock_define,
-        mock_clear_output,
-        mock_display
+        self, mock_define, mock_clear_output, mock_display
     ):
-        """
-        Purpose
+        """Purpose
         -------
         Verify the "initial state" behavior of the editor:
           - Calling dataframe_cell_editor_mvp returns a callable get_results()
@@ -94,10 +85,12 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
         2) Call dataframe_cell_editor_mvp(...) to build the editor.
         3) Call get_results() and inspect exported df + log.
         """
-
         # 1) Arrange: Make the helper deterministic (no input prompts)
         # The editor likely needs to know which columns identify a row vs. editable columns.
-        mock_define.return_value = (["periode", "kommuneregion"], ["utgifter", "flag", "tekst"])
+        mock_define.return_value = (
+            ["periode", "kommuneregion"],
+            ["utgifter", "flag", "tekst"],
+        )
 
         # 2) Act: Build editor; it returns a getter function (closure) for results.
         get_results = dataframe_cell_editor_mvp(self.df, preview_rows=5, log_rows=None)
@@ -116,15 +109,14 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
 
     @patch("functions.funksjoner.enkel_editering.display", autospec=True)
     @patch("functions.funksjoner.enkel_editering.clear_output", autospec=True)
-    @patch("functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable", autospec=True)
+    @patch(
+        "functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable",
+        autospec=True,
+    )
     def test_get_results_reflects_mutations_to_captured_state(
-        self,
-        mock_define,
-        mock_clear_output,
-        mock_display
+        self, mock_define, mock_clear_output, mock_display
     ):
-        """
-        Purpose
+        """Purpose
         -------
         Validate that `get_results()` reflects the *current internal state* of the editor.
 
@@ -154,9 +146,11 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
              - exported log includes our entry
              - internal ROW_ID is removed from exported df
         """
-
         # 1) Arrange: deterministic helper output
-        mock_define.return_value = (["periode", "kommuneregion"], ["utgifter", "flag", "tekst"])
+        mock_define.return_value = (
+            ["periode", "kommuneregion"],
+            ["utgifter", "flag", "tekst"],
+        )
 
         # 2) Act: build the editor and get the results exporter function
         get_results = dataframe_cell_editor_mvp(self.df, preview_rows=5, log_rows=None)
@@ -177,17 +171,19 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
         df_working.loc[0, "utgifter"] = new_val
 
         # Append a log entry describing the change
-        change_log.append({
-            "timestamp": "2026-01-06T12:00:00",
-            "user": "tester",
-            "row_id": rid0,
-            "column": "utgifter",
-            "old_value": old_val,
-            "new_value": new_val,
-            "reason": "unit test change",
-            "id_periode": df_working.loc[0, "periode"],
-            "id_kommuneregion": df_working.loc[0, "kommuneregion"],
-        })
+        change_log.append(
+            {
+                "timestamp": "2026-01-06T12:00:00",
+                "user": "tester",
+                "row_id": rid0,
+                "column": "utgifter",
+                "old_value": old_val,
+                "new_value": new_val,
+                "reason": "unit test change",
+                "id_periode": df_working.loc[0, "periode"],
+                "id_kommuneregion": df_working.loc[0, "kommuneregion"],
+            }
+        )
 
         # 5) Act: export results from the closure
         df_edited, log_df = get_results()
@@ -206,15 +202,14 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
 
     @patch("functions.funksjoner.enkel_editering.display", autospec=True)
     @patch("functions.funksjoner.enkel_editering.clear_output", autospec=True)
-    @patch("functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable", autospec=True)
+    @patch(
+        "functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable",
+        autospec=True,
+    )
     def test_row_id_is_added_internally_but_not_returned(
-        self,
-        mock_define,
-        mock_clear_output,
-        mock_display
+        self, mock_define, mock_clear_output, mock_display
     ):
-        """
-        Purpose
+        """Purpose
         -------
         Verify that ROW_ID is used internally to track rows, but is not exposed
         in the returned/exported DataFrame from get_results().
@@ -225,9 +220,11 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
         2) Inspect closure to verify df_working contains ROW_ID column.
         3) Call get_results() and verify ROW_ID column is not present in exported df.
         """
-
         # 1) Arrange
-        mock_define.return_value = (["periode", "kommuneregion"], ["utgifter", "flag", "tekst"])
+        mock_define.return_value = (
+            ["periode", "kommuneregion"],
+            ["utgifter", "flag", "tekst"],
+        )
 
         # 2) Act: build editor and access internal state
         get_results = dataframe_cell_editor_mvp(self.df, preview_rows=5, log_rows=None)

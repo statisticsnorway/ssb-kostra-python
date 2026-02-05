@@ -12,20 +12,26 @@
 # ---
 
 # %%
-import pandas as pd
-from pandas.api.types import (is_integer_dtype, is_float_dtype, is_bool_dtype, is_extension_array_dtype)
-import numpy as np
-import ipywidgets as widgets
-from IPython.display import display, clear_output
-from datetime import datetime
 import getpass
+from datetime import datetime
+
+import ipywidgets as widgets
+import numpy as np
+import pandas as pd
 from functions.funksjoner import hjelpefunksjoner
+from IPython.display import clear_output
+from IPython.display import display
+from pandas.api.types import is_bool_dtype
+from pandas.api.types import is_extension_array_dtype
+from pandas.api.types import is_float_dtype
+from pandas.api.types import is_integer_dtype
 
 
 # %%
-def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | None = None):
-    """
-    Interactive, user-friendly dataframe cell editor for Jupyter notebooks.
+def dataframe_cell_editor_mvp(
+    df, *, preview_rows: int = 30, log_rows: int | None = None
+):
+    """Interactive, user-friendly dataframe cell editor for Jupyter notebooks.
 
     This function launches an ipywidgets-based UI that allows non-technical users
     to safely edit individual cell values in a pandas DataFrame, with strong
@@ -89,7 +95,8 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
         * the change log refreshes
 
     ------------------------------------------------------------------------
-    Returns
+
+    Returns:
     ------------------------------------------------------------------------
     get_results : callable
         A zero-argument function that returns the current edited dataframe
@@ -114,7 +121,8 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
                     - classification variable snapshot
 
     ------------------------------------------------------------------------
-    Notes
+
+    Notes:
     ------------------------------------------------------------------------
     - This function is intended for interactive use in Jupyter environments.
     - It relies on ipywidgets and a live kernel.
@@ -122,21 +130,20 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
       classification vs statistical variables.
     - Persistence (saving edited data or logs to disk) is intentionally
       left out and can be added later if needed.
-      
+
 
     ------------------------------------------------------------------------
     How to use
     ------------------------------------------------------------------------
     1. Open the interface with:
         - get_results = enkel_editering.dataframe_cell_editor_mvp(df_to_be_edited)
-            - "df_to_be_edited" is the dataframe you want to edit 
+            - "df_to_be_edited" is the dataframe you want to edit
     2. Follow the instructions in the interface.
     3. Generate an edited dataframe (df_edited) and the log (change_log_df) for the changes you made.
         - df_edited, change_log_df = get_results()
         - display(df_edited)       <--- optional
         - display(change_log_df)   <--- optional
     """
-
     # ------------------------------------------------------------------
     # Setup
     # ------------------------------------------------------------------
@@ -146,7 +153,9 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
     if ROW_ID not in df_working.columns:
         df_working[ROW_ID] = np.arange(len(df_working))
 
-    klassifikasjonsvariable, statistikkvariable = hjelpefunksjoner.definere_klassifikasjonsvariable(df_working)
+    klassifikasjonsvariable, statistikkvariable = (
+        hjelpefunksjoner.definere_klassifikasjonsvariable(df_working)
+    )
 
     change_log: list[dict] = []
     MAX_EDIT_ROWS = 250
@@ -158,12 +167,14 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
         return widgets.Text(
             description=col,
             placeholder="exact value",
-            layout=widgets.Layout(width="400px")
+            layout=widgets.Layout(width="400px"),
         )
 
     filter_boxes = [make_filter_row(col) for col in klassifikasjonsvariable]
 
-    apply_filter_btn = widgets.Button(description="Apply filter", button_style="primary")
+    apply_filter_btn = widgets.Button(
+        description="Apply filter", button_style="primary"
+    )
     filter_status = widgets.HTML()
     preview_out = widgets.Output()
 
@@ -173,24 +184,28 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
     edit_column_dd = widgets.Dropdown(
         options=statistikkvariable,
         description="Edit column:",
-        layout=widgets.Layout(width="400px")
+        layout=widgets.Layout(width="400px"),
     )
 
-    new_value_box = widgets.Text(description="New value:", layout=widgets.Layout(width="400px"))
+    new_value_box = widgets.Text(
+        description="New value:", layout=widgets.Layout(width="400px")
+    )
 
     set_nan_chk = widgets.Checkbox(value=False, description="Set to missing (NaN)")
-    apply_all_chk = widgets.Checkbox(value=False, description="Apply to ALL matched rows")
+    apply_all_chk = widgets.Checkbox(
+        value=False, description="Apply to ALL matched rows"
+    )
 
     row_select_box = widgets.SelectMultiple(
         options=[],
         description="Row IDs:",
-        layout=widgets.Layout(width="400px", height="150px")
+        layout=widgets.Layout(width="400px", height="150px"),
     )
 
     reason_box = widgets.Textarea(
         description="Reason:",
         placeholder="Required",
-        layout=widgets.Layout(width="600px", height="80px")
+        layout=widgets.Layout(width="600px", height="80px"),
     )
 
     commit_btn = widgets.Button(description="Commit edit", button_style="danger")
@@ -223,22 +238,30 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
             return np.nan
 
         if text == "":
-            raise ValueError("New value is empty. Type a value or tick 'Set to missing'.")
+            raise ValueError(
+                "New value is empty. Type a value or tick 'Set to missing'."
+            )
 
         if is_integer_dtype(dtype):
             try:
                 f = float(text)
             except Exception:
-                raise ValueError(f"'{text}' is not a valid integer for column '{col_name}'.")
+                raise ValueError(
+                    f"'{text}' is not a valid integer for column '{col_name}'."
+                )
             if not f.is_integer():
-                raise ValueError(f"'{text}' is not a valid integer for column '{col_name}'.")
+                raise ValueError(
+                    f"'{text}' is not a valid integer for column '{col_name}'."
+                )
             return int(f)
 
         if is_float_dtype(dtype):
             try:
                 return float(text)
             except Exception:
-                raise ValueError(f"'{text}' is not a valid number for column '{col_name}'.")
+                raise ValueError(
+                    f"'{text}' is not a valid number for column '{col_name}'."
+                )
 
         if is_bool_dtype(dtype):
             t = text.lower()
@@ -246,7 +269,9 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
                 return True
             if t in ("false", "0", "no", "n"):
                 return False
-            raise ValueError(f"'{text}' is not a valid boolean (true/false/1/0/yes/no).")
+            raise ValueError(
+                f"'{text}' is not a valid boolean (true/false/1/0/yes/no)."
+            )
 
         return text
 
@@ -267,9 +292,19 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
         with log_out:
             clear_output()
             if log_df.empty:
-                display(pd.DataFrame(columns=[
-                    "timestamp", "user", "row_id", "column", "old_value", "new_value", "reason"
-                ]))
+                display(
+                    pd.DataFrame(
+                        columns=[
+                            "timestamp",
+                            "user",
+                            "row_id",
+                            "column",
+                            "old_value",
+                            "new_value",
+                            "reason",
+                        ]
+                    )
+                )
             else:
                 display(log_df if log_rows is None else log_df.tail(log_rows))
 
@@ -352,7 +387,9 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
             return
 
         try:
-            new_val = coerce_value_for_column(col, new_value_box.value, set_nan_chk.value)
+            new_val = coerce_value_for_column(
+                col, new_value_box.value, set_nan_chk.value
+            )
         except Exception as e:
             edit_status.value = f"<b style='color:red'>{e}</b>"
             return
@@ -376,7 +413,7 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
                 "column": col,
                 "old_value": old_val,
                 "new_value": new_val,
-                "reason": reason_box.value
+                "reason": reason_box.value,
             }
 
             for k in klassifikasjonsvariable:
@@ -402,32 +439,35 @@ def dataframe_cell_editor_mvp(df, *, preview_rows: int = 30, log_rows: int | Non
     # ------------------------------------------------------------------
     filter_panel = widgets.VBox(filter_boxes + [apply_filter_btn, filter_status])
 
-    edit_panel = widgets.VBox([
-        edit_column_dd,
-        new_value_box,
-        set_nan_chk,
-        apply_all_chk,
-        row_select_box,
-        reason_box,
-        commit_btn,
-        edit_status
-    ])
+    edit_panel = widgets.VBox(
+        [
+            edit_column_dd,
+            new_value_box,
+            set_nan_chk,
+            apply_all_chk,
+            row_select_box,
+            reason_box,
+            commit_btn,
+            edit_status,
+        ]
+    )
 
     # New right-hand side: preview/edit + live outputs
-    right_panel = widgets.VBox([
-        widgets.HTML("<h3>Preview & Edit</h3>"),
-        preview_out,
-        edit_panel,
-        widgets.HTML("<h3>Edited dataframe (preview)</h3>"),
-        edited_df_out,
-        widgets.HTML("<h3>Change log</h3>"),
-        log_out
-    ])
+    right_panel = widgets.VBox(
+        [
+            widgets.HTML("<h3>Preview & Edit</h3>"),
+            preview_out,
+            edit_panel,
+            widgets.HTML("<h3>Edited dataframe (preview)</h3>"),
+            edited_df_out,
+            widgets.HTML("<h3>Change log</h3>"),
+            log_out,
+        ]
+    )
 
-    ui = widgets.HBox([
-        widgets.VBox([widgets.HTML("<h3>Filters</h3>"), filter_panel]),
-        right_panel
-    ])
+    ui = widgets.HBox(
+        [widgets.VBox([widgets.HTML("<h3>Filters</h3>"), filter_panel]), right_panel]
+    )
 
     display(ui)
 

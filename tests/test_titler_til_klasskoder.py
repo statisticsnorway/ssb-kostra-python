@@ -1,20 +1,18 @@
 import unittest
 from unittest.mock import patch
-import pandas as pd
-import numpy as np
 
-from functions.funksjoner.titler_til_klasskoder import (
-    _attach_one_mapping,
-    _fetch_mapping_for_year,
-    kodelister_navn,
-    _pick_level_columns,
-)
+import numpy as np
+import pandas as pd
+from functions.funksjoner.titler_til_klasskoder import _attach_one_mapping
+from functions.funksjoner.titler_til_klasskoder import _fetch_mapping_for_year
+from functions.funksjoner.titler_til_klasskoder import _pick_level_columns
+from functions.funksjoner.titler_til_klasskoder import kodelister_navn
 
 # --- Test doubles (fakes) for KLASS ---
 
+
 class FakeCodes:
-    """
-    Test double for the object returned by KlassClassification.get_codes(...)
+    """Test double for the object returned by KlassClassification.get_codes(...).
 
     In the real 'klass' library:
       klass.get_codes(...) returns an object that has .pivot_level()
@@ -25,7 +23,13 @@ class FakeCodes:
 
     So this fake only needs to implement pivot_level() and return a DataFrame.
     """
+
     def __init__(self, pivot_df: pd.DataFrame):
+        """Initialize FakeCodes with a DataFrame to be returned by pivot_level.
+
+        Args:
+            pivot_df (pd.DataFrame): The DataFrame to use as the fake pivot table.
+        """
         self._pivot_df = pivot_df
 
     def pivot_level(self):
@@ -34,8 +38,7 @@ class FakeCodes:
 
 
 class FakeKlassClassification:
-    """
-    Test double for klass.KlassClassification.
+    """Test double for klass.KlassClassification.
 
     The production code does:
       klass = KlassClassification(klass_id, ...)
@@ -48,16 +51,23 @@ class FakeKlassClassification:
 
     The class attribute `pivot_df` is set per test to control the mapping.
     """
+
     pivot_df = None  # set per test
 
     def __init__(self, klass_id, language="nb", include_future=True):
+        """Initialize FakeKlassClassification with the given parameters.
+
+        Args:
+            klass_id: The KLASS classification ID.
+            language: The language code (default "nb").
+            include_future: Whether to include future codes (default True).
+        """
         self.klass_id = klass_id
         self.language = language
         self.include_future = include_future
 
     def get_codes(self, **kwargs):
-        """
-        Return a FakeCodes object containing the test-provided pivot table.
+        """Return a FakeCodes object containing the test-provided pivot table.
 
         The kwargs are accepted so the signature looks compatible with the real API,
         but they are not used.
@@ -74,8 +84,7 @@ PATCH_TARGET = "functions.funksjoner.titler_til_klasskoder.KlassClassification"
 
 
 class TestKlassMappingHelpersAndMain(unittest.TestCase):
-    """
-    Test suite for helper functions + main function in titler_til_klasskoder:
+    """Test suite for helper functions + main function in titler_til_klasskoder.
 
       - _pick_level_columns(pivot_df, level)
       - _fetch_mapping_for_year(klass_id, year, ...)
@@ -94,8 +103,8 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
     # -------------------------
 
     def test_pick_level_columns_selects_smallest_level_when_none(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         If select_level=None, _pick_level_columns should pick the smallest available
         level number from columns like "code_1", "code_3", etc.
@@ -106,12 +115,14 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
         2) Call _pick_level_columns(..., level=None).
         3) Assert it chose level 1 and returned the correct column names.
         """
-        pivot = pd.DataFrame({
-            "code_3": ["A"],
-            "name_3": ["NameA"],
-            "code_1": ["B"],
-            "name_1": ["NameB"],
-        })
+        pivot = pd.DataFrame(
+            {
+                "code_3": ["A"],
+                "name_3": ["NameA"],
+                "code_1": ["B"],
+                "name_1": ["NameB"],
+            }
+        )
 
         level, mcode, mname = _pick_level_columns(pivot, level=None)
 
@@ -120,8 +131,8 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
         self.assertEqual(mname, "name_1")
 
     def test_pick_level_columns_raises_if_missing_expected_columns(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         If the pivot DF does NOT contain any 'code_*' or 'name_*' columns,
         the function should raise a RuntimeError.
@@ -136,8 +147,8 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
             _pick_level_columns(pivot, level=None)
 
     def test_pick_level_columns_raises_if_requested_level_not_present(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         If a specific level is requested (e.g. level=2) but the pivot DF only
         has code_1/name_1, the function should raise a RuntimeError.
@@ -149,7 +160,9 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
         3) Assert the correct RuntimeError is raised.
         """
         pivot = pd.DataFrame({"code_1": ["1"], "name_1": ["One"]})
-        with self.assertRaisesRegex(RuntimeError, "Expected columns 'code_2' and 'name_2'"):
+        with self.assertRaisesRegex(
+            RuntimeError, "Expected columns 'code_2' and 'name_2'"
+        ):
             _pick_level_columns(pivot, level=2)
 
     # --------------------------------
@@ -158,8 +171,8 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
 
     @patch(PATCH_TARGET, new=FakeKlassClassification)
     def test_fetch_mapping_for_year_returns_two_col_mapping_and_level(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         Verify that _fetch_mapping_for_year:
           - calls into KLASS (here: our fake)
@@ -178,10 +191,12 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
            - level=1 chosen
            - mapping has correct columns and cleaned values
         """
-        FakeKlassClassification.pivot_df = pd.DataFrame({
-            "code_1": [" 0301 ", "0302"],
-            "name_1": ["Oslo", "Bergen"],
-        })
+        FakeKlassClassification.pivot_df = pd.DataFrame(
+            {
+                "code_1": [" 0301 ", "0302"],
+                "name_1": ["Oslo", "Bergen"],
+            }
+        )
 
         mapping, level = _fetch_mapping_for_year(
             klass_id=231,
@@ -201,9 +216,11 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
     # --------------------------------
 
     @patch(PATCH_TARGET, new=FakeKlassClassification)
-    def test_attach_one_mapping_inserts_name_column_after_code_and_builds_diagnostics(self):
-        """
-        Purpose
+    def test_attach_one_mapping_inserts_name_column_after_code_and_builds_diagnostics(
+        self,
+    ):
+        """Purpose.
+
         -------
         Verify that _attach_one_mapping:
           - merges the mapping onto the input DataFrame
@@ -223,23 +240,27 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
            - names match mapping; invalid code yields NaN
            - diagnostics report exactly one invalid code ("9999")
         """
-        FakeKlassClassification.pivot_df = pd.DataFrame({
-            "code_1": ["0301", "0302"],
-            "name_1": ["Oslo", "Bergen"],
-        })
+        FakeKlassClassification.pivot_df = pd.DataFrame(
+            {
+                "code_1": ["0301", "0302"],
+                "name_1": ["Oslo", "Bergen"],
+            }
+        )
 
-        df_in = pd.DataFrame({
-            "periode": [2024, 2024, 2024],
-            "kommuneregion": ["0301", "9999", "0302"],
-            "value": [10, 20, 30],
-        })
+        df_in = pd.DataFrame(
+            {
+                "periode": [2024, 2024, 2024],
+                "kommuneregion": ["0301", "9999", "0302"],
+                "value": [10, 20, 30],
+            }
+        )
 
         out, diag = _attach_one_mapping(
             df_in,
             year=2024,
             code_col="kommuneregion",
             klass_id=231,
-            name_col_out=None,   # triggers default: f"{code_col}_navn"
+            name_col_out=None,  # triggers default: f"{code_col}_navn"
             language="nb",
             include_future=True,
             select_level=1,
@@ -263,8 +284,8 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
 
     @patch(PATCH_TARGET, new=FakeKlassClassification)
     def test_attach_one_mapping_raises_if_code_col_missing(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         _attach_one_mapping should fail fast if the requested code_col does not
         exist in the input DataFrame.
@@ -275,20 +296,24 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
         2) Call _attach_one_mapping(..., code_col="kommuneregion", ...).
         3) Assert that a ValueError is raised with a clear message.
         """
-        FakeKlassClassification.pivot_df = pd.DataFrame({"code_1": ["1"], "name_1": ["One"]})
+        FakeKlassClassification.pivot_df = pd.DataFrame(
+            {"code_1": ["1"], "name_1": ["One"]}
+        )
 
         df_in = pd.DataFrame({"periode": [2024], "value": [1]})
 
         with self.assertRaisesRegex(ValueError, "Column 'kommuneregion' not found"):
-            _attach_one_mapping(df_in, year=2024, code_col="kommuneregion", klass_id=231)
+            _attach_one_mapping(
+                df_in, year=2024, code_col="kommuneregion", klass_id=231
+            )
 
     # -----------------------
     # kodelister_navn tests
     # -----------------------
 
     def test_kodelister_navn_requires_periode(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         kodelister_navn requires a 'periode' column containing the year.
         If it's missing, the function should raise a ValueError.
@@ -301,11 +326,15 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
         """
         df = pd.DataFrame({"kommuneregion": ["0301"]})
         with self.assertRaisesRegex(ValueError, "must contain a 'periode'"):
-            kodelister_navn(df, mappings=[{"code_col": "kommuneregion", "klass_id": 231}], verbose=False)
+            kodelister_navn(
+                df,
+                mappings=[{"code_col": "kommuneregion", "klass_id": 231}],
+                verbose=False,
+            )
 
     def test_kodelister_navn_requires_exactly_one_unique_year(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         kodelister_navn expects exactly ONE unique year in df['periode'].
         If there are multiple years, it should raise.
@@ -318,12 +347,16 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
         """
         df = pd.DataFrame({"periode": [2023, 2024], "kommuneregion": ["0301", "0301"]})
         with self.assertRaisesRegex(ValueError, "exactly one unique value"):
-            kodelister_navn(df, mappings=[{"code_col": "kommuneregion", "klass_id": 231}], verbose=False)
+            kodelister_navn(
+                df,
+                mappings=[{"code_col": "kommuneregion", "klass_id": 231}],
+                verbose=False,
+            )
 
     @patch(PATCH_TARGET, new=FakeKlassClassification)
     def test_kodelister_navn_applies_multiple_mappings_in_order(self):
-        """
-        Purpose
+        """Purpose.
+
         -------
         Verify that kodelister_navn:
           - reads year from df['periode']
@@ -344,21 +377,30 @@ class TestKlassMappingHelpersAndMain(unittest.TestCase):
            - col2 uses explicit name col: "col2_name"
         4) Assert column placement, values, and diagnostics keys.
         """
-        FakeKlassClassification.pivot_df = pd.DataFrame({
-            "code_1": ["A", "B"],
-            "name_1": ["Alpha", "Beta"],
-        })
+        FakeKlassClassification.pivot_df = pd.DataFrame(
+            {
+                "code_1": ["A", "B"],
+                "name_1": ["Alpha", "Beta"],
+            }
+        )
 
-        df = pd.DataFrame({
-            "periode": [2024, 2024],
-            "col1": ["A", "B"],
-            "col2": ["B", "A"],
-            "value": [1, 2],
-        })
+        df = pd.DataFrame(
+            {
+                "periode": [2024, 2024],
+                "col1": ["A", "B"],
+                "col2": ["B", "A"],
+                "value": [1, 2],
+            }
+        )
 
         mappings = [
             {"code_col": "col1", "klass_id": 111, "select_level": 1},
-            {"code_col": "col2", "klass_id": 222, "name_col_out": "col2_name", "select_level": 1},
+            {
+                "code_col": "col2",
+                "klass_id": 222,
+                "name_col_out": "col2_name",
+                "select_level": 1,
+            },
         ]
 
         out, diag = kodelister_navn(df, mappings=mappings, verbose=False)

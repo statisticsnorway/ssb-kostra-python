@@ -12,29 +12,21 @@
 # ---
 
 # %%
-from klass import KlassClassification
-from klass import KlassCorrespondence
+
 import pandas as pd
-from pandas.api.types import is_integer_dtype, is_float_dtype, is_bool_dtype
-from fagfunksjoner import logger
-import re
-from IPython.display import display  # for nice tables in notebooks
-import ipywidgets as widgets
-import dapla as dp
-import sys
-import time
+from klass import KlassClassification
 
 # %%
 """
-Med denne funksjonen kan du feste navn/tittel til klassifikasjonsvariablenes koder hvis de svarer til en kodeliste i KLASS. 
+Med denne funksjonen kan du feste navn/tittel til klassifikasjonsvariablenes koder hvis de svarer til en kodeliste i KLASS.
 
-Du velger ut de klassifikasjonsvariablene i datasettet ditt som skal få kodeNAVN fra KLASS koplet på kodeVERDIEN i datasettet. 
+Du velger ut de klassifikasjonsvariablene i datasettet ditt som skal få kodeNAVN fra KLASS koplet på kodeVERDIEN i datasettet.
 Deretter kjører du funksjonen på datasettet som skal behandles.
 
 Slik skriver du koden:
 
 Du starter med mappingen, altså angir du variabelen i datasettet ditt og klass_id i KLASS. Du kan nøye deg med ett par, eller du kan ha flere. Men merk deg formatet.
-Her er det snakk om en liste som inneholder dictionary (én eller flere). 
+Her er det snakk om en liste som inneholder dictionary (én eller flere).
 
 mapping_klassifikasjonsvariable = [
     {"code_col": "kommuneregion", "klass_id": 231}, <--- regionsvariabelen i datasettet heter "kommuneregion" og den er koplet til klass-id '231' (https://www.ssb.no/klass/klassifikasjoner/231)
@@ -42,7 +34,7 @@ mapping_klassifikasjonsvariable = [
     {"code_col": "avtaleform", "klass_id": 252},    <--- regionsvariabelen i datasettet heter "avtaleform" og den er koplet til klass-id '252' (https://www.ssb.no/klass/klassifikasjoner/252)
 ]
 
-Under kjører du funksjonen med de instillingene du bestemte i "mapping_klassifikasjonsvariable". Hovedfunksjonen som skal kjøres heter "kodelister_navn". 
+Under kjører du funksjonen med de instillingene du bestemte i "mapping_klassifikasjonsvariable". Hovedfunksjonen som skal kjøres heter "kodelister_navn".
 De øvrige funksjonene du ser under brukes i hovedfunksjonen.
 
 df_aug, diag = mapping_hierarki.kodelister_navn(    <--- funksjonen spytter ut to resultater: "df_aug" er det nye datasettet med navn på klassifikasjonsvariablene. "diag" (diagnose) gir beskjed om datasettet inneholder verdier for klassifikasjonsvariabelen som ikke finnes i kodelisten.
@@ -56,19 +48,22 @@ df_aug, diag = mapping_hierarki.kodelister_navn(    <--- funksjonen spytter ut t
 display(df_aug)                                                         <--- med denne koden kan du se det endelige resultatet.
 
 OBS!!
-Om du kjører regionshierarkiaggregering (du finner denne funksjonen lenger opp) på et datasett etter at du har festet navn på klassifikasjonsvariablene dine, vil det gå i ball. 
-Det er fordi aggregeringsfunksjonen aggregerer regionskodene med en hardkodet mapping, men ikke navnene. 
+Om du kjører regionshierarkiaggregering (du finner denne funksjonen lenger opp) på et datasett etter at du har festet navn på klassifikasjonsvariablene dine, vil det gå i ball.
+Det er fordi aggregeringsfunksjonen aggregerer regionskodene med en hardkodet mapping, men ikke navnene.
 
 Så om du har gjort dette før en nødvendig aggregering, så bør du fjerne disse kolonnene i forkant, for så å utføre aggregeringen. Etter aggregeringen kan legge dem til igjen.
 
 """
 # ---------- internals ----------
 
+
 def _pick_level_columns(pivot_df: pd.DataFrame, level: int | None):
     code_cols = [c for c in pivot_df.columns if str(c).startswith("code_")]
     name_cols = [c for c in pivot_df.columns if str(c).startswith("name_")]
     if not code_cols or not name_cols:
-        raise RuntimeError("KLASS mapping is missing expected 'code_*'/'name_*' columns.")
+        raise RuntimeError(
+            "KLASS mapping is missing expected 'code_*'/'name_*' columns."
+        )
 
     if level is None:
         # choose the smallest available level number
@@ -77,21 +72,33 @@ def _pick_level_columns(pivot_df: pd.DataFrame, level: int | None):
                 return int(str(c).split("_", 1)[1])
             except Exception:
                 return 10**9
+
         level = min(_lvl(c) for c in code_cols)
 
     mcode = f"code_{level}"
     mname = f"name_{level}"
     if mcode not in pivot_df.columns or mname not in pivot_df.columns:
-        raise RuntimeError(f"Expected columns '{mcode}' and '{mname}' not found in mapping.")
+        raise RuntimeError(
+            f"Expected columns '{mcode}' and '{mname}' not found in mapping."
+        )
     return level, mcode, mname
 
 
-def _fetch_mapping_for_year(klass_id: int, year: int, *, language="nb", include_future=True, select_level: int | None = None) -> tuple[pd.DataFrame, int]:
+def _fetch_mapping_for_year(
+    klass_id: int,
+    year: int,
+    *,
+    language="nb",
+    include_future=True,
+    select_level: int | None = None,
+) -> tuple[pd.DataFrame, int]:
     """Return a 2-col DF: ['_map_code','_map_name'] and the level used."""
     from_date = f"{year}-01-01"
-    to_date   = f"{year}-12-31"
+    to_date = f"{year}-12-31"
 
-    klass = KlassClassification(int(klass_id), language=language, include_future=include_future)
+    klass = KlassClassification(
+        int(klass_id), language=language, include_future=include_future
+    )
     codes = klass.get_codes(
         from_date=from_date,
         to_date=to_date,
@@ -102,7 +109,9 @@ def _fetch_mapping_for_year(klass_id: int, year: int, *, language="nb", include_
     pivot = codes.pivot_level()
     level, mcode, mname = _pick_level_columns(pivot, select_level)
 
-    mapping = pivot[[mcode, mname]].rename(columns={mcode: "_map_code", mname: "_map_name"})
+    mapping = pivot[[mcode, mname]].rename(
+        columns={mcode: "_map_code", mname: "_map_name"}
+    )
     # No zero-padding per requirement; compare as plain strings
     mapping["_map_code"] = mapping["_map_code"].astype(str).str.strip()
     mapping["_map_name"] = mapping["_map_name"].astype(str)
@@ -148,7 +157,7 @@ def _attach_one_mapping(
 
     # --- validation: data codes NOT present in mapping ---
     data_codes = set(df[code_col].dropna().astype(str).str.strip())
-    map_codes  = set(mapping["_map_code"])
+    map_codes = set(mapping["_map_code"])
     invalid_in_data = sorted(data_codes - map_codes)
 
     diagnostics = {
@@ -165,6 +174,7 @@ def _attach_one_mapping(
 
 # ---------- public API ----------
 
+
 # def attach_multiple_classification_names(
 def kodelister_navn(
     df: pd.DataFrame,
@@ -174,8 +184,7 @@ def kodelister_navn(
     include_future: bool = True,
     verbose: bool = True,
 ) -> tuple[pd.DataFrame, dict]:
-    """
-    Apply multiple (code_col, klass_id) mappings to a DF for the same year from df['periode'].
+    """Apply multiple (code_col, klass_id) mappings to a DF for the same year from df['periode'].
 
     Parameters
     ----------
@@ -190,7 +199,7 @@ def kodelister_navn(
         }
     language, include_future : passed to KLASS
 
-    Returns
+    Returns:
     -------
     df_out : DataFrame
         Original DF with each name column inserted right after its code column.
@@ -202,7 +211,9 @@ def kodelister_navn(
         raise ValueError("DataFrame must contain a 'periode' column (year).")
     unique_years = pd.Series(df["periode"]).dropna().unique()
     if len(unique_years) != 1:
-        raise ValueError(f"'periode' must have exactly one unique value; found {len(unique_years)}: {unique_years!r}")
+        raise ValueError(
+            f"'periode' must have exactly one unique value; found {len(unique_years)}: {unique_years!r}"
+        )
     year = int(unique_years[0])
 
     out = df.copy()
@@ -229,11 +240,17 @@ def kodelister_navn(
         diagnostics[key] = diag
 
         if verbose:
-            msg = (f"[{code_col}] klass_id={klass_id}, level={diag['level']}, year={year} — "
-                   f"invalid data codes: {diag['invalid_count']}")
+            msg = (
+                f"[{code_col}] klass_id={klass_id}, level={diag['level']}, year={year} — "
+                f"invalid data codes: {diag['invalid_count']}"
+            )
             if diag["invalid_count"]:
                 sample = ", ".join(diag["invalid_sample"])
-                extra = "" if diag["invalid_count"] <= 20 else f" …(+{diag['invalid_count']-20} more)"
+                extra = (
+                    ""
+                    if diag["invalid_count"] <= 20
+                    else f" …(+{diag['invalid_count']-20} more)"
+                )
                 msg += f" | sample: {sample}{extra}"
             print(msg)
 

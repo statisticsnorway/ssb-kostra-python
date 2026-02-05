@@ -12,27 +12,16 @@
 # ---
 
 # %%
-from klass import KlassClassification
-from klass import KlassCorrespondence
 import pandas as pd
-from pandas.api.types import is_integer_dtype, is_float_dtype, is_bool_dtype
-from fagfunksjoner import logger
-import re
 from IPython.display import display  # for nice tables in notebooks
-import ipywidgets as widgets
-from IPython.display import display
-import dapla as dp
-import sys
-import time
-from unittest.mock import patch
+
 INPUT_PATCH_TARGET = "builtins.input"
 from functions.funksjoner import hjelpefunksjoner
 
 
 # %%
 def summere_til_aldersgrupperinger(inputfil: pd.DataFrame, hierarki_path: str):
-    """
-    Aggregerer individbaserte aldersverdier til forhåndsdefinerte aldersgrupper
+    """Aggregerer individbaserte aldersverdier til forhåndsdefinerte aldersgrupper
     ved hjelp av et aldershierarki, og slår de aggregerte verdiene sammen med
     originaldatasettet.
 
@@ -84,7 +73,6 @@ def summere_til_aldersgrupperinger(inputfil: pd.DataFrame, hierarki_path: str):
     - Funksjonen forutsetter at hjelpefunksjoner håndterer korrekt
       identifikasjon av klassifikasjons- og statistikkvariabler.
     """
-
     aldershierarki = pd.read_parquet(hierarki_path)
     inputfil_copy = inputfil.copy()
     # Ensure correct types and formatting for merging
@@ -95,34 +83,41 @@ def summere_til_aldersgrupperinger(inputfil: pd.DataFrame, hierarki_path: str):
     available_years = inputfil_copy["periode"].unique()
     # Skiller ut det året i folketallsfilen i aldershierarkifilen
     # aldershierarki["periode"] = aldershierarki["periode"].astype(str)
-    aldershierarki_filtered = aldershierarki[aldershierarki["periode"].isin(available_years)].copy()
-    aldershierarki_filtered = aldershierarki_filtered[['periode', 'from', 'to']]
+    aldershierarki_filtered = aldershierarki[
+        aldershierarki["periode"].isin(available_years)
+    ].copy()
+    aldershierarki_filtered = aldershierarki_filtered[["periode", "from", "to"]]
     # Convert 'from' to 3-digit strings for joining
     # Setter "from" i hierarkifilen som klassifikasjonsvariabel
-    aldershierarki_filtered["from"] = aldershierarki_filtered["from"].astype(str).str.zfill(3)
+    aldershierarki_filtered["from"] = (
+        aldershierarki_filtered["from"].astype(str).str.zfill(3)
+    )
     # Merge the main data with the mapping on periode and alder ('from')
     # Slår sammen folketallsfilen og hierarkifilen for det aktuelle året
     df_merged = inputfil_copy_formatted.merge(
         aldershierarki_filtered,
         how="inner",
         left_on=["periode", "alder"],
-        right_on=["periode", "from"]
+        right_on=["periode", "from"],
     )
     df_merged = df_merged.drop(columns=["from"])
-    
-    
-    klassifikasjonsvariable, statistikkvariable = hjelpefunksjoner.definere_klassifikasjonsvariable(df_merged)
-    
+
+    klassifikasjonsvariable, statistikkvariable = (
+        hjelpefunksjoner.definere_klassifikasjonsvariable(df_merged)
+    )
+
     print(df_merged.dtypes)
- 
+
     # Group by cohort and region, summing the persons
     # Genererer datasett kun med antall summert på aldersgrupperinger
     rename_variabel = ["alder"]
     groupby_variable = [x for x in klassifikasjonsvariable if x not in rename_variabel]
-    print(f"Aggregerer statistikkvariablen(e) {statistikkvariable} til aldersgrupperinger.")
+    print(
+        f"Aggregerer statistikkvariablen(e) {statistikkvariable} til aldersgrupperinger."
+    )
     print("groupby_variable:")
     print(groupby_variable)
-    
+
     df_cohorts = (
         df_merged.groupby(groupby_variable, as_index=False)[statistikkvariable]
         .sum()
@@ -132,8 +127,9 @@ def summere_til_aldersgrupperinger(inputfil: pd.DataFrame, hierarki_path: str):
     # Concatenate original and cohort-aggregated data
     # Slår sammen den opprinnelige folketallsfilen med folketallsfilen med aggregerte aldersgrupper
     df_combined = pd.concat([inputfil_copy_formatted, df_cohorts], ignore_index=True)
-        
+
     display(df_combined)
     return rename_variabel, groupby_variable, df_combined
+
 
 # %%

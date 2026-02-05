@@ -1,14 +1,12 @@
 import unittest
 from unittest.mock import patch
-import pandas as pd
 
-from functions.funksjoner.hjelpefunksjoner import definere_klassifikasjonsvariable
+import pandas as pd
 from functions.funksjoner.summere_kjonn import summere_over_kjonn
 
 
 class TestSummereOverKjonn(unittest.TestCase):
-    """
-    Tests for `summere_over_kjonn(df)`.
+    """Tests for `summere_over_kjonn(df)`.
 
     What the function appears to do (inferred from tests)
     -----------------------------------------------------
@@ -22,7 +20,7 @@ class TestSummereOverKjonn(unittest.TestCase):
         2) Sum (aggregate) all statistikkvariable over 'kjonn' by removing 'kjonn'
            from the grouping keys, and grouping by the remaining classification vars.
         3) Return a new aggregated DataFrame where the output does not contain 'kjonn'.
-        
+
 
     Note on patching definere_klassifikasjonsvariable
     -------------------------------------------------
@@ -33,8 +31,7 @@ class TestSummereOverKjonn(unittest.TestCase):
     """
 
     def test_returns_input_unchanged_when_kjonn_missing(self):
-        """
-        Purpose
+        """Purpose
         -------
         Verify that if the DataFrame lacks the 'kjonn' column, the function
         does not attempt aggregation and returns the original content unchanged.
@@ -47,24 +44,25 @@ class TestSummereOverKjonn(unittest.TestCase):
            (Your function returns the input directly in this case, so equality is
             the key property; identity is not strictly required.)
         """
-        df = pd.DataFrame({
-            "periode": ["2025", "2025"],
-            "kommuneregion": ["0301", "0301"],
-            "personer": [10, 20],
-        })
+        df = pd.DataFrame(
+            {
+                "periode": ["2025", "2025"],
+                "kommuneregion": ["0301", "0301"],
+                "personer": [10, 20],
+            }
+        )
 
         out = summere_over_kjonn(df)
 
         # Same object is fine here if your implementation returns inputfil directly.
         self.assertTrue(
             out.equals(df),
-            msg="If 'kjonn' is missing, function should return the input unchanged."
+            msg="If 'kjonn' is missing, function should return the input unchanged.",
         )
 
     @patch("functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable")
     def test_sums_over_kjonn_when_present(self, mock_definer_klass):
-        """
-        Purpose
+        """Purpose
         -------
         Verify that when 'kjonn' exists, the function sums all statistikkvariable
         over kjonn (i.e., removes kjonn as a grouping key) and returns grouped rows.
@@ -89,17 +87,22 @@ class TestSummereOverKjonn(unittest.TestCase):
            - summed value is correct
            - 'kjonn' column is removed from output
         """
-        df = pd.DataFrame({
-            "periode": ["2025", "2025", "2025"],
-            "kommuneregion": ["0301", "0301", "0301"],
-            "kjonn": ["1", "2", "1"],
-            "personer": [10, 20, 5],
-        })
+        df = pd.DataFrame(
+            {
+                "periode": ["2025", "2025", "2025"],
+                "kommuneregion": ["0301", "0301", "0301"],
+                "kjonn": ["1", "2", "1"],
+                "personer": [10, 20, 5],
+            }
+        )
 
         # Control what the helper returns:
         # - 'kjonn' is part of classification vars (so it will be removed for summing)
         # - stats var is "personer"
-        mock_definer_klass.return_value = (["periode", "kommuneregion", "kjonn"], ["personer"])
+        mock_definer_klass.return_value = (
+            ["periode", "kommuneregion", "kjonn"],
+            ["personer"],
+        )
 
         out = summere_over_kjonn(df)
 
@@ -107,24 +110,29 @@ class TestSummereOverKjonn(unittest.TestCase):
         #   periode + kommuneregion
         # so only one row remains, and personer should be summed across all rows:
         #   10 + 20 + 5 = 35
-        self.assertEqual(len(out), 1, msg="Expected one aggregated row after summing over kjonn.")
+        self.assertEqual(
+            len(out), 1, msg="Expected one aggregated row after summing over kjonn."
+        )
         self.assertEqual(out["periode"].iloc[0], "2025")
         self.assertEqual(out["kommuneregion"].iloc[0], "0301")
-        self.assertEqual(out["personer"].iloc[0], 35, msg="Expected personer to be summed across kjonn.")
+        self.assertEqual(
+            out["personer"].iloc[0],
+            35,
+            msg="Expected personer to be summed across kjonn.",
+        )
 
         # kjonn should not be in output columns (since it's summed over / removed as key)
         self.assertNotIn(
             "kjonn",
             out.columns,
-            msg="'kjonn' should be removed from the grouping keys after summing over it."
+            msg="'kjonn' should be removed from the grouping keys after summing over it.",
         )
 
         mock_definer_klass.assert_called_once()
 
     @patch("functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable")
     def test_sums_multiple_stat_columns(self, mock_definer_klass):
-        """
-        Purpose
+        """Purpose
         -------
         Verify that if the helper returns multiple statistikkvariable, the function
         sums ALL of them when aggregating over kjonn.
@@ -141,17 +149,19 @@ class TestSummereOverKjonn(unittest.TestCase):
            - both personer and inntekt are summed correctly
            - 'kjonn' is not present in output
         """
-        df = pd.DataFrame({
-            "periode": ["2025", "2025"],
-            "kommuneregion": ["0301", "0301"],
-            "kjonn": ["1", "2"],
-            "personer": [10, 20],
-            "inntekt": [100, 200],
-        })
+        df = pd.DataFrame(
+            {
+                "periode": ["2025", "2025"],
+                "kommuneregion": ["0301", "0301"],
+                "kjonn": ["1", "2"],
+                "personer": [10, 20],
+                "inntekt": [100, 200],
+            }
+        )
 
         mock_definer_klass.return_value = (
             ["periode", "kommuneregion", "kjonn"],
-            ["personer", "inntekt"]
+            ["personer", "inntekt"],
         )
 
         out = summere_over_kjonn(df)

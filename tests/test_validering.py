@@ -1,12 +1,6 @@
-import unittest
-from unittest.mock import patch
 import pandas as pd
 import pytest
-from ssb_kostra_python.regionshierarki import hierarki
-from ssb_kostra_python.regionshierarki import mapping_bydeler_oslo
-from ssb_kostra_python.regionshierarki import mapping_fra_fylkeskommune_til_kostraregion
-from ssb_kostra_python.regionshierarki import mapping_fra_kommune_til_fylkeskommune
-from ssb_kostra_python.regionshierarki import mapping_fra_kommune_til_landet
+
 
 @pytest.fixture
 def df_base():
@@ -14,17 +8,20 @@ def df_base():
         {
             "periode": ["2024", "2024", "2024"],
             "kommuneregion": ["0301", "1506", "4601"],
-            "fylkesregion": ["0300", "1500", "4600"],  # intentionally mixed for some tests
+            "fylkesregion": [
+                "0300",
+                "1500",
+                "4600",
+            ],  # intentionally mixed for some tests
             "bydelsregion": ["030101", "030103", "030107"],  # last one invalid by range
             "funksjon": ["100", "200", "999"],
         }
     )
 
+
 # Tests for _missing_cols and _missing_values
 # tests/test_validation_helpers.py
-import pandas as pd
 import pytest
-
 import your_pkg.mapping_hierarki as mh
 
 
@@ -93,6 +90,7 @@ def test_missing_values_zero_codes_are_missing_by_default(caplog, monkeypatch):
     assert "Missing values detected in 'noekkelkode'" in caplog.text
     assert len(calls) >= 1
 
+
 # Tests for _valid_periode_region
 def test_valid_periode_region_flags_bad_periode_format(caplog, monkeypatch):
     df = pd.DataFrame({"periode": ["2024", "202P", "  ", "000<NA>"]})
@@ -108,7 +106,9 @@ def test_valid_periode_region_flags_bad_periode_format(caplog, monkeypatch):
     assert len(calls) >= 1
 
 
-def test_valid_periode_region_kommuneregion_requires_4_digits_if_numeric(caplog, monkeypatch):
+def test_valid_periode_region_kommuneregion_requires_4_digits_if_numeric(
+    caplog, monkeypatch
+):
     df = pd.DataFrame({"kommuneregion": ["0301", "301", "03A1", "  "]})
     calls = []
     monkeypatch.setattr(mh, "show_toggle", lambda *a, **k: calls.append((a, k)))
@@ -125,7 +125,9 @@ def test_valid_periode_region_kommuneregion_requires_4_digits_if_numeric(caplog,
 
 
 def test_valid_periode_region_bydelsregion_range_and_length(caplog, monkeypatch):
-    df = pd.DataFrame({"bydelsregion": ["030101", "039999", "030000", "03010", "ABCDEF"]})
+    df = pd.DataFrame(
+        {"bydelsregion": ["030101", "039999", "030000", "03010", "ABCDEF"]}
+    )
     calls = []
     monkeypatch.setattr(mh, "show_toggle", lambda *a, **k: calls.append((a, k)))
 
@@ -133,12 +135,15 @@ def test_valid_periode_region_bydelsregion_range_and_length(caplog, monkeypatch)
     mh._valid_periode_region(df, ["bydelsregion"])
 
     # invalids: "030000" (below 030101), "03010" (len 5)
-    assert "must be 6-digit numeric in 030101–039999" in caplog.text
+    assert "must be 6-digit numeric in 030101-039999" in caplog.text
     assert len(calls) >= 1
 
-#Tests for _number_of_periods_in_df
+
+# Tests for _number_of_periods_in_df
 def test_number_of_periods_returns_only_valid_years(caplog, monkeypatch):
-    df = pd.DataFrame({"periode": ["2024", "2025", "202P", None, "  ", "000<NA>", "2024"]})
+    df = pd.DataFrame(
+        {"periode": ["2024", "2025", "202P", None, "  ", "000<NA>", "2024"]}
+    )
 
     calls = []
     monkeypatch.setattr(mh, "show_toggle", lambda *a, **k: calls.append((a, k)))
@@ -150,15 +155,24 @@ def test_number_of_periods_returns_only_valid_years(caplog, monkeypatch):
     assert "Format-invalid 'periode' tokens" in caplog.text
     assert len(calls) >= 1
 
-#Tests for _klass_check (mock KLASS; no network)
+
+# Tests for _klass_check (mock KLASS; no network)
 class FakeKlass:
     def __init__(self, klass_id, language="en", include_future=True):
+        """Initialize FakeKlass with the given parameters.
+
+        Args:
+            klass_id: The KLASS classification ID.
+            language: The language code (default "en").
+            include_future: Whether to include future codes (default True).
+        """
         self.klass_id = klass_id
 
     def get_codes(self, from_date=None, to_date=None):
         # Return something that looks like the library output:
         # your code supports either `.data` or a dataframe directly
         return pd.DataFrame({"code": ["0301", "1101", "9999", "100", "200"]})
+
 
 def test_klass_check_skips_when_multiple_periods(caplog, monkeypatch):
     df = pd.DataFrame(
@@ -169,7 +183,11 @@ def test_klass_check_skips_when_multiple_periods(caplog, monkeypatch):
     )
 
     # if it tries to call klass, we want to know (but it should skip before that)
-    monkeypatch.setattr(mh, "KlassClassification", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("Should not be called")))
+    monkeypatch.setattr(
+        mh,
+        "KlassClassification",
+        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("Should not be called")),
+    )
 
     caplog.clear()
     mh._klass_check(df, ["periode", "kommuneregion"], interactive=False)

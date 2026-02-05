@@ -1,15 +1,14 @@
 import unittest
 from unittest.mock import patch
-import pandas as pd
 
-from functions.funksjoner.hjelpefunksjoner import definere_klassifikasjonsvariable, format_fil
-from functions.funksjoner.enkel_editering import display
-from functions.funksjoner.summere_til_aldersgrupperinger import summere_til_aldersgrupperinger
+import pandas as pd
+from functions.funksjoner.summere_til_aldersgrupperinger import (
+    summere_til_aldersgrupperinger,
+)
 
 
 class TestSummereTilAldersgrupperinger(unittest.TestCase):
-    """
-    Tests for `summere_til_aldersgrupperinger(df_input, hierarki_path=...)`.
+    """Tests for `summere_til_aldersgrupperinger(df_input, hierarki_path=...)`.
 
     What this function appears to do (inferred from the test)
     ---------------------------------------------------------
@@ -66,8 +65,7 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
         mock_definer_klass,
         mock_display,
     ):
-        """
-        Purpose
+        """Purpose
         -------
         Validate a basic end-to-end flow of summing/aggregating rows into age groups.
 
@@ -86,16 +84,21 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
           2) format_fil is replaced with a minimal deterministic implementation
           3) definere_klassifikasjonsvariable returns controlled groupby/stat columns
         """
-
         # ---------------------------------------------------------------------
         # 1) Arrange: input data (deliberately unpadded alder)
         # ---------------------------------------------------------------------
-        df_input = pd.DataFrame({
-            "periode": ["2025", "2025", "2025"],
-            "alder": ["1", "2", "10"],  # intentionally not padded (we expect formatting to pad)
-            "kommuneregion": ["0301", "0301", "0301"],
-            "personer": [10, 20, 5],
-        })
+        df_input = pd.DataFrame(
+            {
+                "periode": ["2025", "2025", "2025"],
+                "alder": [
+                    "1",
+                    "2",
+                    "10",
+                ],  # intentionally not padded (we expect formatting to pad)
+                "kommuneregion": ["0301", "0301", "0301"],
+                "personer": [10, 20, 5],
+            }
+        )
 
         # ---------------------------------------------------------------------
         # 2) Arrange: hierarchy data returned from read_parquet
@@ -104,11 +107,13 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
         # - The function under test likely stringifies + zero-pads 'from' to match 'alder'
         # - Here we deliberately provide from values as ints so we exercise that behavior.
         # - 'to' is the age bucket we expect to aggregate into.
-        df_hierarki = pd.DataFrame({
-            "periode": ["2025", "2025"],
-            "from": [1, 2],             # int -> expected to become "001", "002" for matching
-            "to": ["000-004", "000-004"],
-        })
+        df_hierarki = pd.DataFrame(
+            {
+                "periode": ["2025", "2025"],
+                "from": [1, 2],  # int -> expected to become "001", "002" for matching
+                "to": ["000-004", "000-004"],
+            }
+        )
         mock_read_parquet.return_value = df_hierarki
 
         # ---------------------------------------------------------------------
@@ -153,8 +158,7 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
         # In this scenario, the code groups by ["periode", "kommuneregion", "to"] and then
         # renames 'to' to 'alder' later, so groupby_variable should still list 'to'.
         self.assertEqual(
-            sorted(groupby_variable),
-            sorted(["periode", "kommuneregion", "to"])
+            sorted(groupby_variable), sorted(["periode", "kommuneregion", "to"])
         )
 
         # ---------------------------------------------------------------------
@@ -168,7 +172,7 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
             msg=(
                 "Expected aggregated row not present. "
                 "This usually means merge produced zero rows or 'to' got lost before groupby."
-            )
+            ),
         )
 
         # Only ages 1 and 2 map into 000-004 in our hierarchy, so sum should be 10 + 20 = 30.
@@ -176,7 +180,7 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
         self.assertEqual(
             aggregated["personer"].iloc[0],
             30,
-            msg="10 + 20 should aggregate into 000-004"
+            msg="10 + 20 should aggregate into 000-004",
         )
 
         # ---------------------------------------------------------------------
@@ -185,4 +189,3 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
         mock_read_parquet.assert_called_once()
         mock_format_fil.assert_called_once()
         mock_definer_klass.assert_called_once()
-
