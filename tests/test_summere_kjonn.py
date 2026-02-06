@@ -31,7 +31,8 @@ class TestSummereOverKjonn(unittest.TestCase):
     """
 
     def test_returns_input_unchanged_when_kjonn_missing(self):
-        """Purpose
+        """Purpose.
+
         -------
         Verify that if the DataFrame lacks the 'kjonn' column, the function
         does not attempt aggregation and returns the original content unchanged.
@@ -62,7 +63,8 @@ class TestSummereOverKjonn(unittest.TestCase):
 
     @patch("functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable")
     def test_sums_over_kjonn_when_present(self, mock_definer_klass):
-        """Purpose
+        """Purpose.
+
         -------
         Verify that when 'kjonn' exists, the function sums all statistikkvariable
         over kjonn (i.e., removes kjonn as a grouping key) and returns grouped rows.
@@ -132,7 +134,8 @@ class TestSummereOverKjonn(unittest.TestCase):
 
     @patch("functions.funksjoner.hjelpefunksjoner.definere_klassifikasjonsvariable")
     def test_sums_multiple_stat_columns(self, mock_definer_klass):
-        """Purpose
+        """Purpose.
+
         -------
         Verify that if the helper returns multiple statistikkvariable, the function
         sums ALL of them when aggregating over kjonn.

@@ -67,11 +67,11 @@ def _pick_level_columns(pivot_df: pd.DataFrame, level: int | None):
 
     if level is None:
         # choose the smallest available level number
-        def _lvl(c):
+        def _lvl(c: str) -> int:
             try:
                 return int(str(c).split("_", 1)[1])
             except Exception:
-                return 10**9
+                return 10**9  # put non-conforming columns at the end
 
         level = min(_lvl(c) for c in code_cols)
 
@@ -88,8 +88,8 @@ def _fetch_mapping_for_year(
     klass_id: int,
     year: int,
     *,
-    language="nb",
-    include_future=True,
+    language: str = "nb",
+    include_future: bool = True,
     select_level: int | None = None,
 ) -> tuple[pd.DataFrame, int]:
     """Return a 2-col DF: ['_map_code','_map_name'] and the level used."""

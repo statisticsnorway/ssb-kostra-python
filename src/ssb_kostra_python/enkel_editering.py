@@ -13,7 +13,9 @@
 
 # %%
 import getpass
+from collections.abc import Callable
 from datetime import datetime
+from typing import Any
 
 import ipywidgets as widgets
 import numpy as np
@@ -29,8 +31,8 @@ from pandas.api.types import is_integer_dtype
 
 # %%
 def dataframe_cell_editor_mvp(
-    df, *, preview_rows: int = 30, log_rows: int | None = None
-):
+    df: pd.DataFrame, *, preview_rows: int = 30, log_rows: int | None = None
+) -> Callable[[], tuple[pd.DataFrame, pd.DataFrame]]:
     """Interactive, user-friendly dataframe cell editor for Jupyter notebooks.
 
     This function launches an ipywidgets-based UI that allows non-technical users
@@ -163,7 +165,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     # Widgets: Filter UI
     # ------------------------------------------------------------------
-    def make_filter_row(col):
+    def make_filter_row(col: str) -> widgets.Text:
         return widgets.Text(
             description=col,
             placeholder="exact value",
@@ -245,10 +247,11 @@ def dataframe_cell_editor_mvp(
         if is_integer_dtype(dtype):
             try:
                 f = float(text)
-            except Exception:
+            except Exception as err:
                 raise ValueError(
                     f"'{text}' is not a valid integer for column '{col_name}'."
-                )
+                ) from err
+
             if not f.is_integer():
                 raise ValueError(
                     f"'{text}' is not a valid integer for column '{col_name}'."
@@ -258,10 +261,17 @@ def dataframe_cell_editor_mvp(
         if is_float_dtype(dtype):
             try:
                 return float(text)
-            except Exception:
+            except Exception as err:
                 raise ValueError(
                     f"'{text}' is not a valid number for column '{col_name}'."
-                )
+                ) from err
+
+            # try:
+            # return float(text)
+            # except Exception:
+            # raise ValueError(
+            # f"'{text}' is not a valid number for column '{col_name}'."
+            # )
 
         if is_bool_dtype(dtype):
             t = text.lower()
@@ -316,7 +326,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     current_slice = None
 
-    def apply_filter(_, clear_commit_msg: bool = True):
+    def apply_filter(_: Any, clear_commit_msg: bool = True):
         nonlocal current_slice
         if clear_commit_msg:
             edit_status.value = ""
@@ -364,7 +374,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     # Commit logic
     # ------------------------------------------------------------------
-    def commit_edit(_):
+    def commit_edit(_: Any):
         nonlocal df_working
 
         if current_slice is None or len(current_slice) == 0:
@@ -437,7 +447,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     # Layout
     # ------------------------------------------------------------------
-    filter_panel = widgets.VBox(filter_boxes + [apply_filter_btn, filter_status])
+    filter_panel = widgets.VBox([*filter_boxes, apply_filter_btn, filter_status])
 
     edit_panel = widgets.VBox(
         [

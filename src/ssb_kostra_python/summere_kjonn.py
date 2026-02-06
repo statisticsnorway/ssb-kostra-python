@@ -17,7 +17,15 @@ from functions.funksjoner import hjelpefunksjoner
 
 
 # %%
-def summere_over_kjonn(inputfil: pd.DataFrame):
+def summere_over_kjonn(inputfil: pd.DataFrame) -> pd.DataFrame:
+    """Summér statistikkvariabler over kjønn hvis 'kjonn' finnes i datasettet.
+
+    Args:
+        inputfil (pd.DataFrame): Datasettet som skal summeres.
+
+    Returns:
+        pd.DataFrame: Datasettet summert over kjønn, eller originalt datasett hvis 'kjonn' ikke finnes.
+    """
     if "kjonn" not in inputfil.columns:
         print(
             "Kjønn er ikke en klassifikasjonsvariabel i datasettet. Ingen summering utføres."
@@ -29,7 +37,7 @@ def summere_over_kjonn(inputfil: pd.DataFrame):
 
     summeringsvariabel = ["kjonn"]
     alle_variable = inputfil.columns.tolist()
-    klassifikasjonsvariable, statistikkvariable = (
+    _klassifikasjonsvariable, statistikkvariable = (
         hjelpefunksjoner.definere_klassifikasjonsvariable(inputfil)
     )
     groupby_variable = [

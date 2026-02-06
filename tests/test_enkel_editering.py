@@ -69,7 +69,8 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
     def test_initial_get_results_returns_copy_and_empty_log(
         self, mock_define, mock_clear_output, mock_display
     ):
-        """Purpose
+        """Purpose.
+
         -------
         Verify the "initial state" behavior of the editor:
           - Calling dataframe_cell_editor_mvp returns a callable get_results()
@@ -116,7 +117,8 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
     def test_get_results_reflects_mutations_to_captured_state(
         self, mock_define, mock_clear_output, mock_display
     ):
-        """Purpose
+        """Purpose.
+
         -------
         Validate that `get_results()` reflects the *current internal state* of the editor.
 
@@ -209,7 +211,8 @@ class TestDataframeCellEditorMVP(unittest.TestCase):
     def test_row_id_is_added_internally_but_not_returned(
         self, mock_define, mock_clear_output, mock_display
     ):
-        """Purpose
+        """Purpose.
+
         -------
         Verify that ROW_ID is used internally to track rows, but is not exposed
         in the returned/exported DataFrame from get_results().

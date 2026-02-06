@@ -13,6 +13,7 @@
 
 # %%
 import re
+from typing import Any
 
 import ipywidgets as widgets
 import pandas as pd
@@ -25,8 +26,16 @@ SEPARATOR = "-" * 230  # or whatever length you need
 
 
 # %%
-def show_toggle(df, mask, title, *, preview_rows: int = 15):
+# def show_toggle(df, mask, title, *, preview_rows: int = 15):
+def show_toggle(
+    df: pd.DataFrame,
+    mask: pd.Series,
+    title: str,
+    *,
+    preview_rows: int = 15,
+) -> None:
     """Renders a compact toggle to reveal offending rows on demand.
+
     - Always shows a title
     - Shows a ToggleButton if there are rows; clicking displays a preview table
     """
@@ -42,7 +51,7 @@ def show_toggle(df, mask, title, *, preview_rows: int = 15):
     btn = widgets.ToggleButton(description="Show/hide rows", icon="table", value=False)
     out = widgets.Output()
 
-    def _on_toggle(change):
+    def _on_toggle(change: dict[str, Any]) -> None:
         if change["name"] == "value":
             out.clear_output()
             if btn.value:
@@ -54,7 +63,7 @@ def show_toggle(df, mask, title, *, preview_rows: int = 15):
 
 
 # %%
-def _missing_cols(inputfil, klassifikasjonsvariable):
+def _missing_cols(inputfil: pd.DataFrame, klassifikasjonsvariable: list[str]):
     """Denne funksjonen sjekker om datasettet inneholder de klassifikasjonsvariablene som brukeren angir. Funksjonen inngår i valideringen."""
     # Check for missing columns
     missing_cols = [c for c in klassifikasjonsvariable if c not in inputfil.columns]
@@ -69,9 +78,14 @@ def _missing_cols(inputfil, klassifikasjonsvariable):
 
 # %%
 def _missing_values(
-    df, klassifikasjonsvariable, preview_rows: int = 10, zeros_valid_for=None
-):
-    """Denne funksjonen sjekker om klassifikasjonsvariablene i datasettet mangler verdier (koder). Om koder mangler, vil en feilmelding skrives ut. Inngår i valideringen.
+    df: pd.DataFrame,
+    klassifikasjonsvariable: list[str],
+    preview_rows: int = 10,
+    zeros_valid_for: set[str] | None = None,
+) -> None:
+    """Sjekker om klassifikasjonsvariablene i datasettet mangler verdier.
+
+    Denne funksjonen sjekker om klassifikasjonsvariablene i datasettet mangler verdier (koder). Om koder mangler, vil en feilmelding skrives ut. Inngår i valideringen.
     ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     Check that klassifikasjonsvariable columns have no missing values.
@@ -152,7 +166,9 @@ def _missing_values(
 
 
 # %%
-def _valid_periode_region(df, klassifikasjonsvariable, preview_rows: int = 10):
+def _valid_periode_region(
+    df: pd.DataFrame, klassifikasjonsvariable: list[str], preview_rows: int = 10
+):
     """Denne funksjonen sjekker om verdiene (kodene) til periode- og regionsvariabelen er på riktig format. Inngår i valideringen."""
     logger.info("ℹ️ Checking if periode and region are in the valid format...\n")
 
@@ -236,7 +252,7 @@ def _valid_periode_region(df, klassifikasjonsvariable, preview_rows: int = 10):
                 else:
                     logger.info("✅ 'fylkesregion' is formatted correctly.\n")
 
-        # ----- BYDELSREGION: digits-only must be 6 and in 030101–039999 -----
+        # ----- BYDELSREGION: digits-only must be 6 and in 030101-039999 -----
         if col == "bydelsregion":
             s = df[col].astype("string")
             mask_missing = s.isna() | s.str.strip().eq("")
@@ -271,7 +287,7 @@ def _valid_periode_region(df, klassifikasjonsvariable, preview_rows: int = 10):
 
             if mask_fmt_bad.any():
                 logger.error(
-                    f"❌ Column '{col}' must be 6-digit numeric in 030101–039999.\n"
+                    f"❌ Column '{col}' must be 6-digit numeric in 030101-039999.\n"
                 )
                 # display(df.loc[mask_fmt_bad].head(preview_rows))
                 show_toggle(
@@ -285,8 +301,10 @@ def _valid_periode_region(df, klassifikasjonsvariable, preview_rows: int = 10):
 
 
 # %%
-def _number_of_periods_in_df(inputfil, preview_rows: int = 10):
-    """Sjekker hvor mange forskjellige perioder datasettet inneholder. Helt konkret sjekker den hvor mange forskjellige unike verdier som finnes i periode-kolonnen.
+def _number_of_periods_in_df(inputfil: pd.DataFrame, preview_rows: int = 10):
+    """Sjekker antall perioder i datasettet. Inngår i valideringen.
+
+    Sjekker hvor mange forskjellige perioder datasettet inneholder. Helt konkret sjekker den hvor mange forskjellige unike verdier som finnes i periode-kolonnen.
     Om kolonnen inneholder meningsløse verdier, som for eksempel 202P, eller 5025, vil sjekken markere disse som egne verdier og kategorisere feilen de antas å tilhøre.
     """
     logger.info("ℹ️ Inspecting distinct 'periode' values...\n")
@@ -377,7 +395,9 @@ def _klass_check(
     preview_rows: int = 15,
     interactive: bool = True,
 ):
-    """Denne funksjonen sjekker om kodene til klassifikasjonsvariablene i datasettet er gyldige og i tråd med KLASS-kodelisten for det aktuelle året. Feilmelding skrives ut dersom
+    """Sjekker at klassifikasjonsvariablene i datasettet har koder som finnes i KLASS for det aktuelle året.
+
+    Denne funksjonen sjekker om kodene til klassifikasjonsvariablene i datasettet er gyldige og i tråd med KLASS-kodelisten for det aktuelle året. Feilmelding skrives ut dersom
     sjekken finner koder som ikke finnes i kodelisten for det året. Funksjonen vil automatisk sjekke den regionsvariabelen den finner i datasettet mot riktig KLASS-liste.
     Datasettet inneholder gjerne flere klassifikasjonsvariable en periode- og regionsvariabelen. Funksjonen sørger for å spørre om kodelistenummeret i KLASS til denne eller disse variablene.
     For hver slik variabel må du skrive inn nummeret. Du kan også hoppe over steget ved å trykke "Enter", men da blir ikke variabelens koder sjekket mot KLASS.
@@ -409,7 +429,7 @@ def _klass_check(
 
         TOKENS = {"nan", "<na>", "none", "nul", "null", "na", "n/a", ""}
 
-        def _is_valid_year(v) -> bool:
+        def _is_valid_year(v: Any) -> bool:
             if pd.isna(v):
                 return False
             sv = str(v).strip()
@@ -591,8 +611,12 @@ def _klass_check(
 
 
 # %%
-def validering(inputfil, klassifikasjonsvariable: list = []):
-    """Denne funksjonen kjører flere sjekker etter hverandre. Funksjonen trenger å vite filen som skal undersøkes (inputfil) og klassifikasjonsvariablene
+def validering(
+    inputfil: pd.DataFrame, klassifikasjonsvariable: list | None = None
+) -> None:
+    """Alle enkeltsjekkene samlet i én funksjon. Denne funksjonen er den som skal kjøres for å validere datasettet ditt.
+
+    Denne funksjonen kjører flere sjekker etter hverandre. Funksjonen trenger å vite filen som skal undersøkes (inputfil) og klassifikasjonsvariablene
     som inngår i datasettet (klassifikasjonsvariable). Om du ikke har definert klassifikasjonsvariablene i tidligere i løpet, kan du skrive koden for eksempel slik:
 
     klassifikasjonsvariable = ['periode', 'bydelsregion', 'helsekontroller']

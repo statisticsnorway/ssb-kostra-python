@@ -20,9 +20,12 @@ from functions.funksjoner import hjelpefunksjoner
 
 
 # %%
-def summere_til_aldersgrupperinger(inputfil: pd.DataFrame, hierarki_path: str):
-    """Aggregerer individbaserte aldersverdier til forhåndsdefinerte aldersgrupper
-    ved hjelp av et aldershierarki, og slår de aggregerte verdiene sammen med
+def summere_til_aldersgrupperinger(
+    inputfil: pd.DataFrame, hierarki_path: str
+) -> tuple[list[str], list[str], pd.DataFrame]:
+    """Aggregerer individbaserte aldersverdier til forhåndsdefinerte aldersgrupper.
+
+    Dette ved hjelp av KOSTRA-aldersgrupperingshierarkiet, og slår de aggregerte verdiene sammen med
     originaldatasettet.
 
     Funksjonen:

@@ -65,7 +65,8 @@ class TestSummereTilAldersgrupperinger(unittest.TestCase):
         mock_definer_klass,
         mock_display,
     ):
-        """Purpose
+        """Purpose.
+
         -------
         Validate a basic end-to-end flow of summing/aggregating rows into age groups.
 
