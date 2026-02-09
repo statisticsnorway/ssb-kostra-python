@@ -20,13 +20,14 @@ from typing import Any
 import ipywidgets as widgets
 import numpy as np
 import pandas as pd
-from functions.funksjoner import hjelpefunksjoner
 from IPython.display import clear_output
 from IPython.display import display
 from pandas.api.types import is_bool_dtype
 from pandas.api.types import is_extension_array_dtype
 from pandas.api.types import is_float_dtype
 from pandas.api.types import is_integer_dtype
+
+from ssb_kostra_python import hjelpefunksjoner
 
 
 # %%

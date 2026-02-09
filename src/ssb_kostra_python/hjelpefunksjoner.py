@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 # %%
-def format_fil(file: pd.DataFrame) -> pd.DataFrame:
+def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
     """Formatering av periode- og regionsvariabelen.
 
     Dette er en funksjon du kan bruke til å formatere periode- og regionsvariabelen din. Funksjonen forutsetter at periodevariabelen er kalt 'periode'. Den forutsetter også at regionsvariabelen
@@ -38,26 +38,38 @@ def format_fil(file: pd.DataFrame) -> pd.DataFrame:
     df_formatert = format_fil(df_uformatert)
 
     Her er "df_uformatert" den filen du ønsker å kjøre funksjonen på og rette formatet i. df_formatert er datasettet som spyttes ut, men du kan kalle den det du måtte ønske.
-    """
-    # --- simple fixed-width fields ---
-    if "periode" in file.columns:
-        file["periode"] = file["periode"].astype("string").str.zfill(4)
 
-    if "alder" in file.columns:
-        file["alder"] = file["alder"].astype("string").str.zfill(3)
+    Args:
+        df_uformatert: Dataframe som skal formateres.
+
+    Returns:
+        Dataframe med formatert periode og regionvariabler.
+    """
+    df_formatert = df_uformatert.copy()
+
+    # --- simple fixed-width fields ---
+    if "periode" in df_formatert.columns:
+        df_formatert["periode"] = df_formatert["periode"].astype("string").str.zfill(4)
+
+    if "alder" in df_formatert.columns:
+        df_formatert["alder"] = df_formatert["alder"].astype("string").str.zfill(3)
 
     # --- conditional padding helper (only digits & too short), dtype-safe ---
-    def _conditional_pad(col: str, width: int):
-        if col not in file.columns:
+    def _conditional_pad(col: str, width: int) -> None:
+        if col not in df_formatert.columns:
             return
         # Ensure the actual column (not just a temp Series) is string dtype
-        file[col] = file[col].astype("string")
+        df_formatert[col] = df_formatert[col].astype("string")
 
         # Mask: digits-only AND length < width
-        mask = file[col].str.fullmatch(r"\d+") & (file[col].str.len() < width)
+        mask = df_formatert[col].str.fullmatch(r"\d+") & (
+            df_formatert[col].str.len() < width
+        )
 
         # Assign using where(...) to avoid dtype-mismatch warnings/errors
-        file[col] = file[col].where(~mask, other=file[col].str.zfill(width))
+        df_formatert[col] = df_formatert[col].where(
+            ~mask, other=df_formatert[col].str.zfill(width)
+        )
 
     # Apply to possible region columns (pad only where appropriate)
     _conditional_pad("kommuneregion", 4)
@@ -66,13 +78,14 @@ def format_fil(file: pd.DataFrame) -> pd.DataFrame:
 
     # If none of the region columns are present, raise
     if not any(
-        c in file.columns for c in ("kommuneregion", "fylkesregion", "bydelsregion")
+        c in df_formatert.columns
+        for c in ("kommuneregion", "fylkesregion", "bydelsregion")
     ):
         raise ValueError(
             "No valid region column ('kommuneregion', 'fylkesregion', or 'bydelsregion') found."
         )
 
-    return file
+    return df_formatert
 
 
 # %%
@@ -106,7 +119,7 @@ def definere_klassifikasjonsvariable(
     ]
 
     # Ask user for additional variables
-    andre_klassifikasjonsvariable = input(
+    andre_klassifikasjonsvariable_input = input(
         f"Datasettet inneholder kostra-klassifikasjonsvariablene felles for alle datasett i kostra {felles_klassifikasjonsvariable}.\n"
         "Skriv inn andre klassifikasjonsvariable UTENOM DE OBLIGATORISKE (da trenger du ikke å skrive inn disse: 'periode', 'kommuneregion', 'fylkesregion' eller 'bydelsregion') \n"
         "som datasettet inneholder, uten anførselstegn og komma mellom hver dersom flere enn 1:\n"
@@ -114,7 +127,9 @@ def definere_klassifikasjonsvariable(
     )
 
     andre_klassifikasjonsvariable = [
-        var.strip() for var in andre_klassifikasjonsvariable.split(",") if var.strip()
+        var.strip()
+        for var in andre_klassifikasjonsvariable_input.split(",")
+        if var.strip()
     ]
     if len(andre_klassifikasjonsvariable) == 0:
         print("Ingen andre klassifikasjonsvariable valgt.")

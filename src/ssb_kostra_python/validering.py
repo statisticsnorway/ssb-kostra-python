@@ -12,15 +12,18 @@
 # ---
 
 # %%
+import logging
 import re
 from typing import Any
 
 import ipywidgets as widgets
 import pandas as pd
-from fagfunksjoner import logger
-from functions.funksjoner.hjelpefunksjoner import definere_klassifikasjonsvariable
 from IPython.display import display  # for nice tables in notebooks
 from klass import KlassClassification
+
+from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
+
+logger = logging.getLogger(__name__)
 
 SEPARATOR = "-" * 230  # or whatever length you need
 
@@ -166,9 +169,7 @@ def _missing_values(
 
 
 # %%
-def _valid_periode_region(
-    df: pd.DataFrame, klassifikasjonsvariable: list[str], preview_rows: int = 10
-):
+def _valid_periode_region(df: pd.DataFrame, klassifikasjonsvariable: list[str]):
     """Denne funksjonen sjekker om verdiene (kodene) til periode- og regionsvariabelen er på riktig format. Inngår i valideringen."""
     logger.info("ℹ️ Checking if periode and region are in the valid format...\n")
 
