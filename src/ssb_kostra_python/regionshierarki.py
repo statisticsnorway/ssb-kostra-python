@@ -536,7 +536,7 @@ def gjennomsnitt_aggregerte_regioner(
     print_types: bool = True,
     return_report: bool = False,
 ) -> pd.DataFrame | tuple[pd.DataFrame, dict]:
-    """Gjennomsnitt i aggregrerte regioner.
+    """Performs region aggregation and computes region averages.
 
     Denne funksjonen tar et datasett på kommune-, fylkeskommune- eller bydelsnivå, og aggregerer det til regionsgrupperinger.
     Den beregner så gjennomnittsverdier for de kolonnene brukeren velger ut. De øvrige kolonnene blir summert. Funksjonen kan brukes til å
@@ -548,7 +548,6 @@ def gjennomsnitt_aggregerte_regioner(
     1) klassifikasjonsvariablene i datasettet utenom periode- og regionsvariabelen. Periode og region vil alltid bli automatisk registrert som klassifikasjonsvariable.
     og
     2) kolonnene det skal utføres gjennomsnittsberegninger på.
-
 
     * Slik bruker du funksjonen dersom du ikke har forhåndsdefinert de øvrige klassifikasjonsvariablene. Du vil bli bedt om å angi disse i tekstfeltet som dukker opp underveis.
 
@@ -586,15 +585,17 @@ def gjennomsnitt_aggregerte_regioner(
 
     display(df_gjennomsnitt)
 
-    ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    Divide each column in `cols` by `denom_col`, optionally round,
-    and (optionally) restore each column to its original dtype.
-
-    Assumes `df[denom_col]` has no zeros (so no ±inf will be produced).
+    Args:
+        df: Input DataFrame on which regional aggregation and average computation will be applied.
+        cols: List of columns to perform aggregation and calculations on.
+        denom_col: Column serving as the denominator for aggregation. Defaults to "teller".
+        decimals: Number of decimal points to round to. None rounds to the nearest integer.
+        restore_original_dtype: If True, restores the original dtype of the columns after computation.
+        print_types: If True, prints the dtypes at different stages for debugging purposes.
+        return_report: If True, returns a tuple containing the DataFrame and a report of dtype changes.
 
     Returns:
-        df (and optionally a report dict when return_report=True)
+        Modified DataFrame, optionally along with a report of dtype changes.
     """
     df = df.copy()
 

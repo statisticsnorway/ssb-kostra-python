@@ -44,6 +44,9 @@ def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         Dataframe med formatert periode og regionvariabler.
+
+    Raises:
+        ValueError: If no valid region column is found.
     """
     df_formatert = df_uformatert.copy()
 

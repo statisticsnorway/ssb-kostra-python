@@ -37,6 +37,7 @@ sphinx-click = ">=3.0.2"
 typeguard = ">=2.13.3"
 xdoctest = { extras = ["colors"], version = ">=0.15.10" }
 myst-parser = { version = ">=0.16.1" }
+pytest-mock = ">=3.15.1"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -103,10 +104,13 @@ ignore = [
     "D100",   # Supress undocumented-public-module. Only doc of public api required.
     "FBT001", # Allow boolean positional arguments in a function.
     "FBT002", # Allow boolean default positional arguments in a function.
-    "E402",   # Supress module-import-not-at-top-of-file, needed in jupyter notebooks.
+    "E402",   # Supress module-import-not-at-top-of-df_uformatert, needed in jupyter notebooks.
     "E501",   # Supress line-too-long warnings: trust black's judgement on this one.
     "PLR2004", # Allow to compare with unnamed numerical constants.
 ]
+allowed-confusables = ["ℹ"]
+
+
 
 [tool.ruff.lint.isort]
 force-single-line = true

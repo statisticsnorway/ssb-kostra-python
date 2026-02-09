@@ -13,7 +13,8 @@
 
 # %%
 import pandas as pd
-from functions.funksjoner import hjelpefunksjoner
+
+from ssb_kostra_python import hjelpefunksjoner
 
 
 # %%

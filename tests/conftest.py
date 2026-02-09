@@ -1,37 +1,32 @@
-from unittest.mock import patch
-
 import pandas as pd
 import pytest
 
 
 @pytest.fixture
-def mock_klass_classification():
-    with patch(
-        "ssb_kostra_python.kommunekorr.KlassClassification"
-    ) as MockKlassClassification:
-        instance = MockKlassClassification.return_value
-        instance.get_codes.return_value.data = pd.DataFrame(
-            [
-                {"code": "0301", "name": "Oslo"},
-                {"code": "1103", "name": "Stavanger"},
-                {"code": "3401", "name": "Kongsvinger"},
-                {"code": "3405", "name": "Lillehammer"},
-                {"code": "4204", "name": "Kristiansand"},
-                {"code": "4601", "name": "Bergen"},
-            ]
-        )
-        yield MockKlassClassification
+def mock_klass_classification(mocker):
+    mock = mocker.patch("ssb_kostra_python.kommunekorr.KlassClassification")
+    instance = mock.return_value
+    instance.get_codes.return_value.data = pd.DataFrame(
+        [
+            {"code": "0301", "name": "Oslo"},
+            {"code": "1103", "name": "Stavanger"},
+            {"code": "3401", "name": "Kongsvinger"},
+            {"code": "3405", "name": "Lillehammer"},
+            {"code": "4204", "name": "Kristiansand"},
+            {"code": "4601", "name": "Bergen"},
+        ]
+    )
+    return mock
 
 
 @pytest.fixture
-def mock_klass_correspondence():
-    MockKlassCorrespondence = patch("ssb_kostra_python.kommunekorr.KlassCorrespondence")
-
-    def mock_init(
-        self, source_classification_id, target_classification_id, from_date, to_date
+def mock_klass_correspondence(mocker):
+    def mock_side_effect(
+        source_classification_id, target_classification_id, from_date, to_date
     ):
+        mock_instance = mocker.Mock()
         if target_classification_id == "112":
-            self.data = pd.DataFrame(
+            mock_instance.data = pd.DataFrame(
                 [
                     {
                         "sourceCode": "0301",
@@ -96,7 +91,7 @@ def mock_klass_correspondence():
                 ]
             )
         elif target_classification_id == "104":
-            self.data = pd.DataFrame(
+            mock_instance.data = pd.DataFrame(
                 [
                     {
                         "sourceCode": "0301",
@@ -160,6 +155,9 @@ def mock_klass_correspondence():
                     },
                 ]
             )
+        return mock_instance
 
-    MockKlassCorrespondence.side_effect = mock_init
-    return MockKlassCorrespondence
+    return mocker.patch(
+        "ssb_kostra_python.kommunekorr.KlassCorrespondence",
+        side_effect=mock_side_effect,
+    )
