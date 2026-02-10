@@ -13,7 +13,7 @@
 
 # %%
 import logging
-from typing import Any
+from typing import Any, Callable, cast
 
 import pandas as pd
 from klass import KlassClassification
@@ -63,42 +63,42 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     Her lages kun en mappingfil som viser hvordan kommunene inngår i fylker, Kostra-grupper og landet et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp kommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er en kommunefil.
     """
-    komm_fylk_korr = KlassCorrespondence(
+    komm_fylk_korr_corr = KlassCorrespondence(
         source_classification_id="131",
         target_classification_id="104",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    komm_fylk_korr = komm_fylk_korr.data
-    komm_fylk_korr = komm_fylk_korr[~komm_fylk_korr["sourceCode"].isin(["9999"])]
-    komm_fylk_korr = komm_fylk_korr.rename(
+    komm_fylk_korr_df = komm_fylk_korr_corr.data
+    komm_fylk_korr_df = komm_fylk_korr_df[~komm_fylk_korr_df["sourceCode"].isin(["9999"])]
+    komm_fylk_korr_df = komm_fylk_korr_df.rename(
         columns={
             "sourceCode": "from",
             "targetCode": "to",
         }
     )
-    komm_fylk_korr = komm_fylk_korr[["from", "to"]]
+    komm_fylk_korr_df = komm_fylk_korr_df[["from", "to"]]
 
-    komm_fylk_korr["to"] = "EKA" + komm_fylk_korr["to"].str[:2]
+    komm_fylk_korr_df["to"] = "EKA" + komm_fylk_korr_df["to"].str[:2]
     # display(komm_fylk_korr)
 
-    komm_KOSTRA_gr = KlassCorrespondence(
+    komm_KOSTRA_gr_corr = KlassCorrespondence(
         source_classification_id="131",
         target_classification_id="112",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    komm_KOSTRA_gr = komm_KOSTRA_gr.data
-    komm_KOSTRA_gr = komm_KOSTRA_gr[~komm_KOSTRA_gr["sourceCode"].isin(["9999"])]
-    komm_KOSTRA_gr = komm_KOSTRA_gr.rename(
+    komm_KOSTRA_gr_df = komm_KOSTRA_gr_corr.data
+    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df[~komm_KOSTRA_gr_df["sourceCode"].isin(["9999"])]
+    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df.rename(
         columns={
             "sourceCode": "from",
             "targetCode": "to",
         }
     )
-    komm_KOSTRA_gr = komm_KOSTRA_gr[["from", "to"]]
+    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df[["from", "to"]]
     # display(komm_KOSTRA_gr)
 
     nus = KlassClassification(131, language="nb", include_future=True)
@@ -128,7 +128,12 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     # display(klass_kommuner_u_oslo)
 
     mapping_kommuner = pd.concat(
-        [komm_fylk_korr, komm_KOSTRA_gr, klass_kommuner_landet, klass_kommuner_u_oslo],
+        [
+            komm_fylk_korr_df,
+            komm_KOSTRA_gr_df,
+            klass_kommuner_landet,
+            klass_kommuner_u_oslo,
+        ],
         ignore_index=True,
     )
     mapping_kommuner["from"] = mapping_kommuner["from"].astype(str).str.zfill(4)
@@ -144,32 +149,32 @@ def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     Her lages kun en mappingfil som viser hvordan kommunene inngår i de ulike fylkeskommunene et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp kommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er en kommunefil.
     """
-    komm_fylkeskommune_korr = KlassCorrespondence(
+    komm_fylkeskommune_korr_corr = KlassCorrespondence(
         source_classification_id="131",
         target_classification_id="127",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    komm_fylkeskommune_korr = komm_fylkeskommune_korr.data
-    komm_fylkeskommune_korr = komm_fylkeskommune_korr[
-        ~komm_fylkeskommune_korr["sourceCode"].isin(["9999"])
+    komm_fylkeskommune_korr_df = komm_fylkeskommune_korr_corr.data
+    komm_fylkeskommune_korr_df = komm_fylkeskommune_korr_df[
+        ~komm_fylkeskommune_korr_df["sourceCode"].isin(["9999"])
     ]
-    komm_fylkeskommune_korr = komm_fylkeskommune_korr.rename(
+    komm_fylkeskommune_korr_df = komm_fylkeskommune_korr_df.rename(
         columns={
             "sourceCode": "from",
             "targetCode": "to",
         }
     )
 
-    komm_fylkeskommune_korr = komm_fylkeskommune_korr[["from", "to"]]
-    komm_fylkeskommune_korr["from"] = (
-        komm_fylkeskommune_korr["from"].astype(str).str.zfill(4)
+    komm_fylkeskommune_korr_df = komm_fylkeskommune_korr_df[["from", "to"]]
+    komm_fylkeskommune_korr_df["from"] = (
+        komm_fylkeskommune_korr_df["from"].astype(str).str.zfill(4)
     )
-    komm_fylkeskommune_korr["to"] = (
-        komm_fylkeskommune_korr["to"].astype(str).str.zfill(4)
+    komm_fylkeskommune_korr_df["to"] = (
+        komm_fylkeskommune_korr_df["to"].astype(str).str.zfill(4)
     )
-    return komm_fylkeskommune_korr
+    return komm_fylkeskommune_korr_df
 
 
 # %%
@@ -180,23 +185,23 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     Her lages kun en mappingfil som viser hvordan fylkeskommunene inngår i de ulike KOSTRA-fylkesgruppene et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp fylkeskommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er       en fylkeskommunefil.
     """
-    fylkeskomm_kostraregion = KlassCorrespondence(
+    fylkeskomm_kostraregion_corr = KlassCorrespondence(
         source_classification_id="127",
         target_classification_id="152",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    fylkeskomm_kostraregion = fylkeskomm_kostraregion.data
+    fylkeskomm_kostraregion_df = fylkeskomm_kostraregion_corr.data
 
-    fylkeskomm_kostraregion = fylkeskomm_kostraregion.rename(
+    fylkeskomm_kostraregion_df = fylkeskomm_kostraregion_df.rename(
         columns={
             "sourceCode": "from",
             "targetCode": "to",
         }
     )
 
-    fylkeskomm_kostraregion = fylkeskomm_kostraregion[["from", "to"]]
+    fylkeskomm_kostraregion_df = fylkeskomm_kostraregion_df[["from", "to"]]
 
     nus = KlassClassification(127, language="nb", include_future=True)
     nuskoder = nus.get_codes(f"{year}-01-01")
@@ -224,7 +229,7 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
 
     fylkeskomm_kostraregion_korr = pd.concat(
         [
-            fylkeskomm_kostraregion,
+            fylkeskomm_kostraregion_df,
             klass_fylkeskommuner_landet,
             klass_fylkeskommuner_landet_u_oslo,
         ],
@@ -520,22 +525,47 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
 
 
 # %%
-def _nullable_int_for(dtype: Any) -> str:
-    name = str(dtype)
+def _nullable_int_for(dtype: Any) -> Any:
+    """Return a pandas nullable integer dtype matching the given dtype name.
+
+    Falls back to Int64 if the specific bit width is not recognized.
+    """
+    name = str(dtype).lower()
+    # Signed integers
     if name.startswith("int"):
-        return "I" + name[1:]
-    return "Int64"
+        if "64" in name:
+            return pd.Int64Dtype()
+        if "32" in name:
+            return pd.Int32Dtype()
+        if "16" in name:
+            return pd.Int16Dtype()
+        if "8" in name:
+            return pd.Int8Dtype()
+        return pd.Int64Dtype()
+    # Unsigned integers
+    if name.startswith("uint"):
+        if "64" in name:
+            return pd.UInt64Dtype()
+        if "32" in name:
+            return pd.UInt32Dtype()
+        if "16" in name:
+            return pd.UInt16Dtype()
+        if "8" in name:
+            return pd.UInt8Dtype()
+        return pd.UInt64Dtype()
+    # Fallback
+    return pd.Int64Dtype()
 
 
 def gjennomsnitt_aggregerte_regioner(
     df: pd.DataFrame,
-    cols: list,
+    cols: list[str],
     denom_col: str = "teller",
     decimals: int | None = None,  # None => round to integer; e.g. 2 => round to 2 dp
     restore_original_dtype: bool = True,
     print_types: bool = True,
     return_report: bool = False,
-) -> pd.DataFrame | tuple[pd.DataFrame, dict]:
+) -> pd.DataFrame | tuple[pd.DataFrame, dict[str, dict[str, Any]]]:
     """Performs region aggregation and computes region averages.
 
     Denne funksjonen tar et datasett på kommune-, fylkeskommune- eller bydelsnivå, og aggregerer det til regionsgrupperinger.
@@ -603,10 +633,10 @@ def gjennomsnitt_aggregerte_regioner(
     df = hierarki(df)
 
     # 1) Capture original dtypes
-    original = df[cols].dtypes.to_dict()
+    original: dict[str, Any] = cast(dict[str, Any], df[cols].dtypes.to_dict())
 
     # For reporting: capture post-op (pre-restore) dtypes
-    post_op = {}
+    post_op: dict[str, Any] = {}
 
     if print_types:
         print("")
@@ -656,7 +686,7 @@ def gjennomsnitt_aggregerte_regioner(
             df[c] = result
 
     # 3) Final dtypes
-    final = df[cols].dtypes.to_dict()
+    final: dict[str, Any] = cast(dict[str, Any], df[cols].dtypes.to_dict())
 
     if print_types:
         print("\nPost-op (pre-restore) dtypes:")
@@ -691,6 +721,10 @@ def gjennomsnitt_aggregerte_regioner(
 
     df = df.drop(columns=["teller"])
     if return_report:
-        report = {"original": original, "post_op": post_op, "final": final}
+        report: dict[str, dict[str, Any]] = {
+            "original": original,
+            "post_op": post_op,
+            "final": final,
+        }
         return df, report
     return df
