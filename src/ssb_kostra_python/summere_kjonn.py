@@ -22,10 +22,10 @@ def summere_over_kjonn(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Summér statistikkvariabler over kjønn hvis 'kjonn' finnes i datasettet.
 
     Args:
-        inputfil (pd.DataFrame): Datasettet som skal summeres.
+        inputfil: Datasettet som skal summeres.
 
     Returns:
-        pd.DataFrame: Datasettet summert over kjønn, eller originalt datasett hvis 'kjonn' ikke finnes.
+        Datasettet summert over kjønn, eller originalt datasett hvis 'kjonn' ikke finnes.
     """
     if "kjonn" not in inputfil.columns:
         print(
