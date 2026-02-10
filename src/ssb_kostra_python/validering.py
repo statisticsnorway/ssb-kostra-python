@@ -15,6 +15,7 @@
 import logging
 import re
 from typing import Any
+from typing import cast
 
 import ipywidgets as widgets
 import pandas as pd
@@ -66,7 +67,7 @@ def show_toggle(
 
 
 # %%
-def _missing_cols(inputfil: pd.DataFrame, klassifikasjonsvariable: list[str]):
+def _missing_cols(inputfil: pd.DataFrame, klassifikasjonsvariable: list[str]) -> None:
     """Denne funksjonen sjekker om datasettet inneholder de klassifikasjonsvariablene som brukeren angir. Funksjonen inngår i valideringen."""
     # Check for missing columns
     missing_cols = [c for c in klassifikasjonsvariable if c not in inputfil.columns]
@@ -169,7 +170,7 @@ def _missing_values(
 
 
 # %%
-def _valid_periode_region(df: pd.DataFrame, klassifikasjonsvariable: list[str]):
+def _valid_periode_region(df: pd.DataFrame, klassifikasjonsvariable: list[str]) -> None:
     """Denne funksjonen sjekker om verdiene (kodene) til periode- og regionsvariabelen er på riktig format. Inngår i valideringen."""
     logger.info("ℹ️ Checking if periode and region are in the valid format...\n")
 
@@ -302,7 +303,9 @@ def _valid_periode_region(df: pd.DataFrame, klassifikasjonsvariable: list[str]):
 
 
 # %%
-def _number_of_periods_in_df(inputfil: pd.DataFrame, preview_rows: int = 10):
+def _number_of_periods_in_df(
+    inputfil: pd.DataFrame, preview_rows: int = 10
+) -> list[str]:
     """Sjekker antall perioder i datasettet. Inngår i valideringen.
 
     Sjekker hvor mange forskjellige perioder datasettet inneholder. Helt konkret sjekker den hvor mange forskjellige unike verdier som finnes i periode-kolonnen.
@@ -313,15 +316,21 @@ def _number_of_periods_in_df(inputfil: pd.DataFrame, preview_rows: int = 10):
     TOKENS = {"nan", "<na>", "none", "nul", "null", "na", "n/a", ""}
 
     s = inputfil["periode"].astype("string")
-    uniq = pd.Series(s.unique())
+    uniq = list(s.unique())
 
-    valid, padded_missing, true_missing, fmt_invalid = [], [], [], []
+    valid: list[str] = []
+    padded_missing: list[Any] = []
+    true_missing: list[Any] = []
+    fmt_invalid: list[Any] = []
 
     for v in uniq:
-        if pd.isna(v) or (isinstance(v, str) and v.strip() == ""):
+        if pd.isna(v):
             true_missing.append(v)
             continue
         sv = str(v).strip()
+        if sv == "":
+            true_missing.append(v)
+            continue
         core = sv.lstrip("0").lower()
         if core in TOKENS:
             padded_missing.append(v)
@@ -395,7 +404,7 @@ def _klass_check(
     klassifikasjonsvariable: list[str],
     preview_rows: int = 15,
     interactive: bool = True,
-):
+) -> None:
     """Sjekker at klassifikasjonsvariablene i datasettet har koder som finnes i KLASS for det aktuelle året.
 
     Denne funksjonen sjekker om kodene til klassifikasjonsvariablene i datasettet er gyldige og i tråd med KLASS-kodelisten for det aktuelle året. Feilmelding skrives ut dersom
@@ -514,7 +523,7 @@ def _klass_check(
                     from_date=f"{periode}-01-01", to_date=f"{periode}-12-31"
                 )
                 # some clients expose .data, others return a df; handle both
-                df_codes = getattr(codes, "data", codes)
+                df_codes: Any = getattr(codes, "data", codes)
                 if df_codes is None or len(df_codes) == 0:
                     logger.warning(
                         f"⚠️ KLASS ID {klass_id} returned no codes for {periode}. Try again or press Enter to skip.\n"
@@ -557,14 +566,14 @@ def _klass_check(
             return _cache[key]
         k = KlassClassification(klass_id, language="en", include_future=True)
         result = k.get_codes(from_date=f"{year}-01-01", to_date=f"{year}-12-31")
-        df_codes = getattr(result, "data", result)
+        df_codes: Any = getattr(result, "data", result)
         codes = (
             df_codes[["code"]]
             .assign(code=lambda s: s["code"].astype(str).str.strip())["code"]
             .tolist()
         )
         _cache[key] = codes
-        return codes
+        return cast(list[str], codes)
 
     for col in klassifikasjonsvariable:
         if col == "periode":
@@ -613,7 +622,7 @@ def _klass_check(
 
 # %%
 def validering(
-    inputfil: pd.DataFrame, klassifikasjonsvariable: list | None = None
+    inputfil: pd.DataFrame, klassifikasjonsvariable: list[str] | None = None
 ) -> None:
     """Alle enkeltsjekkene samlet i én funksjon. Denne funksjonen er den som skal kjøres for å validere datasettet ditt.
 
@@ -624,7 +633,7 @@ def validering(
     mapping_hierarki.validering(navn_på_din_fil, klassifikasjonsvariable)
 
     """
-    if klassifikasjonsvariable == []:
+    if not klassifikasjonsvariable:
         logger.info("Genererer klassifikasjonsvariable fra inputfilen...")
         klassifikasjonsvariable, _ = definere_klassifikasjonsvariable(inputfil)
     else:
