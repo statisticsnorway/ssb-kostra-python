@@ -65,20 +65,13 @@ def dataframe_cell_editor_mvp(
         * edited dataframe preview
         * change log
 
-    ------------------------------------------------------------------------
-    Parameters
-    ------------------------------------------------------------------------
-    df : pandas.DataFrame
-        The input dataframe to be edited. This dataframe is not modified.
-
-    preview_rows : int, default 30
-        Number of rows to display in the "Edited dataframe (preview)" panel.
-        This is a preview only; the full edited dataframe is still available
-        via the returned function.
-
-    log_rows : int or None, default None
-        If None, display the full change log in the UI.
-        If an integer, display only the last `log_rows` entries in the UI.
+    Args:
+        df: The input dataframe to be edited. This dataframe is not modified.
+        preview_rows: Number of rows to display in the "Edited dataframe (preview)" panel.
+            This is a preview only; the full edited dataframe is still available
+            via the returned function.
+        log_rows: If None, display the full change log in the UI.
+            If an integer, display only the last `log_rows` entries in the UI.
 
     ------------------------------------------------------------------------
     User interface behavior
@@ -100,20 +93,15 @@ def dataframe_cell_editor_mvp(
     ------------------------------------------------------------------------
 
     Returns:
-    ------------------------------------------------------------------------
-    get_results : callable
-        A zero-argument function that returns the current edited dataframe
-        and the full change log.
+        get_results: A zero-argument function that returns the current edited dataframe
+            and the full change log.
 
-        Calling:
-            df_edited, change_log_df = get_results()
+            Calling:
+                df_edited, change_log_df = get_results()
 
-        returns:
-            df_edited : pandas.DataFrame
-                The fully edited dataframe (original unchanged).
-
-            change_log_df : pandas.DataFrame
-                A dataframe containing one row per committed cell edit, including:
+            returns:
+                df_edited (pandas.DataFrame): The fully edited dataframe (original unchanged).
+                change_log_df (pandas.DataFrame): A dataframe containing one row per committed cell edit, including:
                     - timestamp
                     - user
                     - row identifier

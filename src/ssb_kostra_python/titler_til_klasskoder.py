@@ -186,25 +186,26 @@ def kodelister_navn(
 ) -> tuple[pd.DataFrame, dict]:
     """Apply multiple (code_col, klass_id) mappings to a DF for the same year from df['periode'].
 
-    Parameters
-    ----------
-    df : DataFrame
-        Must contain 'periode' with exactly one unique year.
-    mappings : list of dict
-        Each dict: {
-            "code_col": "kommunenr",     # required
-            "klass_id": 131,              # required
-            "name_col_out": "kommunenr_navn",   # optional; default <code_col>_navn
-            "select_level": 1,            # optional
-        }
-    language, include_future : passed to KLASS
+    Args:
+        df: Must contain 'periode' with exactly one unique year.
+        mappings: List of dictionaries. Each dict:
+            {
+                "code_col": "kommunenr",     # required
+                "klass_id": 131,              # required
+                "name_col_out": "kommunenr_navn",   # optional; default <code_col>_navn
+                "select_level": 1,            # optional
+            }
+        language: Language code passed to KLASS.
+        include_future: Whether to include future codes in KLASS.
+        verbose: Whether to print diagnostic messages.
 
     Returns:
-    -------
-    df_out : DataFrame
-        Original DF with each name column inserted right after its code column.
-    diag : dict
-        Per-pair diagnostics keyed by code_col (or code_col|klass_id if duplicates).
+        tuple: A tuple containing:
+            - df_out (pd.DataFrame): Original DF with each name column inserted right after its code column.
+            - diag (dict): Per-pair diagnostics keyed by code_col (or code_col|klass_id if duplicates).
+
+    Raises:
+        ValueError: If 'periode' is missing or contains multiple unique years.
     """
     # Validate 'periode' once
     if "periode" not in df.columns:

@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath("../src"))
 
 project = "SSB Kostra Python"
 copyright = "2025, Statistics Norway"
-author = "Magne Furuholmen Myhren"
+author = "Christopher Okazaki Hansen"
 
 # -- General configuration ---------------------------------------------------
 

@@ -1,43 +1,64 @@
-[tool.poetry]
+[project]
 name = "ssb-kostra-python"
 version = "0.0.3"
 description = "SSB Kostra Python"
-authors = ["Magne Furuholmen Myhren <mfm@ssb.no>"]
+authors = [{ name = "Christopher Okazaki Hansen", email = "coh@ssb.no" }]
+maintainers = [{ name = "Statistics Norway, Public finance Department (212)" }]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dynamic = ["classifiers"]
+dependencies = [
+    "click>=8.0.1",
+    "pandas>=2.2.3",
+    "pandas-stubs>=2.2.3.241126",
+    "ssb-klass-python>=1.0.0",
+]
+
+[project.urls]
 homepage = "https://github.com/statisticsnorway/ssb-kostra-python"
 repository = "https://github.com/statisticsnorway/ssb-kostra-python"
 documentation = "https://statisticsnorway.github.io/ssb-kostra-python"
-classifiers = ["Development Status :: 4 - Beta"]
-
-[tool.poetry.urls]
 Changelog = "https://github.com/statisticsnorway/ssb-kostra-python/releases"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pandas = ">=2.2.3"
-pandas-stubs = ">=2.2.3.241126"
-ssb-klass-python = ">=1.0.0"
+[project.scripts]
+ssb-kostra-python = "ssb_kostra_python.__main__:main"
 
-[tool.poetry.group.dev.dependencies]
-pygments = ">=2.10.0"
-black = { extras = ["jupyter"], version = ">=23.1.0" }
-coverage = { extras = ["toml"], version = ">=6.2" }
-darglint = ">=1.8.1"
-furo = ">=2021.11.12"
-mypy = ">=0.930"
-pre-commit = ">=2.16.0"
-pre-commit-hooks = ">=4.1.0"
-ruff = ">=0.0.284"
-pytest = ">=6.2.5"
-sphinx = ">=6.2.1"
-sphinx-autobuild = ">=2021.3.14"
-sphinx-autodoc-typehints = ">=1.24.0"
-sphinx-click = ">=3.0.2"
-typeguard = ">=2.13.3"
-xdoctest = { extras = ["colors"], version = ">=0.15.10" }
-myst-parser = { version = ">=0.16.1" }
-pytest-mock = ">=3.15.1"
+[dependency-groups]
+lint = [
+    "black[jupyter]>=25.11.0",
+    "pre-commit>=4.4.0",
+    "pre-commit-hooks>=6.0.0",
+    "pydoclint>=0.8.3",
+    "ruff>=0.14.5",
+]
+doc = [
+    "furo>=2025.9.25; python_version >= '3.11'",
+    "myst-parser>=4.0.1; python_version >= '3.11'",
+    "sphinx>=8.2.3; python_version >= '3.11'",
+    "sphinx-autobuild>=2025.8.25; python_version >= '3.11'",
+    "sphinx-autodoc-typehints>=3.5.2; python_version >= '3.11'",
+    "sphinx-click>=6.1.0; python_version >= '3.11'",
+]
+dev = [
+    {include-group = "lint"},
+    {include-group = "doc"},
+    "coverage[toml]>=7.11.3",
+    "deptry>=0.24.0",
+    "mypy>=1.18.2",
+    "pygments>=2.19.0",
+    "pytest>=9.0.0",
+    "typeguard>=2.13.3",
+    "xdoctest[colors]>=1.3.0",
+    "pytest-mock>=3.15.1",
+]
+
+[tool.poetry]
+classifiers = ["Development Status :: 4 - Beta"]
+requires-poetry = ">=2.2"
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.9"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -55,6 +76,9 @@ relative_files = true
 show_missing = true
 fail_under = 50
 
+[tool.deptry.per_rule_ignores]
+DEP001 = ["nox", "nox_poetry"]  # packages available by default
+
 [tool.mypy]
 strict = true
 warn_unreachable = true
@@ -69,6 +93,15 @@ module = [
 ]
 ignore_missing_imports = true
 follow_imports = "skip"
+
+[tool.pydoclint]
+style = "google"
+exclude = '\.git|\.nox'
+arg-type-hints-in-docstring = false
+check-return-types = false
+check-yield-types = false
+allow-init-docstring = true
+quiet = true
 
 [tool.ruff]
 force-exclude = true  # Apply excludes to pre-commit
@@ -99,18 +132,17 @@ select = [
     "RUF",  # the ruff developer's own rules
 ]
 ignore = [
-    "ANN202", # Don't requiere return type annotation for private functions.
+    "ANN202", # Don't require return type annotation for private functions.
     "ANN401", # Allow type annotation with type Any.
     "D100",   # Supress undocumented-public-module. Only doc of public api required.
     "FBT001", # Allow boolean positional arguments in a function.
     "FBT002", # Allow boolean default positional arguments in a function.
-    "E402",   # Supress module-import-not-at-top-of-df_uformatert, needed in jupyter notebooks.
+    "E402",   # Supress module-import-not-at-top-of-file, needed in jupyter notebooks.
     "E501",   # Supress line-too-long warnings: trust black's judgement on this one.
     "PLR2004", # Allow to compare with unnamed numerical constants.
 ]
+external = ["DOC"]  # Avoiding removing any codes starting with `DOC` from any `# noqa` directives.
 allowed-confusables = ["ℹ"]
-
-
 
 [tool.ruff.lint.isort]
 force-single-line = true
@@ -145,5 +177,5 @@ classmethod-decorators = ["classmethod", "validator", "root_validator", "pydanti
 ]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

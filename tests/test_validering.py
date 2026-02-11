@@ -158,7 +158,12 @@ def test_number_of_periods_returns_only_valid_years(caplog, mocker):
 
 # Tests for _klass_check (mock KLASS; no network)
 class FakeKlass:
-    def __init__(self, klass_id, language="en", include_future=True):
+    def __init__(
+        self,
+        klass_id: str | int,
+        language: str = "en",
+        include_future: bool = True,
+    ) -> None:
         """Initialize FakeKlass with the given parameters.
 
         Args:

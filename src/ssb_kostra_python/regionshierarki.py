@@ -13,7 +13,8 @@
 
 # %%
 import logging
-from typing import Any, Callable, cast
+from typing import Any
+from typing import cast
 
 import pandas as pd
 from klass import KlassClassification
@@ -71,7 +72,9 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     )
 
     komm_fylk_korr_df = komm_fylk_korr_corr.data
-    komm_fylk_korr_df = komm_fylk_korr_df[~komm_fylk_korr_df["sourceCode"].isin(["9999"])]
+    komm_fylk_korr_df = komm_fylk_korr_df[
+        ~komm_fylk_korr_df["sourceCode"].isin(["9999"])
+    ]
     komm_fylk_korr_df = komm_fylk_korr_df.rename(
         columns={
             "sourceCode": "from",
@@ -91,7 +94,9 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     )
 
     komm_KOSTRA_gr_df = komm_KOSTRA_gr_corr.data
-    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df[~komm_KOSTRA_gr_df["sourceCode"].isin(["9999"])]
+    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df[
+        ~komm_KOSTRA_gr_df["sourceCode"].isin(["9999"])
+    ]
     komm_KOSTRA_gr_df = komm_KOSTRA_gr_df.rename(
         columns={
             "sourceCode": "from",
