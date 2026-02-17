@@ -148,7 +148,8 @@ def dataframe_cell_editor_mvp(
         hjelpefunksjoner.definere_klassifikasjonsvariable(df_working)
     )
 
-    change_log: list[dict] = []
+    from typing import Any
+    change_log: list[dict[str, Any]] = []
     MAX_EDIT_ROWS = 250
 
     # ------------------------------------------------------------------
@@ -211,7 +212,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
-    def coerce_value_for_column(col_name: str, raw_text: str, set_missing: bool):
+    def coerce_value_for_column(col_name: str, raw_text: str, set_missing: bool) -> Any:
         """Convert widget text input into a value compatible with df_working[col_name].dtype."""
         dtype = df_working[col_name].dtype
         text = (raw_text or "").strip()
@@ -274,13 +275,13 @@ def dataframe_cell_editor_mvp(
 
         return text
 
-    def get_results():
+    def get_results() -> tuple[pd.DataFrame, pd.DataFrame]:
         """Return the full edited df and the full change log df."""
         df_final = df_working.drop(columns=[ROW_ID])
         log_df = pd.DataFrame(change_log)
         return df_final, log_df
 
-    def render_results():
+    def render_results() -> None:
         """Refresh the two live output panels."""
         df_final, log_df = get_results()
 
@@ -315,7 +316,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     current_slice = None
 
-    def apply_filter(_: Any, clear_commit_msg: bool = True):
+    def apply_filter(_: Any, clear_commit_msg: bool = True) -> None:
         nonlocal current_slice
         if clear_commit_msg:
             edit_status.value = ""
@@ -363,7 +364,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     # Commit logic
     # ------------------------------------------------------------------
-    def commit_edit(_: Any):
+    def commit_edit(_: Any) -> None:
         nonlocal df_working
 
         if current_slice is None or len(current_slice) == 0:
@@ -399,7 +400,7 @@ def dataframe_cell_editor_mvp(
             idx = df_working.index[df_working[ROW_ID] == rid][0]
             old_val = df_working.at[idx, col]
 
-            if (pd.isna(old_val) and pd.isna(new_val)) or (old_val == new_val):
+            if (pd.isna(old_val) and pd.isna(new_val)) or (old_val == new_val):  # type: ignore[unreachable]
                 continue
 
             df_working.at[idx, col] = new_val
