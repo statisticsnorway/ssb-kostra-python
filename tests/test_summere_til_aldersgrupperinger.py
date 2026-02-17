@@ -8,7 +8,9 @@ from ssb_kostra_python.summere_til_aldersgrupperinger import (
 class TestSummereTilAldersgrupperinger:
     """Tests for `summere_til_aldersgrupperinger(df_input, hierarki_path=...)`."""
 
-    def test_summere_til_aldersgrupperinger_basic(self, mocker):
+    from typing import Any
+
+    def test_summere_til_aldersgrupperinger_basic(self, mocker: Any) -> None:
         """Validate a basic end-to-end flow of summing/aggregating rows into age groups."""
         # 1) Arrange: input data
         df_input = pd.DataFrame(
@@ -33,7 +35,7 @@ class TestSummereTilAldersgrupperinger:
         )
 
         # 3) Arrange: patch format_fil
-        def fake_format_fil(df):
+        def fake_format_fil(df: pd.DataFrame) -> pd.DataFrame:
             df = df.copy()
             df["periode"] = df["periode"].astype(str)
             df["alder"] = df["alder"].astype(str).str.zfill(3)

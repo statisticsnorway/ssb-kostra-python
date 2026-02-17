@@ -1,3 +1,5 @@
+from typing import Any
+
 import pandas as pd
 import pytest
 
@@ -16,24 +18,35 @@ class FakeCodes:
         """Initialize FakeCodes with a DataFrame to be returned by pivot_level."""
         self._pivot_df = pivot_df
 
-    def pivot_level(self):
+    def pivot_level(self) -> pd.DataFrame:
         """Return the pivot table as if it came from real KLASS."""
         return self._pivot_df
+
+
+from typing import ClassVar
+
+import pandas as pd
 
 
 class FakeKlassClassification:
     """Test double for klass.KlassClassification."""
 
-    pivot_df = None  # set per test
+    pivot_df: ClassVar[pd.DataFrame | None] = None  # set per test
 
-    def __init__(self, klass_id, language="nb", include_future=True):
+    def __init__(
+        self, klass_id: int, language: str = "nb", include_future: bool = True
+    ) -> None:
         """Initialize FakeKlassClassification with the given parameters."""
         self.klass_id = klass_id
         self.language = language
         self.include_future = include_future
 
-    def get_codes(self, **kwargs):
+    def get_codes(self, **kwargs: Any) -> FakeCodes:
         """Return a FakeCodes object containing the test-provided pivot table."""
+        if self.__class__.pivot_df is None:
+            raise ValueError(
+                "pivot_df must be set to a DataFrame before calling get_codes."
+            )
         return FakeCodes(self.__class__.pivot_df)
 
 
@@ -45,7 +58,7 @@ PATCH_TARGET = "ssb_kostra_python.titler_til_klasskoder.KlassClassification"
 # -------------------------
 
 
-def test_pick_level_columns_selects_smallest_level_when_none():
+def test_pick_level_columns_selects_smallest_level_when_none() -> None:
     """Verify level selection logic."""
     pivot = pd.DataFrame(
         {
@@ -61,14 +74,14 @@ def test_pick_level_columns_selects_smallest_level_when_none():
     assert mname == "name_1"
 
 
-def test_pick_level_columns_raises_if_missing_expected_columns():
+def test_pick_level_columns_raises_if_missing_expected_columns() -> None:
     """Verify error on missing columns."""
     pivot = pd.DataFrame({"something_else": [1]})
     with pytest.raises(RuntimeError, match="missing expected"):
         _pick_level_columns(pivot, level=None)
 
 
-def test_pick_level_columns_raises_if_requested_level_not_present():
+def test_pick_level_columns_raises_if_requested_level_not_present() -> None:
     """Verify error on missing requested level."""
     pivot = pd.DataFrame({"code_1": ["1"], "name_1": ["One"]})
     with pytest.raises(RuntimeError, match="Expected columns 'code_2' and 'name_2'"):
@@ -80,7 +93,7 @@ def test_pick_level_columns_raises_if_requested_level_not_present():
 # --------------------------------
 
 
-def test_fetch_mapping_for_year_returns_two_col_mapping_and_level(mocker):
+def test_fetch_mapping_for_year_returns_two_col_mapping_and_level(mocker: Any) -> None:
     """Verify mapping fetch logic."""
     mocker.patch(PATCH_TARGET, FakeKlassClassification)
     FakeKlassClassification.pivot_df = pd.DataFrame(
@@ -110,8 +123,8 @@ def test_fetch_mapping_for_year_returns_two_col_mapping_and_level(mocker):
 
 
 def test_attach_one_mapping_inserts_name_column_after_code_and_builds_diagnostics(
-    mocker,
-):
+    mocker: Any,
+) -> None:
     """Verify name attachment and diagnostics."""
     mocker.patch(PATCH_TARGET, FakeKlassClassification)
     FakeKlassClassification.pivot_df = pd.DataFrame(
@@ -153,7 +166,7 @@ def test_attach_one_mapping_inserts_name_column_after_code_and_builds_diagnostic
     assert diag["level"] == 1
 
 
-def test_attach_one_mapping_raises_if_code_col_missing(mocker):
+def test_attach_one_mapping_raises_if_code_col_missing(mocker: Any) -> None:
     """Verify error on missing code column."""
     mocker.patch(PATCH_TARGET, FakeKlassClassification)
     FakeKlassClassification.pivot_df = pd.DataFrame(
@@ -169,7 +182,7 @@ def test_attach_one_mapping_raises_if_code_col_missing(mocker):
 # -----------------------
 
 
-def test_kodelister_navn_requires_periode():
+def test_kodelister_navn_requires_periode() -> None:
     """Verify error if 'periode' is missing."""
     df = pd.DataFrame({"kommuneregion": ["0301"]})
     with pytest.raises(ValueError, match="must contain a 'periode'"):
@@ -180,7 +193,7 @@ def test_kodelister_navn_requires_periode():
         )
 
 
-def test_kodelister_navn_requires_exactly_one_unique_year():
+def test_kodelister_navn_requires_exactly_one_unique_year() -> None:
     """Verify error if multiple years are present."""
     df = pd.DataFrame({"periode": [2023, 2024], "kommuneregion": ["0301", "0301"]})
     with pytest.raises(ValueError, match="exactly one unique value"):
@@ -191,7 +204,7 @@ def test_kodelister_navn_requires_exactly_one_unique_year():
         )
 
 
-def test_kodelister_navn_applies_multiple_mappings_in_order(mocker):
+def test_kodelister_navn_applies_multiple_mappings_in_order(mocker: Any) -> None:
     """Verify sequential mapping application."""
     mocker.patch(PATCH_TARGET, FakeKlassClassification)
     FakeKlassClassification.pivot_df = pd.DataFrame(

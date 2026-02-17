@@ -3,7 +3,11 @@ import pandas as pd
 from ssb_kostra_python.kommunekorr import kostra_kommunekorr
 
 
-def test_kostra_kommunekorr(mock_klass_classification, mock_klass_correspondence):
+from typing import Any
+
+def test_kostra_kommunekorr(
+    mock_klass_classification: Any, mock_klass_correspondence: Any
+) -> None:
     year = "2023"
     result = kostra_kommunekorr(year)
     assert isinstance(result, pd.DataFrame)

@@ -13,6 +13,8 @@
 
 # %%
 
+from typing import Literal
+
 import pandas as pd
 from klass import KlassClassification
 
@@ -57,7 +59,12 @@ Så om du har gjort dette før en nødvendig aggregering, så bør du fjerne dis
 # ---------- internals ----------
 
 
-def _pick_level_columns(pivot_df: pd.DataFrame, level: int | None):
+from typing import Any
+
+
+def _pick_level_columns(
+    pivot_df: pd.DataFrame, level: int | None
+) -> tuple[int, str, str]:
     code_cols = [c for c in pivot_df.columns if str(c).startswith("code_")]
     name_cols = [c for c in pivot_df.columns if str(c).startswith("name_")]
     if not code_cols or not name_cols:
@@ -88,7 +95,7 @@ def _fetch_mapping_for_year(
     klass_id: int,
     year: int,
     *,
-    language: str = "nb",
+    language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
     select_level: int | None = None,
 ) -> tuple[pd.DataFrame, int]:
@@ -125,10 +132,10 @@ def _attach_one_mapping(
     code_col: str,
     klass_id: int,
     name_col_out: str | None = None,
-    language: str = "nb",
+    language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
     select_level: int | None = None,
-) -> tuple[pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Attach names for one (code_col, klass_id) pair; returns new df and diagnostics."""
     if code_col not in df_in.columns:
         raise ValueError(f"Column '{code_col}' not found in DataFrame.")
@@ -149,8 +156,13 @@ def _attach_one_mapping(
         name_col_out = f"{code_col}_navn"
 
     # Insert the name column immediately after the code column
-    insert_at = merged.columns.get_loc(code_col) + 1
-    merged.insert(insert_at, name_col_out, merged["_map_name"])
+    insert_at_raw = merged.columns.get_loc(code_col)
+    if not isinstance(insert_at_raw, int):
+        raise TypeError(
+            f"Expected int from get_loc, got {type(insert_at_raw)}: {insert_at_raw}"
+        )
+    insert_at = insert_at_raw
+    merged.insert(insert_at + 1, name_col_out, merged["_map_name"])
 
     # Drop helper columns
     merged = merged.drop(columns=["_map_code", "_map_name"])
@@ -178,12 +190,12 @@ def _attach_one_mapping(
 # def attach_multiple_classification_names(
 def kodelister_navn(
     df: pd.DataFrame,
-    mappings: list[dict],
+    mappings: list[dict[str, Any]],
     *,
-    language: str = "nb",
+    language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
     verbose: bool = True,
-) -> tuple[pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Apply multiple (code_col, klass_id) mappings to a DF for the same year from df['periode'].
 
     Args:
@@ -218,7 +230,7 @@ def kodelister_navn(
     year = int(unique_years[0])
 
     out = df.copy()
-    diagnostics: dict = {}
+    diagnostics: dict[str, Any] = {}
 
     for item in mappings:
         code_col = item["code_col"]

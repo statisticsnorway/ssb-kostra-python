@@ -7,7 +7,7 @@ from ssb_kostra_python.enkel_editering import dataframe_cell_editor_mvp
 
 
 @pytest.fixture
-def df():
+def df() -> pd.DataFrame:
     """Create a small representative DataFrame for testing."""
     return pd.DataFrame(
         {
@@ -20,7 +20,11 @@ def df():
     )
 
 
-def test_initial_get_results_returns_copy_and_empty_log(mocker, df):
+from typing import Any
+
+def test_initial_get_results_returns_copy_and_empty_log(
+    mocker: Any, df: pd.DataFrame
+) -> None:
     """Verify the "initial state" behavior of the editor."""
     # Arrange: Make the helper deterministic (no input prompts)
     mock_define = mocker.patch(
@@ -50,7 +54,9 @@ def test_initial_get_results_returns_copy_and_empty_log(mocker, df):
     assert log_df.empty
 
 
-def test_get_results_reflects_mutations_to_captured_state(mocker, df):
+def test_get_results_reflects_mutations_to_captured_state(
+    mocker: Any, df: pd.DataFrame
+) -> None:
     """Validate that `get_results()` reflects the *current internal state* of the editor."""
     # Arrange: deterministic helper output
     mock_define = mocker.patch(
@@ -98,7 +104,18 @@ def test_get_results_reflects_mutations_to_captured_state(mocker, df):
     df_edited, log_df = get_results()
 
     # Assert: edited value is present
-    assert int(df_edited.loc[0, "utgifter"]) == 9999
+    val = df_edited.loc[0, "utgifter"]
+    if pd.notna(val):
+        import numpy as np
+
+        if isinstance(val, (int, np.integer)):
+            assert int(val) == 9999
+        elif isinstance(val, float) and val.is_integer():
+            assert int(val) == 9999
+        else:
+            raise AssertionError(f"utgifter value is not an integer: {val!r}")
+    else:
+        raise AssertionError("utgifter value is NA, expected 9999")
 
     # Assert: change log contains our entry
     assert len(log_df) == 1
@@ -110,7 +127,7 @@ def test_get_results_reflects_mutations_to_captured_state(mocker, df):
     assert "__row_id__" not in df_edited.columns
 
 
-def test_row_id_is_added_internally_but_not_returned(mocker, df):
+def test_row_id_is_added_internally_but_not_returned(mocker: Any, df: pd.DataFrame) -> None:
     """Verify that ROW_ID is used internally but not exposed in the exported DataFrame."""
     # Arrange
     mock_define = mocker.patch(

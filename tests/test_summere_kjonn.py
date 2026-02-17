@@ -6,7 +6,7 @@ from ssb_kostra_python.summere_kjonn import summere_over_kjonn
 class TestSummereOverKjonn:
     """Tests for `summere_over_kjonn(df)`."""
 
-    def test_returns_input_unchanged_when_kjonn_missing(self):
+    def test_returns_input_unchanged_when_kjonn_missing(self) -> None:
         """Verify behavior when 'kjonn' is missing."""
         df = pd.DataFrame(
             {
@@ -20,7 +20,9 @@ class TestSummereOverKjonn:
 
         assert out.equals(df)
 
-    def test_sums_over_kjonn_when_present(self, mocker):
+    from typing import Any
+
+    def test_sums_over_kjonn_when_present(self, mocker: Any) -> None:
         """Verify that when 'kjonn' exists, the function sums all statistikkvariable over kjonn."""
         df = pd.DataFrame(
             {
@@ -49,7 +51,7 @@ class TestSummereOverKjonn:
 
         mock_definer_klass.assert_called_once()
 
-    def test_sums_multiple_stat_columns(self, mocker):
+    def test_sums_multiple_stat_columns(self, mocker: Any) -> None:
         """Verify that if the helper returns multiple statistikkvariable, the function sums ALL of them."""
         df = pd.DataFrame(
             {

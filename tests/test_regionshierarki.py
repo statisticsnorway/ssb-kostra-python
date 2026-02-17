@@ -1,5 +1,7 @@
+
 import pandas as pd
 import pytest
+from typing import Any
 
 from ssb_kostra_python.regionshierarki import hierarki
 from ssb_kostra_python.regionshierarki import mapping_bydeler_oslo
@@ -15,34 +17,42 @@ from ssb_kostra_python.regionshierarki import mapping_fra_kommune_til_landet
 class FakeCodes_bb_eab:
     """Test double for the object returned by KlassClassification.get_codes(...)."""
 
-    def __init__(self, pivot_df: pd.DataFrame):
+    def __init__(self, pivot_df: pd.DataFrame) -> None:
         """Initialize fake with dataframe returned by pivot_level()."""
         self._pivot_df = pivot_df
 
-    def pivot_level(self):
+    def pivot_level(self) -> pd.DataFrame:
         return self._pivot_df
 
 
 class FakeKlassClassification_bb_eab:
     """Test double for KlassClassification used by mapping_bydeler_oslo."""
 
-    pivot_df = None  # set per test
+    pivot_df: pd.DataFrame | None = None  # set per test
 
-    def __init__(self, klass_id, language="nb", include_future=True):
+    def __init__(
+        self, klass_id: int, language: str = "nb", include_future: bool = True
+    ) -> None:
         """Initialize fake KlassClassification with expected constructor arguments."""
         self.klass_id = klass_id
         self.language = language
         self.include_future = include_future
 
-    def get_codes(self, *args, **kwargs):
+    from typing import Any
+
+    def get_codes(self, *args: Any, **kwargs: Any) -> FakeCodes_bb_eab:
         """Return fake codes object for testing."""
+        if self.__class__.pivot_df is None:
+            raise ValueError(
+                "pivot_df must be set to a DataFrame before calling get_codes."
+            )
         return FakeCodes_bb_eab(self.__class__.pivot_df)
 
 
 class TestMappingBydelerOslo:
     """Tests for mapping_bydeler_oslo(year)."""
 
-    def test_mapping_bydeler_oslo_filters_and_sets_to_EAB(self, mocker):
+    def test_mapping_bydeler_oslo_filters_and_sets_to_EAB(self, mocker: Any) -> None:
         """Checks if the function maps and filters correctly."""
         mocker.patch(
             "ssb_kostra_python.regionshierarki.KlassClassification",
@@ -71,7 +81,9 @@ class TestMappingBydelerOslo:
         assert sorted(out["from"].tolist()) == sorted(["030101", "030102", "030103"])
         assert (out["to"] == "EAB").all()
 
-    def test_mapping_bydeler_oslo_returns_empty_if_only_filtered_codes(self, mocker):
+    def test_mapping_bydeler_oslo_returns_empty_if_only_filtered_codes(
+        self, mocker: Any
+    ) -> None:
         """Verify behavior when all available codes are filtered out."""
         mocker.patch(
             "ssb_kostra_python.regionshierarki.KlassClassification",
@@ -98,8 +110,12 @@ class FakeKlassCorrespondence_kk_eak:
     """Fake KlassCorrespondence that provides a `.data` DataFrame."""
 
     def __init__(
-        self, source_classification_id, target_classification_id, from_date, to_date
-    ):
+        self,
+        source_classification_id: int,
+        target_classification_id: int,
+        from_date: str,
+        to_date: str,
+    ) -> None:
         """Initializes an instance of the class with specified parameters."""
         self.source_classification_id = source_classification_id
         self.target_classification_id = target_classification_id
@@ -127,33 +143,39 @@ class FakeKlassCorrespondence_kk_eak:
 class FakeCodes_kk_eak:
     """Fake codes object providing pivot_level(), used by FakeKlassClassification_kk_eak."""
 
-    def __init__(self, pivot_df: pd.DataFrame):
+    def __init__(self, pivot_df: pd.DataFrame) -> None:
         """Initializes an instance of the class with specified parameters."""
         self._pivot_df = pivot_df
 
-    def pivot_level(self):
+    def pivot_level(self) -> pd.DataFrame:
         return self._pivot_df
 
 
 class FakeKlassClassification_kk_eak:
     """Fake KlassClassification returning a FakeCodes object."""
 
-    pivot_df = None
+    pivot_df: pd.DataFrame | None = None
 
-    def __init__(self, klass_id, language="nb", include_future=True):
+    def __init__(
+        self, klass_id: int, language: str = "nb", include_future: bool = True, *args: Any, **kwargs: Any
+    ) -> None:
         """Initializes an instance of the class with specified parameters."""
         self.klass_id = klass_id
         self.language = language
         self.include_future = include_future
 
-    def get_codes(self, *args, **kwargs):
+    def get_codes(self, *args: Any, **kwargs: Any) -> FakeCodes_kk_eak:
+        if self.__class__.pivot_df is None:
+            raise ValueError(
+                "pivot_df must be set to a DataFrame before calling get_codes."
+            )
         return FakeCodes_kk_eak(self.__class__.pivot_df)
 
 
 class TestMappingFraKommuneTilLandet:
     """Tests for mapping_fra_kommune_til_landet(year)."""
 
-    def test_mapping_fra_kommune_til_landet_happy_path(self, mocker):
+    def test_mapping_fra_kommune_til_landet_happy_path(self, mocker: Any) -> None:
         """Validate the main invariants of mapping_fra_kommune_til_landet."""
         mocker.patch(
             "ssb_kostra_python.regionshierarki.KlassCorrespondence",
@@ -188,7 +210,7 @@ class TestMappingFraKommuneTilLandet:
         assert not ((out["from"] == "0301") & (out["to"] == "EAKUO")).any()
         assert ((out["from"] == "5001") & (out["to"] == "EAKUO")).any()
 
-    def test_from_is_zero_padded_when_short(self, mocker):
+    def test_from_is_zero_padded_when_short(self, mocker: Any) -> None:
         """Specifically validate the zero-padding behavior."""
         mocker.patch(
             "ssb_kostra_python.regionshierarki.KlassCorrespondence",
@@ -219,7 +241,7 @@ class TestMappingFraKommuneTilLandet:
 class FakeKlassCorrespondence_kk_fk:
     """Minimal fake for KlassCorrespondence(...).data used in mapping_fra_kommune_til_fylkeskommune."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes an instance of the class with specified parameters."""
         self.data = pd.DataFrame(
             {
@@ -232,7 +254,7 @@ class FakeKlassCorrespondence_kk_fk:
 class TestMappingFraKommuneTilFylkeskommune:
     """Tests for mapping_fra_kommune_til_fylkeskommune(year)."""
 
-    def test_mapping_filters_renames_and_pads(self, mocker):
+    def test_mapping_filters_renames_and_pads(self, mocker: Any) -> None:
         """Verify filtering and padding."""
         mocker.patch(
             "ssb_kostra_python.regionshierarki.KlassCorrespondence",
@@ -258,8 +280,12 @@ class FakeKlassCorrespondence_fk_eafk:
     """Fake KlassCorrespondence that returns deterministic mapping rows for fylkes codes."""
 
     def __init__(
-        self, source_classification_id, target_classification_id, from_date, to_date
-    ):
+        self,
+        source_classification_id: int,
+        target_classification_id: int,
+        from_date: str,
+        to_date: str,
+    ) -> None:
         """Initializes an instance of the class with specified parameters."""
         self.data = pd.DataFrame(
             {
@@ -270,31 +296,39 @@ class FakeKlassCorrespondence_fk_eafk:
 
 
 class FakeCodes_fk_eafk:
-    def __init__(self, pivot_df: pd.DataFrame):
+    def __init__(self, pivot_df: pd.DataFrame) -> None:
         """Initializes an instance of the class with specified parameters."""
         self._pivot_df = pivot_df
 
-    def pivot_level(self):
+    def pivot_level(self) -> pd.DataFrame:
         return self._pivot_df
 
 
 class FakeKlassClassification_fk_eafk:
     """Fake KlassClassification providing fylkes codes via pivot_level()."""
 
-    pivot_df = None
+    pivot_df: pd.DataFrame | None = None
 
-    def __init__(self, klass_id, language="nb", include_future=True):
+    def __init__(
+        self, klass_id: int, language: str = "nb", include_future: bool = True, *args: Any, **kwargs: Any
+    ) -> None:
         """Initializes an instance of the class with specified parameters."""
         self.klass_id = klass_id
 
-    def get_codes(self, *args, **kwargs):
+    def get_codes(self, *args: Any, **kwargs: Any) -> FakeCodes_fk_eafk:
+        if self.__class__.pivot_df is None:
+            raise ValueError(
+                "pivot_df must be set to a DataFrame before calling get_codes."
+            )
         return FakeCodes_fk_eafk(self.__class__.pivot_df)
 
 
 class TestMappingFraFylkeskommuneTilKostraregion:
     """Tests for mapping_fra_fylkeskommune_til_kostraregion(year)."""
 
-    def test_mapping_fra_fylkeskommune_til_kostraregion_happy_path(self, mocker):
+    def test_mapping_fra_fylkeskommune_til_kostraregion_happy_path(
+        self, mocker: Any
+    ) -> None:
         """Verify fylke to kostraregion mapping."""
         mocker.patch(
             "ssb_kostra_python.regionshierarki.KlassCorrespondence",
@@ -337,7 +371,7 @@ class TestMappingFraFylkeskommuneTilKostraregion:
 class TestHierarki:
     """Tests for the main `hierarki` function."""
 
-    def test_raises_if_more_than_one_periode(self):
+    def test_raises_if_more_than_one_periode(self) -> None:
         """Hierarki expects exactly one unique periode."""
         df = pd.DataFrame(
             {
@@ -349,13 +383,13 @@ class TestHierarki:
         with pytest.raises(KeyError, match="Mer enn 1 periode"):
             hierarki(df)
 
-    def test_raises_if_no_region_column(self):
+    def test_raises_if_no_region_column(self) -> None:
         """Hierarki expects exactly one valid region column to exist."""
         df = pd.DataFrame({"periode": ["2025"], "personer": [1]})
         with pytest.raises(ValueError, match="Fant ingen gyldig regionkolonne"):
             hierarki(df)
 
-    def test_raises_if_multiple_region_columns(self):
+    def test_raises_if_multiple_region_columns(self) -> None:
         """Hierarki expects exactly one region column."""
         df = pd.DataFrame(
             {
@@ -368,7 +402,7 @@ class TestHierarki:
         with pytest.raises(ValueError, match="Fant flere regionskolonner"):
             hierarki(df)
 
-    def test_raises_if_inconsistent_aggregeringstype(self):
+    def test_raises_if_inconsistent_aggregeringstype(self) -> None:
         """Verify aggregeringstype consistency."""
         df = pd.DataFrame(
             {
@@ -380,7 +414,7 @@ class TestHierarki:
         with pytest.raises(ValueError, match="Inkonsekvent valg"):
             hierarki(df, aggregeringstype="kommune_til_landet")
 
-    def test_kommune_til_landet_default_appends_aggregated_rows(self, mocker):
+    def test_kommune_til_landet_default_appends_aggregated_rows(self, mocker: Any) -> None:
         """Verify default kommune to landet aggregation."""
         df = pd.DataFrame(
             {
@@ -420,7 +454,9 @@ class TestHierarki:
         mock_map.assert_called_once()
         mock_definer.assert_called_once()
 
-    def test_kommune_til_fylkeskommune_filters_to_endswith_00_and_renames(self, mocker):
+    def test_kommune_til_fylkeskommune_filters_to_endswith_00_and_renames(
+        self, mocker: Any
+    ) -> None:
         """Verify aggregation and column renaming."""
         df = pd.DataFrame(
             {
@@ -453,7 +489,7 @@ class TestHierarki:
         mock_map.assert_called_once()
         mock_definer.assert_called_once()
 
-    def test_fylkeskommune_til_kostraregion(self, mocker):
+    def test_fylkeskommune_til_kostraregion(self, mocker: Any) -> None:
         """Verify fylkesregion to kostraregion aggregation."""
         df = pd.DataFrame(
             {
@@ -482,7 +518,7 @@ class TestHierarki:
         mock_map.assert_called_once()
         mock_definer.assert_called_once()
 
-    def test_bydeler_til_EAB(self, mocker):
+    def test_bydeler_til_EAB(self, mocker: Any) -> None:
         """Verify bydel aggregation into EAB."""
         df = pd.DataFrame(
             {

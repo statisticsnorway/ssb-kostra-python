@@ -1,4 +1,18 @@
-def _select_mapping(aggregeringstype, region_col, periode):
+from collections.abc import Callable
+from typing import Any
+
+import pandas as pd
+
+
+def _select_mapping(
+    aggregeringstype: str | None, region_col: str, periode: str | int
+) -> tuple[
+    pd.DataFrame,
+    str,
+    str,
+    Callable[[pd.DataFrame], pd.DataFrame] | None,
+    dict[str, str],
+]:
     valid_by_region = {
         "kommuneregion": {"kommune_til_landet", "kommune_til_fylkeskommune"},
         "fylkesregion": {"fylkeskommune_til_kostraregion"},
@@ -27,7 +41,7 @@ def _select_mapping(aggregeringstype, region_col, periode):
         )
     if aggregeringstype == "kommune_til_fylkeskommune":
 
-        def _post_filter_kommuner_til_fylke(df):
+        def _post_filter_kommuner_til_fylke(df: pd.DataFrame) -> pd.DataFrame:
             return df[df["kommuneregion"].str.endswith("00")]
 
         return (
@@ -54,15 +68,19 @@ def _select_mapping(aggregeringstype, region_col, periode):
     )
 
 
-def _validate_and_normalize_region_col(df):
+def _validate_and_normalize_region_col(df: pd.DataFrame) -> tuple[str, pd.DataFrame]:
     region_cols = [
         c for c in ["kommuneregion", "fylkesregion", "bydelsregion"] if c in df.columns
     ]
     if len(region_cols) != 1:
-            if len(region_cols) == 0:
-                raise ValueError("Fant ingen gyldig regionkolonne ('kommuneregion', 'fylkesregion', 'bydelsregion'). Datasettet ditt må inneholde minst én.")
-            else:
-                raise ValueError(f"Fant flere regionskolonner {region_cols}. Det skal være nøyaktig én.")
+        if len(region_cols) == 0:
+            raise ValueError(
+                "Fant ingen gyldig regionkolonne ('kommuneregion', 'fylkesregion', 'bydelsregion'). Datasettet ditt må inneholde minst én."
+            )
+        else:
+            raise ValueError(
+                f"Fant flere regionskolonner {region_cols}. Det skal være nøyaktig én."
+            )
     col = region_cols[0]
     if col == "kommuneregion":
         df[col] = df[col].astype(str).str.zfill(4)
@@ -73,7 +91,12 @@ def _validate_and_normalize_region_col(df):
     return col, df
 
 
-def _postprocess_combined(df, post_filter, rename_cols, klassifikasjonsvariable):
+def _postprocess_combined(
+    df: pd.DataFrame,
+    post_filter: Callable[[pd.DataFrame], pd.DataFrame] | None,
+    rename_cols: dict[str, str],
+    klassifikasjonsvariable: list[str],
+) -> pd.DataFrame:
     df[klassifikasjonsvariable] = df[klassifikasjonsvariable].astype(str)
     if post_filter:
         df = post_filter(df)
@@ -82,7 +105,12 @@ def _postprocess_combined(df, post_filter, rename_cols, klassifikasjonsvariable)
     return df.reset_index(drop=True)
 
 
-def _print_dtype_report(original, post_op, final, cols):
+def _print_dtype_report(
+    original: dict[str, Any],
+    post_op: dict[str, Any],
+    final: dict[str, Any],
+    cols: list[str],
+) -> None:
     print("\nOriginal dtypes:")
     for c, dt in original.items():
         print(f"  {c}: {dt}")
@@ -112,7 +140,7 @@ def _print_dtype_report(original, post_op, final, cols):
         print("\nNo dtype changes remain after restoration.")
 
 
-def _restore_dtype(result, orig):
+def _restore_dtype(result: Any, orig: Any) -> Any:
     if is_integer_dtype(orig):
         rounded = result.round(0)
         return (
