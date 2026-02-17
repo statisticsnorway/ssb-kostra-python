@@ -1,7 +1,7 @@
+from typing import Any
 
 import pandas as pd
 import pytest
-from typing import Any
 
 from ssb_kostra_python.regionshierarki import hierarki
 from ssb_kostra_python.regionshierarki import mapping_bydeler_oslo
@@ -157,7 +157,12 @@ class FakeKlassClassification_kk_eak:
     pivot_df: pd.DataFrame | None = None
 
     def __init__(
-        self, klass_id: int, language: str = "nb", include_future: bool = True, *args: Any, **kwargs: Any
+        self,
+        klass_id: int,
+        language: str = "nb",
+        include_future: bool = True,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """Initializes an instance of the class with specified parameters."""
         self.klass_id = klass_id
@@ -310,7 +315,12 @@ class FakeKlassClassification_fk_eafk:
     pivot_df: pd.DataFrame | None = None
 
     def __init__(
-        self, klass_id: int, language: str = "nb", include_future: bool = True, *args: Any, **kwargs: Any
+        self,
+        klass_id: int,
+        language: str = "nb",
+        include_future: bool = True,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """Initializes an instance of the class with specified parameters."""
         self.klass_id = klass_id
@@ -414,7 +424,9 @@ class TestHierarki:
         with pytest.raises(ValueError, match="Inkonsekvent valg"):
             hierarki(df, aggregeringstype="kommune_til_landet")
 
-    def test_kommune_til_landet_default_appends_aggregated_rows(self, mocker: Any) -> None:
+    def test_kommune_til_landet_default_appends_aggregated_rows(
+        self, mocker: Any
+    ) -> None:
         """Verify default kommune to landet aggregation."""
         df = pd.DataFrame(
             {

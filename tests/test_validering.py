@@ -1,4 +1,3 @@
-
 import logging
 from typing import Any
 
@@ -33,7 +32,9 @@ def df_base() -> pd.DataFrame:
 # tests/test_validation_helpers.py
 
 
-def test_missing_cols_logs_error_when_missing(caplog: Any, df_base: pd.DataFrame) -> None:
+def test_missing_cols_logs_error_when_missing(
+    caplog: Any, df_base: pd.DataFrame
+) -> None:
     caplog.clear()
     _missing_cols(df_base, ["periode", "kommuneregion", "MISSING_COL"])
 
@@ -41,7 +42,9 @@ def test_missing_cols_logs_error_when_missing(caplog: Any, df_base: pd.DataFrame
     assert "MISSING_COL" in caplog.text
 
 
-def test_missing_cols_logs_ok_when_all_present(caplog: Any, df_base: pd.DataFrame) -> None:
+def test_missing_cols_logs_ok_when_all_present(
+    caplog: Any, df_base: pd.DataFrame
+) -> None:
     caplog.clear()
     with caplog.at_level(logging.INFO):
         _missing_cols(df_base, ["periode", "kommuneregion"])
@@ -68,7 +71,9 @@ def test_missing_values_detects_native_na_and_tokens(caplog: Any, mocker: Any) -
     assert mock_show_toggle.call_count >= 1
 
 
-def test_missing_values_zero_codes_are_valid_when_configured(caplog: Any, mocker: Any) -> None:
+def test_missing_values_zero_codes_are_valid_when_configured(
+    caplog: Any, mocker: Any
+) -> None:
     df = pd.DataFrame(
         {
             "noekkelkode": ["000", "0", "00", "0000"],  # all should be valid if allowed
@@ -85,7 +90,9 @@ def test_missing_values_zero_codes_are_valid_when_configured(caplog: Any, mocker
     assert mock_show_toggle.call_count == 0
 
 
-def test_missing_values_zero_codes_are_missing_by_default(caplog: Any, mocker: Any) -> None:
+def test_missing_values_zero_codes_are_missing_by_default(
+    caplog: Any, mocker: Any
+) -> None:
     df = pd.DataFrame({"noekkelkode": ["000", "0", "00", "0000"]})
 
     mock_show_toggle = mocker.patch("ssb_kostra_python.validering.show_toggle")
@@ -98,7 +105,9 @@ def test_missing_values_zero_codes_are_missing_by_default(caplog: Any, mocker: A
 
 
 # Tests for _valid_periode_region
-def test_valid_periode_region_flags_bad_periode_format(caplog: Any, mocker: Any) -> None:
+def test_valid_periode_region_flags_bad_periode_format(
+    caplog: Any, mocker: Any
+) -> None:
     df = pd.DataFrame({"periode": ["2024", "202P", "  ", "000<NA>"]})
 
     mock_show_toggle = mocker.patch("ssb_kostra_python.validering.show_toggle")
@@ -111,7 +120,9 @@ def test_valid_periode_region_flags_bad_periode_format(caplog: Any, mocker: Any)
     assert mock_show_toggle.call_count >= 1
 
 
-def test_valid_periode_region_kommuneregion_requires_4_digits_if_numeric(caplog: Any, mocker: Any) -> None:
+def test_valid_periode_region_kommuneregion_requires_4_digits_if_numeric(
+    caplog: Any, mocker: Any
+) -> None:
     df = pd.DataFrame({"kommuneregion": ["0301", "301", "03A1", "  "]})
     mock_show_toggle = mocker.patch("ssb_kostra_python.validering.show_toggle")
 
@@ -126,7 +137,9 @@ def test_valid_periode_region_kommuneregion_requires_4_digits_if_numeric(caplog:
     # so the test mainly checks the numeric-length rule works.
 
 
-def test_valid_periode_region_bydelsregion_range_and_length(caplog: Any, mocker: Any) -> None:
+def test_valid_periode_region_bydelsregion_range_and_length(
+    caplog: Any, mocker: Any
+) -> None:
     df = pd.DataFrame(
         {"bydelsregion": ["030101", "039999", "030000", "03010", "ABCDEF"]}
     )

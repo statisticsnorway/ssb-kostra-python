@@ -22,6 +22,7 @@ def df() -> pd.DataFrame:
 
 from typing import Any
 
+
 def test_initial_get_results_returns_copy_and_empty_log(
     mocker: Any, df: pd.DataFrame
 ) -> None:
@@ -127,7 +128,9 @@ def test_get_results_reflects_mutations_to_captured_state(
     assert "__row_id__" not in df_edited.columns
 
 
-def test_row_id_is_added_internally_but_not_returned(mocker: Any, df: pd.DataFrame) -> None:
+def test_row_id_is_added_internally_but_not_returned(
+    mocker: Any, df: pd.DataFrame
+) -> None:
     """Verify that ROW_ID is used internally but not exposed in the exported DataFrame."""
     # Arrange
     mock_define = mocker.patch(

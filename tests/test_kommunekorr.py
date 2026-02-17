@@ -1,9 +1,9 @@
+from typing import Any
+
 import pandas as pd
 
 from ssb_kostra_python.kommunekorr import kostra_kommunekorr
 
-
-from typing import Any
 
 def test_kostra_kommunekorr(
     mock_klass_classification: Any, mock_klass_correspondence: Any
