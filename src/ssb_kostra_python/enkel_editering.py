@@ -148,7 +148,6 @@ def dataframe_cell_editor_mvp(
         hjelpefunksjoner.definere_klassifikasjonsvariable(df_working)
     )
 
-    from typing import Any
     change_log: list[dict[str, Any]] = []
     MAX_EDIT_ROWS = 250
 

@@ -1,3 +1,135 @@
+def _select_mapping(aggregeringstype, region_col, periode):
+    valid_by_region = {
+        "kommuneregion": {"kommune_til_landet", "kommune_til_fylkeskommune"},
+        "fylkesregion": {"fylkeskommune_til_kostraregion"},
+        "bydelsregion": {"bydeler_til_EAB"},
+    }
+    if aggregeringstype is None:
+        if region_col == "kommuneregion":
+            aggregeringstype = "kommune_til_landet"
+        elif region_col == "fylkesregion":
+            aggregeringstype = "fylkeskommune_til_kostraregion"
+        else:
+            aggregeringstype = "bydeler_til_EAB"
+    allowed = valid_by_region.get(region_col, set())
+    if aggregeringstype not in allowed:
+        raise ValueError(
+            f"Inkonsekvent valg: aggregeringstype='{aggregeringstype}' passer ikke med regionkolonne '{region_col}'. "
+            f"Tillatte valg for {region_col}: {sorted(allowed)}."
+        )
+    if aggregeringstype == "kommune_til_landet":
+        return (
+            mapping_fra_kommune_til_landet(periode),
+            "kommuneregion",
+            "kommuneregion",
+            None,
+            {},
+        )
+    if aggregeringstype == "kommune_til_fylkeskommune":
+
+        def _post_filter_kommuner_til_fylke(df):
+            return df[df["kommuneregion"].str.endswith("00")]
+
+        return (
+            mapping_fra_kommune_til_fylkeskommune(periode),
+            "kommuneregion",
+            "kommuneregion",
+            _post_filter_kommuner_til_fylke,
+            {"kommuneregion": "fylkesregion"},
+        )
+    if aggregeringstype == "fylkeskommune_til_kostraregion":
+        return (
+            mapping_fra_fylkeskommune_til_kostraregion(periode),
+            "fylkesregion",
+            "fylkesregion",
+            None,
+            {},
+        )
+    if aggregeringstype == "bydeler_til_EAB":
+        return mapping_bydeler_oslo(periode), "bydelsregion", "bydelsregion", None, {}
+    raise ValueError(
+        f"Ukjent aggregeringstype: {aggregeringstype}. "
+        "Gyldige: 'kommune_til_landet', 'kommune_til_fylkeskommune', "
+        "'fylkeskommune_til_kostraregion', 'bydeler_til_EAB'."
+    )
+
+
+def _validate_and_normalize_region_col(df):
+    region_cols = [
+        c for c in ["kommuneregion", "fylkesregion", "bydelsregion"] if c in df.columns
+    ]
+    if len(region_cols) != 1:
+            if len(region_cols) == 0:
+                raise ValueError("Fant ingen gyldig regionkolonne ('kommuneregion', 'fylkesregion', 'bydelsregion'). Datasettet ditt må inneholde minst én.")
+            else:
+                raise ValueError(f"Fant flere regionskolonner {region_cols}. Det skal være nøyaktig én.")
+    col = region_cols[0]
+    if col == "kommuneregion":
+        df[col] = df[col].astype(str).str.zfill(4)
+    elif col == "fylkesregion":
+        df[col] = df[col].astype(str).str.zfill(4)
+    else:
+        df[col] = df[col].astype(str).str.zfill(6)
+    return col, df
+
+
+def _postprocess_combined(df, post_filter, rename_cols, klassifikasjonsvariable):
+    df[klassifikasjonsvariable] = df[klassifikasjonsvariable].astype(str)
+    if post_filter:
+        df = post_filter(df)
+    if rename_cols:
+        df = df.rename(columns=rename_cols)
+    return df.reset_index(drop=True)
+
+
+def _print_dtype_report(original, post_op, final, cols):
+    print("\nOriginal dtypes:")
+    for c, dt in original.items():
+        print(f"  {c}: {dt}")
+    print("\nPost-op (pre-restore) dtypes:")
+    for c, dt in post_op.items():
+        print(f"  {c}: {dt}")
+    print("\nFinal dtypes (after restore):")
+    for c, dt in final.items():
+        print(f"  {c}: {dt}")
+    post_changes = {
+        c: (original[c], post_op[c]) for c in cols if original[c] != post_op[c]
+    }
+    final_changes = {
+        c: (original[c], final[c]) for c in cols if original[c] != final[c]
+    }
+    if post_changes:
+        print("\nDtype changes caused by the operation (original -> post-op):")
+        for c, (o, p) in post_changes.items():
+            print(f"  {c}: {o} -> {p}")
+    else:
+        print("\nNo dtype changes caused by the operation.")
+    if final_changes:
+        print("\nDtype changes remaining after restoration (original -> final):")
+        for c, (o, f) in final_changes.items():
+            print(f"  {c}: {o} -> {f}")
+    else:
+        print("\nNo dtype changes remain after restoration.")
+
+
+def _restore_dtype(result, orig):
+    if is_integer_dtype(orig):
+        rounded = result.round(0)
+        return (
+            rounded.astype(_nullable_int_for(orig))
+            if rounded.isna().any()
+            else rounded.astype(orig)
+        )
+    if is_float_dtype(orig):
+        return result.astype(orig)
+    if is_bool_dtype(orig):
+        try:
+            return (result != 0).astype("boolean")
+        except TypeError:
+            return (result != 0).astype(bool)
+    return result
+
+
 # ---
 # jupyter:
 #   jupytext:
@@ -64,14 +196,14 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     Her lages kun en mappingfil som viser hvordan kommunene inngår i fylker, Kostra-grupper og landet et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp kommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er en kommunefil.
     """
-    komm_fylk_korr_corr = KlassCorrespondence(
+    komm_fylk_korr_corr: KlassCorrespondence = KlassCorrespondence(
         source_classification_id="131",
         target_classification_id="104",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    komm_fylk_korr_df = komm_fylk_korr_corr.data
+    komm_fylk_korr_df: pd.DataFrame = komm_fylk_korr_corr.data
     komm_fylk_korr_df = komm_fylk_korr_df[
         ~komm_fylk_korr_df["sourceCode"].isin(["9999"])
     ]
@@ -86,30 +218,32 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     komm_fylk_korr_df["to"] = "EKA" + komm_fylk_korr_df["to"].str[:2]
     # display(komm_fylk_korr)
 
-    komm_KOSTRA_gr_corr = KlassCorrespondence(
+    komm_kostra_gr_corr: KlassCorrespondence = KlassCorrespondence(
         source_classification_id="131",
         target_classification_id="112",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    komm_KOSTRA_gr_df = komm_KOSTRA_gr_corr.data
-    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df[
-        ~komm_KOSTRA_gr_df["sourceCode"].isin(["9999"])
+    komm_kostra_gr_df: pd.DataFrame = komm_kostra_gr_corr.data
+    komm_kostra_gr_df = komm_kostra_gr_df[
+        ~komm_kostra_gr_df["sourceCode"].isin(["9999"])
     ]
-    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df.rename(
+    komm_kostra_gr_df = komm_kostra_gr_df.rename(
         columns={
             "sourceCode": "from",
             "targetCode": "to",
         }
     )
-    komm_KOSTRA_gr_df = komm_KOSTRA_gr_df[["from", "to"]]
-    # display(komm_KOSTRA_gr)
+    komm_kostra_gr_df = komm_kostra_gr_df[["from", "to"]]
+    # display(komm_kostra_gr)
 
-    nus = KlassClassification(131, language="nb", include_future=True)
-    nuskoder = nus.get_codes(f"{year}-01-01")
+    nus: KlassClassification = KlassClassification(
+        131, language="nb", include_future=True
+    )
+    nuskoder: Any = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
-    klass_kommuner_landet = nuskoder.pivot_level()
+    klass_kommuner_landet: pd.DataFrame = nuskoder.pivot_level()
     klass_kommuner_landet = klass_kommuner_landet[
         ~klass_kommuner_landet["code_1"].isin(["9999"])
     ]
@@ -122,7 +256,7 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     nus = KlassClassification(131, language="nb", include_future=True)
     nuskoder = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
-    klass_kommuner_u_oslo = nuskoder.pivot_level()
+    klass_kommuner_u_oslo: pd.DataFrame = nuskoder.pivot_level()
     klass_kommuner_u_oslo = klass_kommuner_u_oslo[
         ~klass_kommuner_u_oslo["code_1"].isin(["0301", "9999"])
     ]
@@ -132,10 +266,10 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     klass_kommuner_u_oslo["to"] = "EAKUO"
     # display(klass_kommuner_u_oslo)
 
-    mapping_kommuner = pd.concat(
+    mapping_kommuner: pd.DataFrame = pd.concat(
         [
             komm_fylk_korr_df,
-            komm_KOSTRA_gr_df,
+            komm_kostra_gr_df,
             klass_kommuner_landet,
             klass_kommuner_u_oslo,
         ],
@@ -154,14 +288,14 @@ def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     Her lages kun en mappingfil som viser hvordan kommunene inngår i de ulike fylkeskommunene et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp kommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er en kommunefil.
     """
-    komm_fylkeskommune_korr_corr = KlassCorrespondence(
+    komm_fylkeskommune_korr_corr: KlassCorrespondence = KlassCorrespondence(
         source_classification_id="131",
         target_classification_id="127",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    komm_fylkeskommune_korr_df = komm_fylkeskommune_korr_corr.data
+    komm_fylkeskommune_korr_df: pd.DataFrame = komm_fylkeskommune_korr_corr.data
     komm_fylkeskommune_korr_df = komm_fylkeskommune_korr_df[
         ~komm_fylkeskommune_korr_df["sourceCode"].isin(["9999"])
     ]
@@ -190,14 +324,14 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     Her lages kun en mappingfil som viser hvordan fylkeskommunene inngår i de ulike KOSTRA-fylkesgruppene et bestemt år.
     Dette er altså bare en hjelpefunksjon som inngår i annen funksjon, hierarkifunksjonen, som aggregerer opp fylkeskommunedata til de forskjellige regionsgrupperingene kun dersom inputfilen er       en fylkeskommunefil.
     """
-    fylkeskomm_kostraregion_corr = KlassCorrespondence(
+    fylkeskomm_kostraregion_corr: KlassCorrespondence = KlassCorrespondence(
         source_classification_id="127",
         target_classification_id="152",
         from_date=f"{year}-01-01",
         to_date=f"{year}-12-31",
     )
 
-    fylkeskomm_kostraregion_df = fylkeskomm_kostraregion_corr.data
+    fylkeskomm_kostraregion_df: pd.DataFrame = fylkeskomm_kostraregion_corr.data
 
     fylkeskomm_kostraregion_df = fylkeskomm_kostraregion_df.rename(
         columns={
@@ -208,10 +342,12 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
 
     fylkeskomm_kostraregion_df = fylkeskomm_kostraregion_df[["from", "to"]]
 
-    nus = KlassClassification(127, language="nb", include_future=True)
-    nuskoder = nus.get_codes(f"{year}-01-01")
+    nus: KlassClassification = KlassClassification(
+        127, language="nb", include_future=True
+    )
+    nuskoder: Any = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
-    klass_fylkeskommuner_landet = nuskoder.pivot_level()
+    klass_fylkeskommuner_landet: pd.DataFrame = nuskoder.pivot_level()
     klass_fylkeskommuner_landet = klass_fylkeskommuner_landet[
         ~klass_fylkeskommuner_landet["code_1"].isin(["9900"])
     ]
@@ -223,7 +359,7 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     nus = KlassClassification(127, language="nb", include_future=True)
     nuskoder = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
-    klass_fylkeskommuner_landet_u_oslo = nuskoder.pivot_level()
+    klass_fylkeskommuner_landet_u_oslo: pd.DataFrame = nuskoder.pivot_level()
     klass_fylkeskommuner_landet_u_oslo = klass_fylkeskommuner_landet_u_oslo[
         ~klass_fylkeskommuner_landet_u_oslo["code_1"].isin(["0300", "9900"])
     ]
@@ -232,7 +368,7 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     ].rename(columns={"code_1": "from"})
     klass_fylkeskommuner_landet_u_oslo["to"] = "EAFKUO"
 
-    fylkeskomm_kostraregion_korr = pd.concat(
+    fylkeskomm_kostraregion_korr: pd.DataFrame = pd.concat(
         [
             fylkeskomm_kostraregion_df,
             klass_fylkeskommuner_landet,
@@ -312,10 +448,7 @@ def hierarki(
     ------
     KeyError, ValueError
     """
-    # --- Defensive copy
     inputfil_copy = inputfil.copy()
-
-    # --- Periodekontroll
     if inputfil_copy["periode"].nunique() > 1:
         raise KeyError("Mer enn 1 periode i datasettet")
     inputfil_copy["periode"] = inputfil_copy["periode"].astype(str)
@@ -323,149 +456,25 @@ def hierarki(
     print("Periode:")
     print(periode)
 
-    # --- Finn regionkolonne (må være nøyaktig én)
-    region_cols_present = [
-        c
-        for c in ["kommuneregion", "fylkesregion", "bydelsregion"]
-        if c in inputfil_copy.columns
-    ]
-    if len(region_cols_present) == 0:
-        raise ValueError(
-            "Fant ingen gyldig regionkolonne ('kommuneregion', 'fylkesregion', 'bydelsregion'). Datasettet ditt må inneholde minst én."
-        )
-    if len(region_cols_present) > 1:
-        raise ValueError(
-            f"Fant flere regionskolonner {region_cols_present}. Det skal være nøyaktig én."
-        )
+    region_col, inputfil_copy = _validate_and_normalize_region_col(inputfil_copy)
 
-    region_col = region_cols_present[0]
-
-    # --- Normaliser regionkolonne (streng + riktig lengde)
-    if region_col == "kommuneregion":
-        inputfil_copy["kommuneregion"] = (
-            inputfil_copy["kommuneregion"].astype(str).str.zfill(4)
-        )
-    elif region_col == "fylkesregion":
-        inputfil_copy["fylkesregion"] = (
-            inputfil_copy["fylkesregion"].astype(str).str.zfill(4)
-        )
-    else:  # bydelsregion
-        inputfil_copy["bydelsregion"] = (
-            inputfil_copy["bydelsregion"].astype(str).str.zfill(6)
-        )
-
-    # --- Bestem (ev. verifiser) aggregeringstype
-    if aggregeringstype is None:
-        if region_col == "kommuneregion":
-            aggregeringstype = "kommune_til_landet"  # default, kan overstyres ved behov
-        elif region_col == "fylkesregion":
-            aggregeringstype = "fylkeskommune_til_kostraregion"
-        else:  # bydelsregion
-            aggregeringstype = "bydeler_til_EAB"
-    else:
-        # Konsistenssjekk mellom oppgitt aggregeringstype og regionkolonne
-        valid_by_region = {
-            "kommuneregion": {"kommune_til_landet", "kommune_til_fylkeskommune"},
-            "fylkesregion": {"fylkeskommune_til_kostraregion"},
-            "bydelsregion": {"bydeler_til_EAB"},
-        }
-        allowed = valid_by_region.get(region_col, set())
-        if aggregeringstype not in allowed:
-            raise ValueError(
-                f"Inkonsekvent valg: aggregeringstype='{aggregeringstype}' passer ikke med regionkolonne '{region_col}'. "
-                f"Tillatte valg for {region_col}: {sorted(allowed)}."
-            )
-
-    # --- Velg mapping, koblingskolonne og etterbehandling
-    if aggregeringstype == "kommune_til_landet":
-
-        mappingfil = mapping_fra_kommune_til_landet(periode)
-        join_col = "kommuneregion"
-        replace_col = "kommuneregion"
-        post_filter = None
-        rename_cols = {}
-
-    # elif aggregeringstype == "kommune_til_fylkeskommune":
-
-    #     mappingfil = mapping_fra_kommune_til_fylkeskommune(periode)
-    #     join_col = "kommuneregion"
-    #     replace_col = "kommuneregion"
-    #     # beholder filteret før evt. kolonnerename (bevarer din originale rekkefølge/semantikk)
-    #     post_filter = lambda df: df[df["kommuneregion"].str.endswith("00")]
-    #     rename_cols = {"kommuneregion": "fylkesregion"}
-
-    elif aggregeringstype == "kommune_til_fylkeskommune":
-
-        mappingfil = mapping_fra_kommune_til_fylkeskommune(periode)
-        join_col = "kommuneregion"
-        replace_col = "kommuneregion"
-
-        # beholder filteret før evt. kolonnerename (bevarer din originale rekkefølge/semantikk)
-        def _post_filter_kommuner_til_fylke(df: pd.DataFrame) -> pd.DataFrame:
-            return df[df["kommuneregion"].str.endswith("00")]
-
-        post_filter = _post_filter_kommuner_til_fylke
-        rename_cols = {"kommuneregion": "fylkesregion"}
-
-    elif aggregeringstype == "fylkeskommune_til_kostraregion":
-
-        mappingfil = mapping_fra_fylkeskommune_til_kostraregion(periode)
-        join_col = "fylkesregion"
-        replace_col = "fylkesregion"
-        post_filter = None
-        rename_cols = {}
-
-    elif aggregeringstype == "bydeler_til_EAB":
-
-        mappingfil = mapping_bydeler_oslo(periode)
-        join_col = "bydelsregion"
-        replace_col = "bydelsregion"
-        post_filter = None
-        rename_cols = {}
-
-    else:
-        raise ValueError(
-            f"Ukjent aggregeringstype: {aggregeringstype}. "
-            "Gyldige: 'kommune_til_landet', 'kommune_til_fylkeskommune', "
-            "'fylkeskommune_til_kostraregion', 'bydeler_til_EAB'."
-        )
-
-    # --- Slå sammen mot mapping
+    mappingfil, join_col, replace_col, post_filter, rename_cols = _select_mapping(
+        aggregeringstype, region_col, periode
+    )
     df_merged = inputfil_copy.merge(
         mappingfil, left_on=join_col, right_on="from", how="inner"
     )
-
-    # --- Hent klassifikasjons- og statistikkvariable (bruk kopi for å unngå sideeffekter)
-    # klassifikasjonsvariable, statistikkvariable = definere_klassifikasjonsvariable(inputfil_copy)
     klassifikasjonsvariable, statistikkvariable = (
         hjelpefunksjoner.definere_klassifikasjonsvariable(inputfil_copy)
     )
-
-    # --- Bytt ut regionverdi med aggregert nivå (to)
     df_merged[replace_col] = df_merged["to"]
-
-    # --- Aggreger
     df_agg = df_merged.groupby(klassifikasjonsvariable, as_index=False, observed=True)[
         statistikkvariable
     ].sum()
-
-    # --- Kombiner med original
     df_combined = pd.concat([inputfil_copy, df_agg], ignore_index=True)
-
-    # --- Datatyper for klassifikasjonsvariable
-    df_combined[klassifikasjonsvariable] = df_combined[klassifikasjonsvariable].astype(
-        str
+    return _postprocess_combined(
+        df_combined, post_filter, rename_cols, klassifikasjonsvariable
     )
-
-    # --- Filtrer (om definert) før ev. kolonnerename (matcher din opprinnelige flyt)
-    if post_filter:
-        df_combined = post_filter(df_combined)
-
-    # --- Kolonnerename (om definert)
-    if rename_cols:
-        df_combined = df_combined.rename(columns=rename_cols)
-
-    return df_combined.reset_index(drop=True)
 
 
 # %%
@@ -499,16 +508,16 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
 
     display(df_kommune)
     """
-    year = inputfil["periode"].unique()[0]
+    year: Any = inputfil["periode"].unique()[0]
     hjelpefunksjoner.konvertere_komma_til_punktdesimal(inputfil)
     hjelpefunksjoner.format_fil(inputfil)
-    mappingfil = mapping_fra_kommune_til_fylkeskommune(year)
+    mappingfil: pd.DataFrame = mapping_fra_kommune_til_fylkeskommune(year)
     mappingfil[["from", "to"]] = mappingfil[["to", "from"]]
     mappingfil = mappingfil.copy()
     mappingfil["from"] = mappingfil["from"].astype(str).str.zfill(4)
     mappingfil["to"] = mappingfil["to"].astype(str).str.zfill(4)
 
-    df_merged = mappingfil.merge(
+    df_merged: pd.DataFrame = mappingfil.merge(
         inputfil, left_on="from", right_on="fylkesregion", how="left"
     )
 
@@ -521,6 +530,8 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
         "Det skjer fordi datasettet gjøres om fra et fylkesregionsdatasett til et kommuneregionsdatasett."
     )
 
+    klassifikasjonsvariable: list[str]
+    statistikkvariable: list[str]
     klassifikasjonsvariable, statistikkvariable = (
         hjelpefunksjoner.definere_klassifikasjonsvariable(df_merged)
     )
@@ -535,30 +546,29 @@ def _nullable_int_for(dtype: Any) -> Any:
 
     Falls back to Int64 if the specific bit width is not recognized.
     """
-    name = str(dtype).lower()
-    # Signed integers
+    name: str = str(dtype).lower()
+    signed_map = {
+        "int64": pd.Int64Dtype(),
+        "int32": pd.Int32Dtype(),
+        "int16": pd.Int16Dtype(),
+        "int8": pd.Int8Dtype(),
+    }
+    unsigned_map = {
+        "uint64": pd.UInt64Dtype(),
+        "uint32": pd.UInt32Dtype(),
+        "uint16": pd.UInt16Dtype(),
+        "uint8": pd.UInt8Dtype(),
+    }
     if name.startswith("int"):
-        if "64" in name:
-            return pd.Int64Dtype()
-        if "32" in name:
-            return pd.Int32Dtype()
-        if "16" in name:
-            return pd.Int16Dtype()
-        if "8" in name:
-            return pd.Int8Dtype()
+        for key in signed_map:
+            if key in name:
+                return signed_map[key]
         return pd.Int64Dtype()
-    # Unsigned integers
     if name.startswith("uint"):
-        if "64" in name:
-            return pd.UInt64Dtype()
-        if "32" in name:
-            return pd.UInt32Dtype()
-        if "16" in name:
-            return pd.UInt16Dtype()
-        if "8" in name:
-            return pd.UInt8Dtype()
+        for key in unsigned_map:
+            if key in name:
+                return unsigned_map[key]
         return pd.UInt64Dtype()
-    # Fallback
     return pd.Int64Dtype()
 
 
@@ -633,96 +643,25 @@ def gjennomsnitt_aggregerte_regioner(
         Modified DataFrame, optionally along with a report of dtype changes.
     """
     df = df.copy()
-
     df["teller"] = 1
     df = hierarki(df)
 
-    # 1) Capture original dtypes
     original: dict[str, Any] = cast(dict[str, Any], df[cols].dtypes.to_dict())
-
-    # For reporting: capture post-op (pre-restore) dtypes
     post_op: dict[str, Any] = {}
 
-    if print_types:
-        print("")
-        print("Original dtypes:")
-        for c, dt in original.items():
-            print(f"  {c}: {dt}")
-
-    # 2) Perform operation (+ optional rounding), record post-op dtype,
-    #    then optionally restore to original dtype.
     for c in cols:
         result = df[c] / df[denom_col]
-
-        # Rounding
-        if decimals is None:
-            result = result.round(0)
-        else:
-            result = result.round(decimals)
-
-        # Record dtype immediately after the math (pre-restore)
+        result = result.round(0) if decimals is None else result.round(decimals)
         post_op[c] = result.dtype
-
         if restore_original_dtype:
-            orig = original[c]
-
-            if is_integer_dtype(orig):
-                # Ensure integers before casting back
-                rounded = result.round(0)
-                if rounded.isna().any():
-                    df[c] = rounded.astype(_nullable_int_for(orig))
-                else:
-                    df[c] = rounded.astype(orig)
-
-            elif is_float_dtype(orig):
-                df[c] = result.astype(orig)
-
-            elif is_bool_dtype(orig):
-                # Nonzero -> True, zero/NaN -> False/NA (nullable boolean if possible)
-                try:
-                    df[c] = (result != 0).astype("boolean")
-                except TypeError:
-                    df[c] = (result != 0).astype(bool)
-
-            else:
-                # object/category/etc.: keep numeric result unless you define a policy
-                df[c] = result
+            df[c] = _restore_dtype(result, original[c])
         else:
             df[c] = result
 
-    # 3) Final dtypes
     final: dict[str, Any] = cast(dict[str, Any], df[cols].dtypes.to_dict())
 
     if print_types:
-        print("\nPost-op (pre-restore) dtypes:")
-        for c, dt in post_op.items():
-            print(f"  {c}: {dt}")
-
-        print("\nFinal dtypes (after restore):")
-        for c, dt in final.items():
-            print(f"  {c}: {dt}")
-
-        # Differences
-        post_changes = {
-            c: (original[c], post_op[c]) for c in cols if original[c] != post_op[c]
-        }
-        final_changes = {
-            c: (original[c], final[c]) for c in cols if original[c] != final[c]
-        }
-
-        if post_changes:
-            print("\nDtype changes caused by the operation (original -> post-op):")
-            for c, (o, p) in post_changes.items():
-                print(f"  {c}: {o} -> {p}")
-        else:
-            print("\nNo dtype changes caused by the operation.")
-
-        if final_changes:
-            print("\nDtype changes remaining after restoration (original -> final):")
-            for c, (o, f) in final_changes.items():
-                print(f"  {c}: {o} -> {f}")
-        else:
-            print("\nNo dtype changes remain after restoration.")
+        _print_dtype_report(original, post_op, final, cols)
 
     df = df.drop(columns=["teller"])
     if return_report:
