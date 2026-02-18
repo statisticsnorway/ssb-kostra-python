@@ -414,63 +414,63 @@ def hierarki(
 ) -> pd.DataFrame:
     """Hierarkisk aggregering.
 
-    Utfører hierarkisk regionsaggregering av inputfilen brukeren angir. Det er forsøkt å gjøre funksjonen så lik hierarkifunksjonen i KOMPIS som mulig. Denne funksjonen dessverre krever litt
-    ekstra arbeid, men ikke mye.
+    Utfører hierarkisk regionsaggregering av inputfilen brukeren angir. Funksjonen fastslår
+    regionsnivået basert på kolonnetittelen for regionsvariabelen ("kommuneregion",
+    "fylkesregion" eller "bydelsregion").
 
-    Funksjonen fastslår regionsnivået i datasettet basert på kolonnetittelen for regionsvariabelen (som MÅ være "kommuneregion", "fylkesregion" eller "bydelsregion").
-    - Dersom regionsnivået er "kommuneregion" (regionsvariabelen må hete "kommuneregion"), vil funksjonen automatisk aggregere opp til "EKA", "EKG" og "EAK(UO)".
-        - Det anbefales ikke å aggregere opp fra "kommuneregion" til "fylkesregion", som angir fylkeskommuner (f.eks: 0300), og ikke fylker (f.eks: EKA03), men det går an.
-          Da må du angi det i funksjonen.
-    - Dersom regionsnivået er "fylkesregion" (regionsvariabelen må hete "fylkesregion"), vil funksjonen automatisk aggregere opp til "EAFKXX" og "EAFK(UO)".
-    - Dersom regionsnivået er "bydelsregion" (regionsvariabelen må hete "bydelsregion"), vil funksjonen automatisk aggregere opp til "EAB".
+    Regler:
 
-    Slik skriver du funksjonen:
-        - Vanligst: la funksjonen velge aggregeringstype automatisk:
-            df_agg = mapping_hierarki.hierarki(df)
+    - «kommuneregion» aggregeres automatisk til «EKA», «EKG» og «EAK(UO)».
+      Det anbefales normalt ikke å aggregere fra «kommuneregion» til «fylkesregion» (fylkeskommuner),
+      men det er mulig ved å overstyre parameteren.
 
-        - Sjelden override i kommunedata, som kommentert over er dette ikke anbefalt, men er nødvendig i noen tilfeller (kommune -> fylkeskommune):
-            df_agg = mapping_hierarki.hierarki(df, aggregeringstype="kommune_til_fylkeskommune")
+    - «fylkesregion» aggregeres automatisk til «EAFKXX» og «EAFK(UO)».
 
-    For at den hierarkiske aggregeringen skal skje på riktig måte, er det nødvendig å angi de klassifikasjonsvariablene som finnes i datasettet UTOVER periode- og regionsvariabelen. Som kommentert
-    over, blir periode- og regionsvariabelen automatisk identifisert, så lenge de er navngitt riktig.
-    Når du kjører funksjonen vil det automatisk dukke opp et tekstfelt der du må skrive inn disse ektra klassifikasjonsvariablene. Det er muligens irriterende å måtte føre inn de ekstra
-    klassifikasjonsvariablene hver gang du kjører funksjonen i en ferdiglaget og mer eller mindre fast notebook som skal behandle de samme datasettene gang etter gang, særlig hvis de ekstra
-    klassifikasjonsvariablene er de samme hver gang. Da kan du gjøre slik:
+    - «bydelsregion» aggregeres automatisk til «EAB».
 
-    from unittest.mock import patch
-    INPUT_PATCH_TARGET = "builtins.input"
+    Eksempler::
 
-    predefined_input = "alder"
+        # La funksjonen velge aggregeringstype automatisk
+        df_agg = mapping_hierarki.hierarki(df)
 
-    with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-        df_aggregert = mapping_hierarki.hierarki(df_ikke_aggregert)
+        # Overstyring i kommunedata (ikke anbefalt, men mulig)
+        df_agg = mapping_hierarki.hierarki(df, aggregeringstype="kommune_til_fylkeskommune")
 
-    display(df_aggregert)
+    For at aggregeringen skal bli korrekt, må du angi klassifikasjonsvariabler i datasettet
+    utover periode- og regionsvariabelen. Disse identifiseres automatisk hvis de er riktig navngitt.
+    I Jupyter vil du få et tekstfelt der du kan skrive inn klassifikasjonsvariablene.
 
-    I eksempelet over er "alder" den ene klassifikasjonsvariabelen som finnes i datasettet i tillegg til periode- og regionsvariabelen. Du forhåndsdefinerer inputen 'alder' og kjører funksjonen.
-    Funksjonen vil bruke den forhåndsdefinerte inputen til tekstpromtet, og du slipper å bli spurt.
+    Forhåndsdefinert input i notebook::
 
+        from unittest.mock import patch
+        INPUT_PATCH_TARGET = "builtins.input"
+        predefined_input = "alder"
+        with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
+            df_aggregert = mapping_hierarki.hierarki(df_ikke_aggregert)
+        display(df_aggregert)
 
-    Denne funksjonen fungerer IKKE til å aggregere regionsnavn til aggregerte regionsnavn. Du unngår rot i datasettet ditt hvis du aggregerer et datasett uten en kolonne for regionsnavnet.
-    Prøver du å aggregere et datasett som også inneholder regionsnavnene vil det likevel skje en aggregering, men regionsnavnene blir ikke aggregert riktig.
-    Det finnes en annen funksjon du kan bruke til å feste regionsnavn etter at hierarkioperasjonen er utført.
-    ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Merk:
+
+    - Denne funksjonen aggregerer ikke regionsnavn. Unngå derfor datasett med egen kolonne
+      for regionsnavn under aggregering. Fest eventuelle regionsnavn etterpå i en egen prosess.
+
     Parametre
     ---------
     inputfil : pandas.DataFrame
-        Må inneholde 'periode' og ikke flere enn én av regionskolonnene:
-        'kommuneregion' (4 sifre), 'fylkesregion' (4 sifre, slutter på '00') eller 'bydelsregion' (6 sifre).
+        Må inneholde «periode» og nøyaktig én av regionskolonnene:
+        «kommuneregion» (4 sifre), «fylkesregion» (4 sifre, slutter på «00») eller «bydelsregion» (6 sifre).
 
     aggregeringstype : str | None
-        Valgfritt. Dersom None, bestemmes automatisk av hvilken regionkolonne som finnes:
-            - kommuneregion -> "kommune_til_landet" (default; kan overstyres til "kommune_til_fylkeskommune")
-            - fylkesregion  -> "fylkeskommune_til_kostraregion"
-            - bydelsregion  -> "bydeler_til_EAB"
+        Valgfritt. Dersom ``None``, bestemmes automatisk av regionkolonnen:
+
+        - kommuneregion -> ``"kommune_til_landet"`` (kan overstyres til ``"kommune_til_fylkeskommune"``)
+        - fylkesregion  -> ``"fylkeskommune_til_kostraregion"``
+        - bydelsregion  -> ``"bydeler_til_EAB"``
 
     Returnerer
-    ---------
+    ----------
     pandas.DataFrame
-        Opprinnelige rader + aggregerte rader. Ev. kolonnenavnendring (kommuneregion -> fylkesregion) anvendes.
+        Opprinnelige rader + aggregerte rader. Eventuell kolonnenavnendring (``kommuneregion`` -> ``fylkesregion``) anvendes.
 
     Kaster
     ------
@@ -509,32 +509,25 @@ def hierarki(
 def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Legge fylkeskommunedata over på alle tilhørende kommuner.
 
-    Denne funksjonen brukes til å legge data som bare finnes på fylkes- eller fylkeskommunenivå over på enkeltkommunenivå. Dersom du har et fylkes(-kommune)datasett, kan dette
-    gjøres om til et kommunedatasett der verdiene for fylket/fylkeskommunen gjør seg gjeldende for hver kommune i fylket/fylkeskommunen.
+    Denne funksjonen legger data som kun finnes på fylkes- eller fylkeskommunenivå over på kommunenivå.
+    Eksempel: Hvis forventet levealder for kvinner er 85.3 år i Vestland fylkeskommune (4600) i 2024,
+    kan funksjonen legge 85.3 som forventet levealder for kvinner i alle kommuner i Vestland (46XX).
 
-    Det vil si at dersom forventet levealder for kvinner er
-    85.3 år i Vestland fylkeskommune (4600) i 2024, kan du bruke denne funksjonen til å legge 85.3 år som forventet levealder for kvinner i alle 46XX-kommuner som inngår i
-    Vestland fylke.
+    Også her må du angi klassifikasjonsvariabler utover periode- og regionsvariabelen.
 
-    Også i denne funksjonen er det nødvendig å føre inn klassifikasjonsvariable utover periode- og regionsvariabelen.
-    Du kan skrive inn funksjon så enkelt som under:
+    Enkel bruk::
 
-    df_kommune = mapping_hierarki.overfore_data_fra_fk_til_k(df_fylke)
-    display(df_kommune) <------ om du trenger å se datasettet etterpå
-
-    I tilfellet over har du ikke forhåndsdefinert de øvrige klassifikasjonsvariablene i datasettet, og det vil dukke opp et tekstfelt der du må føre den/dem inn.
-
-
-    Du kan også forhåndsdefinere de(n) øvrige klassifikasjonsvariablene. Da skriver du slik:
-
-    from unittest.mock import patch
-    INPUT_PATCH_TARGET = "builtins.input"
-
-    predefined_input = "ekstra_klassifikasjonsv_1, ekstra_klassifikasjonsv_2 "
-    with patch("builtins.input", return_value=predefined_input):
         df_kommune = mapping_hierarki.overfore_data_fra_fk_til_k(df_fylke)
+        display(df_kommune)  # valgfritt
 
-    display(df_kommune)
+    Forhåndsdefinerte klassifikasjonsvariabler::
+
+        from unittest.mock import patch
+        INPUT_PATCH_TARGET = "builtins.input"
+        predefined_input = "ekstra_klassifikasjonsv_1, ekstra_klassifikasjonsv_2"
+        with patch("builtins.input", return_value=predefined_input):
+            df_kommune = mapping_hierarki.overfore_data_fra_fk_til_k(df_fylke)
+        display(df_kommune)
     """
     year: Any = inputfil["periode"].unique()[0]
     hjelpefunksjoner.konvertere_komma_til_punktdesimal(inputfil)
@@ -609,66 +602,60 @@ def gjennomsnitt_aggregerte_regioner(
     print_types: bool = True,
     return_report: bool = False,
 ) -> pd.DataFrame | tuple[pd.DataFrame, dict[str, dict[str, Any]]]:
-    """Performs region aggregation and computes region averages.
+    """Aggregerer regioner og beregner gjennomsnitt.
 
-    Denne funksjonen tar et datasett på kommune-, fylkeskommune- eller bydelsnivå, og aggregerer det til regionsgrupperinger.
-    Den beregner så gjennomnittsverdier for de kolonnene brukeren velger ut. De øvrige kolonnene blir summert. Funksjonen kan brukes til å
-    beregne gjennomsnittet av summerbare variable (f.eks. folkemengde, antall_menn, antall_barn), men den passer IKKE til å beregne
-    gjennomsnittet av andeler (f.eks. andel_skilte). Om andelen er 0.51 i en stor kommune og 0.49 i en liten kommune, vil denne
-    funksjonen beregne gjennomsnittet til 0.50, og det blir ikke riktig. Funksjonen duger altså kun til å beregne gjennomsnittet av summerbare størrelser.
+    Funksjonen tar et datasett på kommune-, fylkeskommune- eller bydelsnivå og aggregerer det
+    til regionsgrupperinger. Deretter beregnes gjennomsnitt for angitte kolonner, mens øvrige
+    kolonner summeres. Merk at funksjonen ikke er egnet for andeler (f.eks. «andel_skilte»):
+    en enkel snittberegning kan bli misvisende.
 
-    For at funksjonen skal fungere, må du angi
-    1) klassifikasjonsvariablene i datasettet utenom periode- og regionsvariabelen. Periode og region vil alltid bli automatisk registrert som klassifikasjonsvariable.
-    og
-    2) kolonnene det skal utføres gjennomsnittsberegninger på.
+    Du må angi:
 
-    * Slik bruker du funksjonen dersom du ikke har forhåndsdefinert de øvrige klassifikasjonsvariablene. Du vil bli bedt om å angi disse i tekstfeltet som dukker opp underveis.
+    1) Klassifikasjonsvariablene i datasettet (utenom periode- og regionsvariabelen). Periode og region
+       blir alltid automatisk registrert som klassifikasjonsvariabler.
 
-    gjennomsnittskolonner = ['skilte_separerte']
+    2) Kolonnene det skal beregnes gjennomsnitt for.
 
-    df_gjennomsnitt = mapping_hierarki.gjennomsnitt_aggregerte_regioner(
-    utvalgte_nokkeltall_kommuner_2024,
-    cols=gjennomsnittskolonner,
-    denom_col="teller",
-    decimals=2,
-    restore_original_dtype=False,
-    print_types=True
-    )
+    Eksempel uten forhåndsdefinerte klassifikasjonsvariabler::
 
-    display(df_gjennomsnitt)
-
-    * Du KAN OGSÅ FORHÅNDSDEFINERE de øvrige klassifikasjonsvariablene for å slippe tekstpromptet. Da gjør du som under. Du lager et objekt som du for eksempel kan kalle predefined_input
-    og i denne skriver du inn variablene. Det skal være komma mellom hver av dem og anførselstegn på utsiden. Du kan også lage en predefined input uten noen ting i, som vist i
-    eksempelet. Da gir du beskjed om at det ikke finnes andre klassifikasjonsvariable utenom 'periode' og 'region' og også da slipper du også tekstpromptet.
-    Skriv slik:
-
-    predefined_input = ""
-    gjennomsnittskolonner = ['andel_skilte_separerte']
-
-    with patch("builtins.input", return_value=predefined_input):
-
-        df_gjennomsnitt = mapping_hierarki.gjennomsnitt_aggregerte_regioner( <------ df_gjennomsnitt er datasettet som blir spyttet ut.
-        utvalgte_nokkeltall_kommuner_2024, <------ datasettet som skal behandles.
-        cols=gjennomsnittskolonner, <------ kolonnene det skal beregnes gjennomsnitt på.
-        denom_col="teller",
-        decimals=2, <------ antall desimaler du ønsker på det beregnede gjennomsnittet.
-        restore_original_dtype=False, <------ skal formatet på de utregnede verdiene være det samme som formatet på verdien gjennomsnittet blir beregnet av?
-        print_types=True <------ skal du ha utskrift av formatet på variablene i datasettet etter at beregningen er utført?
+        gjennomsnittskolonner = ["skilte_separerte"]
+        df_gjennomsnitt = mapping_hierarki.gjennomsnitt_aggregerte_regioner(
+            utvalgte_nokkeltall_kommuner_2024,
+            cols=gjennomsnittskolonner,
+            denom_col="teller",
+            decimals=2,
+            restore_original_dtype=False,
+            print_types=True,
         )
+        display(df_gjennomsnitt)
 
-    display(df_gjennomsnitt)
+    Eksempel med forhåndsdefinerte klassifikasjonsvariabler::
+
+        from unittest.mock import patch
+        predefined_input = ""
+        gjennomsnittskolonner = ["andel_skilte_separerte"]
+        with patch("builtins.input", return_value=predefined_input):
+            df_gjennomsnitt = mapping_hierarki.gjennomsnitt_aggregerte_regioner(
+                utvalgte_nokkeltall_kommuner_2024,
+                cols=gjennomsnittskolonner,
+                denom_col="teller",
+                decimals=2,
+                restore_original_dtype=False,
+                print_types=True,
+            )
+        display(df_gjennomsnitt)
 
     Args:
-        df: Input DataFrame on which regional aggregation and average computation will be applied.
-        cols: List of columns to perform aggregation and calculations on.
-        denom_col: Column serving as the denominator for aggregation. Defaults to "teller".
-        decimals: Number of decimal points to round to. None rounds to the nearest integer.
-        restore_original_dtype: If True, restores the original dtype of the columns after computation.
-        print_types: If True, prints the dtypes at different stages for debugging purposes.
-        return_report: If True, returns a tuple containing the DataFrame and a report of dtype changes.
+        df: Input-dataframe for aggregering og gjennomsnittsberegning.
+        cols: Liste over kolonner som skal gjennomsnittsberegnes.
+        denom_col: Kolonne som fungerer som nevner ved aggregering. Standard er "teller".
+        decimals: Antall desimaler å runde til. ``None`` runder til nærmeste heltall.
+        restore_original_dtype: Hvis ``True``, gjenopprettes opprinnelig dtype etter beregning.
+        print_types: Hvis ``True``, skrives dtypene ut for debug.
+        return_report: Hvis ``True``, returneres også en rapport over dtype-endringer.
 
     Returns:
-        Modified DataFrame, optionally along with a report of dtype changes.
+        DataFrame, eventuelt sammen med en rapport over dtype-endringer.
     """
     df = df.copy()
     df["teller"] = 1
