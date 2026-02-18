@@ -24,7 +24,7 @@ def kostra_kommunekorr(year: str) -> pd.DataFrame:
           - 'landet_u_oslo': a static label "EAKUO Landet uten Oslo" (set to NaN for Oslo, municipality code "0301").
 
     Args:
-        year (str): The year (format "YYYY") for which data should be fetched.
+        year: The year (format "YYYY") for which data should be fetched.
 
     Returns:
         pd.DataFrame: A DataFrame with the following columns:
@@ -46,6 +46,7 @@ def kostra_kommunekorr(year: str) -> pd.DataFrame:
     Raises:
         ValueError: If the correspondence between municipality and KOSTRA group is not found (e.g., HTTP 404),
                     or if duplicates are detected for municipality numbers after merging the data.
+        HTTPError: If an unexpected HTTP error occurs during data retrieval.
 
     Example:
         >>> df = kostra_kommunekorr("2025")

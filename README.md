@@ -18,7 +18,6 @@
 [pypi status]: https://pypi.org/project/ssb-kostra-python/
 [documentation]: https://statisticsnorway.github.io/ssb-kostra-python
 [tests]: https://github.com/statisticsnorway/ssb-kostra-python/actions?workflow=Tests
-
 [sonarcov]: https://sonarcloud.io/summary/overall?id=statisticsnorway_ssb-kostra-python
 [sonarquality]: https://sonarcloud.io/summary/overall?id=statisticsnorway_ssb-kostra-python
 [pre-commit]: https://github.com/pre-commit/pre-commit
