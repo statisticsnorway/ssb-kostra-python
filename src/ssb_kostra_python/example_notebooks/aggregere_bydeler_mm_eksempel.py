@@ -19,31 +19,34 @@
 # ### Vi laster den inn med “from functions.funksjoner import regionshierarki”.
 
 # %%
-from klass import KlassClassification
-from klass import KlassCorrespondence
-import pandas as pd
-from pandas.api.types import is_integer_dtype, is_float_dtype, is_bool_dtype
-from fagfunksjoner import logger
-import re
-from IPython.display import display  # for nice tables in notebooks
-import ipywidgets as widgets
-import dapla as dp
-import sys
-import time
 from unittest.mock import patch
-INPUT_PATCH_TARGET = "builtins.input"
-from functions.funksjoner import summere_til_aldersgrupperinger
-from functions.funksjoner import hjelpefunksjoner
-from functions.funksjoner import avrunding
-from functions.funksjoner import enkel_editering
 
+import pandas as pd
+from IPython.display import display  # for nice tables in notebooks
+
+INPUT_PATCH_TARGET = "builtins.input"
+
+from ssb_kostra_python.avrunding import konverter_dtypes
+from ssb_kostra_python.avrunding import print_instruks_konverter_dtypes
+from ssb_kostra_python.summere_til_aldersgrupperinger import summere_til_aldersgrupperinger
+from ssb_kostra_python import enkel_editering
+from ssb_kostra_python import hjelpefunksjoner
+
+#from functions.funksjoner import avrunding
+#from functions.funksjoner import enkel_editering
+#from functions.funksjoner import hjelpefunksjoner
+#from functions.funksjoner import summere_til_aldersgrupperinger
 
 # %% [markdown]
 # ### Først henter vi ned en folketallsfil som fordeler Oslo-befolkningen på kjønn, bydel og alder.
 
 # %%
 # Henter ned fil
-folketall_bydeler = pd.read_csv("gs://ssb-off-fin-data-tilsky-prod/befolkning/Folketall 3sifra 2024 Bydeler.csv", delimiter=";", encoding="latin1")
+folketall_bydeler = pd.read_csv(
+    "gs://ssb-off-fin-data-tilsky-prod/befolkning/Folketall 3sifra 2024 Bydeler.csv",
+    delimiter=";",
+    encoding="latin1",
+)
 # Viser fil
 display(folketall_bydeler)
 
@@ -60,7 +63,11 @@ hierarki_path = "gs://ssb-off-fin-data-produkt-prod/befolkning/_config/mapping_a
 # #### df_sum_med_kjonn er datasettet som genereres etter at funksjonen er kjørt. Datasettet inneholder de aggregerte aldersgrupperingene.
 
 # %%
-rename_variabel, groupby_variable, df_sum_med_kjonn = summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(folketall_bydeler, hierarki_path)
+rename_variabel, groupby_variable, df_sum_med_kjonn = (
+    summere_til_aldersgrupperinger(
+        folketall_bydeler, hierarki_path
+    )
+)
 
 # %% [markdown]
 # ### Kjøre aldersaggregeringsfunksjon med forhåndsdefinerte klassifikasjonsvariable
@@ -71,7 +78,11 @@ rename_variabel, groupby_variable, df_sum_med_kjonn = summere_til_aldersgrupperi
 predefined_input = "kjonn, alder, to"
 
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-    rename_variabel, groupby_variable, df_sum_med_kjonn = summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(folketall_bydeler, hierarki_path)
+    rename_variabel, groupby_variable, df_sum_med_kjonn = (
+        summere_til_aldersgrupperinger(
+            folketall_bydeler, hierarki_path
+        )
+    )
 
 # %% [markdown]
 # ### Vi ser at "personer" er ført som desimaltall. Vi kan konvertere denne variabelen til heltall.
@@ -81,18 +92,26 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
 
 # %%
 # Skriver ut instruksen
-instruks = avrunding.print_instruks_konverter_dtypes()
+instruks = print_instruks_konverter_dtypes()
 
 # %%
 dtype_mapping = {
-        "klassifikasjonsvariabel":  ["periode", "bydelsregion", "kjonn", "alder",],
-        "heltall":                  ["personer",],
-        "desimaltall_1_des":        [],
-        "desimaltall_2_des":        [],
-        "stringvar":                [],
-        "bool_var":                 [],}
+    "klassifikasjonsvariabel": [
+        "periode",
+        "bydelsregion",
+        "kjonn",
+        "alder",
+    ],
+    "heltall": [
+        "personer",
+    ],
+    "desimaltall_1_des": [],
+    "desimaltall_2_des": [],
+    "stringvar": [],
+    "bool_var": [],
+}
 
-avrundet, avrundet_dtypes = avrunding.konverter_dtypes(df_sum_med_kjonn, dtype_mapping)
+avrundet, avrundet_dtypes = konverter_dtypes(df_sum_med_kjonn, dtype_mapping)
 
 # %%
 display(avrundet)
@@ -101,7 +120,9 @@ display(avrundet)
 predefined_input = "kjonn, alder"
 
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-    klassifikasjonsvariable, statistikkvariable = hjelpefunksjoner.definere_klassifikasjonsvariable(avrundet)
+    klassifikasjonsvariable, statistikkvariable = (
+        hjelpefunksjoner.definere_klassifikasjonsvariable(avrundet)
+    )
 
 
 display(klassifikasjonsvariable)
