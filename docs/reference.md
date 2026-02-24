@@ -16,11 +16,76 @@ ssb\_kostra\_python package
 ===========================
 
 
+ssb\_kostra\_python.avrunding module
+------------------------------------
+
+.. automodule:: ssb_kostra_python.avrunding
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+ssb\_kostra\_python.enkel\_editering module
+-------------------------------------------
+
+.. automodule:: ssb_kostra_python.enkel_editering
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+ssb\_kostra\_python.hjelpefunksjoner module
+-------------------------------------------
+
+.. automodule:: ssb_kostra_python.hjelpefunksjoner
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 ssb\_kostra\_python.kommunekorr module
 --------------------------------------
 
 .. automodule:: ssb_kostra_python.kommunekorr
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
+
+ssb\_kostra\_python.regionshierarki module
+------------------------------------------
+
+.. automodule:: ssb_kostra_python.regionshierarki
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+ssb\_kostra\_python.summere\_kjonn module
+-----------------------------------------
+
+.. automodule:: ssb_kostra_python.summere_kjonn
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+ssb\_kostra\_python.summere\_til\_aldersgrupperinger module
+-----------------------------------------------------------
+
+.. automodule:: ssb_kostra_python.summere_til_aldersgrupperinger
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+ssb\_kostra\_python.titler\_til\_klasskoder module
+--------------------------------------------------
+
+.. automodule:: ssb_kostra_python.titler_til_klasskoder
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+ssb\_kostra\_python.validering module
+-------------------------------------
+
+.. automodule:: ssb_kostra_python.validering
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 ```

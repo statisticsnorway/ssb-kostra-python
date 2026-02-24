@@ -40,100 +40,71 @@ def dataframe_cell_editor_mvp(
     to safely edit individual cell values in a pandas DataFrame, with strong
     guardrails to prevent accidental bulk edits and with full change logging.
 
-    The workflow is strictly:
-        1) Filter rows using exact-match filters on classification variables
-        2) Review the filtered slice (editing is only allowed if ≤ 250 rows)
-        3) Commit controlled cell edits with a required reason
-        4) Automatically preview the updated dataframe and change log
+    Workflow:
+
+    - Filter rows using exact-match filters on classification variables.
+    - Review the filtered slice (editing is only allowed if ≤ 250 rows).
+    - Commit controlled cell edits with a required reason.
+    - Preview the updated dataframe and change log.
 
     The original input dataframe is never modified. All edits are applied to an
     internal working copy.
 
-    ------------------------------------------------------------------------
-    Key features
-    ------------------------------------------------------------------------
-    - Designed for large dataframes (hundreds to millions of rows)
-    - Exact-match, AND-only filtering on classification variables
-    - Editing allowed only on small slices (≤ 250 rows)
-    - Supports editing numeric, boolean, and string statistical variables
-    - Safe type coercion based on column dtype (e.g. Int64, Float64, string)
-    - Optional setting of missing values (NaN / pd.NA where supported)
-    - Required reason for every committed edit
-    - Full, row-level change log created at edit time
+    Key features:
+
+    - Designed for large dataframes (hundreds to millions of rows).
+    - Exact-match, AND-only filtering on classification variables.
+    - Editing allowed only on small slices (≤ 250 rows).
+    - Supports editing numeric, boolean, and string statistical variables.
+    - Safe type coercion based on column dtype (e.g. Int64, Float64, string).
+    - Optional setting of missing values (NaN / ``pd.NA`` where supported).
+    - Required reason for every committed edit.
+    - Full, row-level change log created at edit time.
     - Automatic UI refresh after each commit:
-        * filtered slice preview
-        * edited dataframe preview
-        * change log
+        - filtered slice preview
+        - edited dataframe preview
+        - change log
 
     Args:
         df: The input dataframe to be edited. This dataframe is not modified.
-        preview_rows: Number of rows to display in the "Edited dataframe (preview)" panel.
-            This is a preview only; the full edited dataframe is still available
-            via the returned function.
-        log_rows: If None, display the full change log in the UI.
-            If an integer, display only the last `log_rows` entries in the UI.
+        preview_rows: Number of rows to display in the "Edited dataframe (preview)" panel. This is a preview only; the
+            full edited dataframe is still available via the returned function.
+        log_rows: If None, display the full change log in the UI. If an integer, display only the last ``log_rows`` entries in the UI.
 
-    ------------------------------------------------------------------------
-    User interface behavior
-    ------------------------------------------------------------------------
+    User interface behavior:
+
     - Filtering is performed using text inputs with exact string matching.
     - Filters are combined using logical AND.
-    - If the filter matches more than 250 rows, editing is blocked until the
-      filter is narrowed.
-    - Users may apply edits to:
-        * all matched rows, or
-        * a selected subset of rows within the filtered slice
+    - If the filter matches more than 250 rows, editing is blocked until the filter is narrowed.
+    - Users may apply edits to either all matched rows, or a selected subset within the filtered slice.
     - Each edit operation modifies exactly one column per commit.
     - After each commit:
-        * a confirmation message is shown
-        * the preview table updates automatically
-        * the edited dataframe preview refreshes
-        * the change log refreshes
-
-    ------------------------------------------------------------------------
+        - a confirmation message is shown
+        - the preview table updates automatically
+        - the edited dataframe preview refreshes
+        - the change log refreshes
 
     Returns:
-        get_results: A zero-argument function that returns the current edited dataframe
-            and the full change log.
+    - ``get_results``: A zero-argument function that returns the current edited dataframe and the full change log.
 
-            Calling:
+        Example::
+
+                get_results = enkel_editering.dataframe_cell_editor_mvp(df_to_be_edited)
                 df_edited, change_log_df = get_results()
+                display(df_edited)
+                display(change_log_df)
 
-            returns:
-                df_edited (pandas.DataFrame): The fully edited dataframe (original unchanged).
-                change_log_df (pandas.DataFrame): A dataframe containing one row per committed cell edit, including:
-                    - timestamp
-                    - user
-                    - row identifier
-                    - column edited
-                    - old value
-                    - new value
-                    - reason
-                    - classification variable snapshot
+        Where:
 
-    ------------------------------------------------------------------------
+        - ``df_edited`` (pandas.DataFrame): The fully edited dataframe (original unchanged).
+        - ``change_log_df`` (pandas.DataFrame): One row per committed cell edit, including timestamp, user,
+            row identifier, column edited, old value, new value, reason, and a snapshot of classification variables.
 
     Notes:
-    ------------------------------------------------------------------------
-    - This function is intended for interactive use in Jupyter environments.
-    - It relies on ipywidgets and a live kernel.
-    - It builds upon `definere_klassifikasjonsvariable()` to identify
-      classification vs statistical variables.
-    - Persistence (saving edited data or logs to disk) is intentionally
-      left out and can be added later if needed.
-
-
-    ------------------------------------------------------------------------
-    How to use
-    ------------------------------------------------------------------------
-    1. Open the interface with:
-        - get_results = enkel_editering.dataframe_cell_editor_mvp(df_to_be_edited)
-            - "df_to_be_edited" is the dataframe you want to edit
-    2. Follow the instructions in the interface.
-    3. Generate an edited dataframe (df_edited) and the log (change_log_df) for the changes you made.
-        - df_edited, change_log_df = get_results()
-        - display(df_edited)       <--- optional
-        - display(change_log_df)   <--- optional
+        - Intended for interactive use in Jupyter environments.
+    - Relies on ipywidgets and a live kernel.
+    - Builds upon ``definere_klassifikasjonsvariable()`` to identify classification vs statistical variables.
+    - Persistence (saving edited data or logs to disk) is intentionally left out and can be added later if needed.
     """
     # ------------------------------------------------------------------
     # Setup
@@ -148,7 +119,7 @@ def dataframe_cell_editor_mvp(
         hjelpefunksjoner.definere_klassifikasjonsvariable(df_working)
     )
 
-    change_log: list[dict] = []
+    change_log: list[dict[str, Any]] = []
     MAX_EDIT_ROWS = 250
 
     # ------------------------------------------------------------------
@@ -211,7 +182,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
-    def coerce_value_for_column(col_name: str, raw_text: str, set_missing: bool):
+    def coerce_value_for_column(col_name: str, raw_text: str, set_missing: bool) -> Any:
         """Convert widget text input into a value compatible with df_working[col_name].dtype."""
         dtype = df_working[col_name].dtype
         text = (raw_text or "").strip()
@@ -274,13 +245,13 @@ def dataframe_cell_editor_mvp(
 
         return text
 
-    def get_results():
+    def get_results() -> tuple[pd.DataFrame, pd.DataFrame]:
         """Return the full edited df and the full change log df."""
         df_final = df_working.drop(columns=[ROW_ID])
         log_df = pd.DataFrame(change_log)
         return df_final, log_df
 
-    def render_results():
+    def render_results() -> None:
         """Refresh the two live output panels."""
         df_final, log_df = get_results()
 
@@ -315,7 +286,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     current_slice = None
 
-    def apply_filter(_: Any, clear_commit_msg: bool = True):
+    def apply_filter(_: Any, clear_commit_msg: bool = True) -> None:
         nonlocal current_slice
         if clear_commit_msg:
             edit_status.value = ""
@@ -363,7 +334,7 @@ def dataframe_cell_editor_mvp(
     # ------------------------------------------------------------------
     # Commit logic
     # ------------------------------------------------------------------
-    def commit_edit(_: Any):
+    def commit_edit(_: Any) -> None:
         nonlocal df_working
 
         if current_slice is None or len(current_slice) == 0:
@@ -399,7 +370,7 @@ def dataframe_cell_editor_mvp(
             idx = df_working.index[df_working[ROW_ID] == rid][0]
             old_val = df_working.at[idx, col]
 
-            if (pd.isna(old_val) and pd.isna(new_val)) or (old_val == new_val):
+            if (pd.isna(old_val) and pd.isna(new_val)) or (old_val == new_val):  # type: ignore[unreachable]
                 continue
 
             df_working.at[idx, col] = new_val

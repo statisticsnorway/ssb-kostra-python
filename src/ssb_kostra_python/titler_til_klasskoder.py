@@ -13,51 +13,54 @@
 
 # %%
 
+from typing import Literal
+
 import pandas as pd
 from klass import KlassClassification
 
 # %%
-"""
-Med denne funksjonen kan du feste navn/tittel til klassifikasjonsvariablenes koder hvis de svarer til en kodeliste i KLASS.
+"""Fest navn/tittel til klassifikasjonskoder basert på KLASS.
 
-Du velger ut de klassifikasjonsvariablene i datasettet ditt som skal få kodeNAVN fra KLASS koplet på kodeVERDIEN i datasettet.
-Deretter kjører du funksjonen på datasettet som skal behandles.
+Denne modulen lar deg knytte lesbare navn (tittel) til koder i klassifikasjonsvariabler
+ved hjelp av KLASS. Du velger hvilke klassifikasjonsvariabler som skal få navn
+koplet til verdiene i datasettet, og kjører funksjonen på det aktuelle datasettet.
 
-Slik skriver du koden:
+Oppsett av mapping::
 
-Du starter med mappingen, altså angir du variabelen i datasettet ditt og klass_id i KLASS. Du kan nøye deg med ett par, eller du kan ha flere. Men merk deg formatet.
-Her er det snakk om en liste som inneholder dictionary (én eller flere).
+    mapping_klassifikasjonsvariable = [
+        {"code_col": "kommuneregion", "klass_id": 231},
+        {"code_col": "funksjon",       "klass_id": 277},
+        {"code_col": "avtaleform",     "klass_id": 252},
+    ]
 
-mapping_klassifikasjonsvariable = [
-    {"code_col": "kommuneregion", "klass_id": 231}, <--- regionsvariabelen i datasettet heter "kommuneregion" og den er koplet til klass-id '231' (https://www.ssb.no/klass/klassifikasjoner/231)
-    {"code_col": "funksjon",  "klass_id": 277},     <--- en annen klassifikasjonsvariabel i datasettet er "funksjon" og den er koplet til klass-id '277' (https://www.ssb.no/klass/klassifikasjoner/277)
-    {"code_col": "avtaleform", "klass_id": 252},    <--- regionsvariabelen i datasettet heter "avtaleform" og den er koplet til klass-id '252' (https://www.ssb.no/klass/klassifikasjoner/252)
-]
+Kjøring::
 
-Under kjører du funksjonen med de instillingene du bestemte i "mapping_klassifikasjonsvariable". Hovedfunksjonen som skal kjøres heter "kodelister_navn".
-De øvrige funksjonene du ser under brukes i hovedfunksjonen.
+    df_aug, diag = mapping_hierarki.kodelister_navn(
+        df_befolkningsdata,
+        mappings=mapping_klassifikasjonsvariable,
+        language="nb",
+        include_future=True,
+        verbose=True,
+    )
+    display(df_aug)
 
-df_aug, diag = mapping_hierarki.kodelister_navn(    <--- funksjonen spytter ut to resultater: "df_aug" er det nye datasettet med navn på klassifikasjonsvariablene. "diag" (diagnose) gir beskjed om datasettet inneholder verdier for klassifikasjonsvariabelen som ikke finnes i kodelisten.
-    df_befolkningsdata,                             <--- dette er datasettet som skal behandles, i dette eksempelet heter det "df_befolkningsdata".
-    mappings=mapping_klassifikasjonsvariable,       <--- dette er mappingen du definerte i forkant. Husk at det er nødvendig å lage mappingen så funksjonen vet hvor den skal lete.
-    language="nb",
-    include_future=True,
-    verbose=True,   # prints a short line per mapping with invalid-code count
-)
+Merk:
 
-display(df_aug)                                                         <--- med denne koden kan du se det endelige resultatet.
+- Dersom du kjører regionshierarki-aggregering på et datasett etter at du har festet
+  navn på klassifikasjonsvariablene, kan det bli inkonsistens. Aggregeringsfunksjonen
+  aggregerer koder, men ikke navnene.
 
-OBS!!
-Om du kjører regionshierarkiaggregering (du finner denne funksjonen lenger opp) på et datasett etter at du har festet navn på klassifikasjonsvariablene dine, vil det gå i ball.
-Det er fordi aggregeringsfunksjonen aggregerer regionskodene med en hardkodet mapping, men ikke navnene.
-
-Så om du har gjort dette før en nødvendig aggregering, så bør du fjerne disse kolonnene i forkant, for så å utføre aggregeringen. Etter aggregeringen kan legge dem til igjen.
-
+- Fjern i så fall navnekolonnene før aggregering. Etter aggregering kan du legge dem til igjen.
 """
 # ---------- internals ----------
 
 
-def _pick_level_columns(pivot_df: pd.DataFrame, level: int | None):
+from typing import Any
+
+
+def _pick_level_columns(
+    pivot_df: pd.DataFrame, level: int | None
+) -> tuple[int, str, str]:
     code_cols = [c for c in pivot_df.columns if str(c).startswith("code_")]
     name_cols = [c for c in pivot_df.columns if str(c).startswith("name_")]
     if not code_cols or not name_cols:
@@ -88,7 +91,7 @@ def _fetch_mapping_for_year(
     klass_id: int,
     year: int,
     *,
-    language: str = "nb",
+    language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
     select_level: int | None = None,
 ) -> tuple[pd.DataFrame, int]:
@@ -125,10 +128,10 @@ def _attach_one_mapping(
     code_col: str,
     klass_id: int,
     name_col_out: str | None = None,
-    language: str = "nb",
+    language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
     select_level: int | None = None,
-) -> tuple[pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Attach names for one (code_col, klass_id) pair; returns new df and diagnostics."""
     if code_col not in df_in.columns:
         raise ValueError(f"Column '{code_col}' not found in DataFrame.")
@@ -149,8 +152,13 @@ def _attach_one_mapping(
         name_col_out = f"{code_col}_navn"
 
     # Insert the name column immediately after the code column
-    insert_at = merged.columns.get_loc(code_col) + 1
-    merged.insert(insert_at, name_col_out, merged["_map_name"])
+    insert_at_raw = merged.columns.get_loc(code_col)
+    if not isinstance(insert_at_raw, int):
+        raise TypeError(
+            f"Expected int from get_loc, got {type(insert_at_raw)}: {insert_at_raw}"
+        )
+    insert_at = insert_at_raw
+    merged.insert(insert_at + 1, name_col_out, merged["_map_name"])
 
     # Drop helper columns
     merged = merged.drop(columns=["_map_code", "_map_name"])
@@ -178,34 +186,33 @@ def _attach_one_mapping(
 # def attach_multiple_classification_names(
 def kodelister_navn(
     df: pd.DataFrame,
-    mappings: list[dict],
+    mappings: list[dict[str, Any]],
     *,
-    language: str = "nb",
+    language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
     verbose: bool = True,
-) -> tuple[pd.DataFrame, dict]:
-    """Apply multiple (code_col, klass_id) mappings to a DF for the same year from df['periode'].
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Apply multiple (code_col, klass_id) mappings for the year in ``df['periode']``.
 
     Args:
-        df: Must contain 'periode' with exactly one unique year.
-        mappings: List of dictionaries. Each dict:
+        df: Must contain ``'periode'`` with exactly one unique year.
+        mappings: List of dictionaries. Each dict has the following keys::
             {
-                "code_col": "kommunenr",     # required
-                "klass_id": 131,              # required
-                "name_col_out": "kommunenr_navn",   # optional; default <code_col>_navn
-                "select_level": 1,            # optional
+                "code_col": "kommunenr",          # required
+                "klass_id": 131,                    # required
+                "name_col_out": "kommunenr_navn", # optional; default <code_col>_navn
+                "select_level": 1,                  # optional
             }
-        language: Language code passed to KLASS.
-        include_future: Whether to include future codes in KLASS.
-        verbose: Whether to print diagnostic messages.
+        language: Language code passed to KLASS. {"nb", "nn", "en"}, default "nb".
+        include_future: Whether to include future codes in KLASS. default True
+        verbose: Whether to print diagnostic messages. default True
 
     Returns:
-        tuple: A tuple containing:
-            - df_out (pd.DataFrame): Original DF with each name column inserted right after its code column.
-            - diag (dict): Per-pair diagnostics keyed by code_col (or code_col|klass_id if duplicates).
+        A tuple containing: ``df_out``: Original DF with each name column inserted right after its code column.
+            ``diag``: Per-pair diagnostics keyed by ``code_col`` (or ``code_col|klass_id`` if duplicates).
 
     Raises:
-        ValueError: If 'periode' is missing or contains multiple unique years.
+        ValueError: If ``'periode'`` is missing or contains multiple unique years.
     """
     # Validate 'periode' once
     if "periode" not in df.columns:
@@ -218,7 +225,7 @@ def kodelister_navn(
     year = int(unique_years[0])
 
     out = df.copy()
-    diagnostics: dict = {}
+    diagnostics: dict[str, Any] = {}
 
     for item in mappings:
         code_col = item["code_col"]

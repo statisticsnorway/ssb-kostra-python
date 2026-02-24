@@ -25,56 +25,57 @@ def summere_til_aldersgrupperinger(
 ) -> tuple[list[str], list[str], pd.DataFrame]:
     """Aggregerer individbaserte aldersverdier til forhåndsdefinerte aldersgrupper.
 
-    Dette ved hjelp av KOSTRA-aldersgrupperingshierarkiet, og slår de aggregerte verdiene sammen med
-    originaldatasettet.
+    Dette gjøres ved hjelp av KOSTRA-aldersgrupperingshierarkiet, og de aggregerte verdiene
+    slås sammen med originaldatasettet.
 
     Funksjonen:
-    - Leser inn et aldershierarki fra fil (parquet)
-    - Tilpasser datatyper og formatering for korrekt kobling
-    - Mapper individuelle aldersverdier til aldersgrupper ("from" → "to")
-    - Summerer statistikkvariabler (f.eks. antall personer) over aldersgrupper
-    - Bevarer øvrige klassifikasjonsvariabler (f.eks. periode, kjønn, region)
-    - Returnerer et datasett som inneholder både originale aldre og aggregerte
-      aldersgrupper
+
+    - Leser inn et aldershierarki fra fil (parquet).
+    - Tilpasser datatyper og formatering for korrekt kobling.
+    - Mapper individuelle aldersverdier til aldersgrupper ("from" → "to").
+    - Summerer statistikkvariabler (f.eks. antall personer) over aldersgrupper.
+    - Bevarer øvrige klassifikasjonsvariabler (f.eks. periode, kjønn, region).
+    - Returnerer et datasett som inneholder både originale aldre og aggregerte aldersgrupper.
 
     Parametere
     ----------
     inputfil : pd.DataFrame
         Inndatafil med individbaserte eller finmaskede aldersverdier.
         Forutsetter minst følgende kolonner:
-        - 'periode' (år)
-        - 'alder' (3-sifret alderskode)
-        - én eller flere statistikkvariabler (f.eks. 'personer')
+
+        - ``periode`` (år)
+    - ``alder`` (3-sifret alderskode)
+        - én eller flere statistikkvariabler (f.eks. ``personer``)
 
     hierarki_path : str
-        Filsti til parquet-fil som inneholder aldershierarki.
+    Filsti til parquet-fil som inneholder aldershierarki.
         Forutsetter følgende kolonner:
-        - 'periode' : år
-        - 'from'    : alder (finmaskert nivå)
-        - 'to'      : aldersgruppe
+
+        - ``periode`` : år
+        - ``from``    : alder (finmaskert nivå)
+        - ``to``      : aldersgruppe
 
     Returverdier
     ------------
     rename_variabel : list[str]
-        Liste med variabler som erstattes i aggregeringen
-        (for tiden ['alder']).
+        Liste med variabler som erstattes i aggregeringen (for tiden ``['alder']``).
 
     groupby_variable : list[str]
-        Klassifikasjonsvariabler som brukes i gruppering ved aggregering
-        (alle klassifikasjonsvariabler unntatt 'alder').
+        Klassifikasjonsvariabler som brukes i gruppering ved aggregering (alle klassifikasjonsvariabler unntatt ``alder``).
 
     df_combined : pd.DataFrame
         Datasett som inneholder både:
+
         - opprinnelige aldersnivåer
         - aggregerte aldersgrupper
-        med identiske klassifikasjons- og statistikkvariabler.
+
+    med identiske klassifikasjons- og statistikkvariabler.
 
     Merknader
     ---------
-    - Kun perioder som finnes i `inputfil` blir brukt fra hierarkifilen.
+    - Kun perioder som finnes i ``inputfil`` blir brukt fra hierarkifilen.
     - Aldershierarkiet forventes å være entydig per periode og alder.
-    - Funksjonen forutsetter at hjelpefunksjoner håndterer korrekt
-      identifikasjon av klassifikasjons- og statistikkvariabler.
+    - Funksjonen forutsetter at hjelpefunksjoner håndterer korrekt identifikasjon av klassifikasjons- og statistikkvariabler.
     """
     aldershierarki = pd.read_parquet(hierarki_path)
     inputfil_copy = inputfil.copy()

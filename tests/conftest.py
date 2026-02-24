@@ -1,9 +1,11 @@
+from typing import Any
+
 import pandas as pd
 import pytest
 
 
 @pytest.fixture
-def mock_klass_classification(mocker):
+def mock_klass_classification(mocker: Any) -> Any:
     mock = mocker.patch("ssb_kostra_python.kommunekorr.KlassClassification")
     instance = mock.return_value
     instance.get_codes.return_value.data = pd.DataFrame(
@@ -20,10 +22,13 @@ def mock_klass_classification(mocker):
 
 
 @pytest.fixture
-def mock_klass_correspondence(mocker):
+def mock_klass_correspondence(mocker: Any) -> Any:
     def mock_side_effect(
-        source_classification_id, target_classification_id, from_date, to_date
-    ):
+        source_classification_id: Any,
+        target_classification_id: Any,
+        from_date: Any,
+        to_date: Any,
+    ) -> Any:
         mock_instance = mocker.Mock()
         if target_classification_id == "112":
             mock_instance.data = pd.DataFrame(

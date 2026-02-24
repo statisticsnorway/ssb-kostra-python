@@ -63,21 +63,26 @@ def print_instruks_konverter_dtypes() -> str:
 def konverter_dtypes(
     df: pd.DataFrame, dtype_mapping: dict[str, list[str]]
 ) -> tuple[pd.DataFrame, pd.Series]:
-    """ℹ️Bruk malen under for dtype_mapping. Du må angi denne mappingen i forkant for at funksjonen skal kunne konvertere variablene slik du ønsker.
+    """Bruk malen under for ``dtype_mapping``.
 
-    dtype_mapping = {
-        "klassifikasjonsvariabel":  ["var1", "var2"]         ℹ️Legg inn variablene du vil klassifikasjonsverdier
-        "heltall":                  ["var3", "var4"],        ℹ️Legg inn variablene du vil runde av til heltall (kommersiell avrunding)
-        "desimaltall_1_des":        ["var5", "var6"],        ℹ️Legg inn variablene du vil runde til 1 desimal
-        "desimaltall_2_des":        ["var7", "var8"],        ℹ️Legg inn variablene du vil runde til 2 desimaler
-        "stringvar":                ["var9", "var10"],       ℹ️Legg inn variablene du vil konvertere til tekst
-        "bool_var":                 ["var11", "var12"],      ℹ️Legg inn variablene du vil konvertere til boolske verdier
-    }
+    Du må angi denne mappingen i forkant for at funksjonen skal kunne konvertere variablene slik du ønsker.
 
-    NB:
-    ℹ️ Variabler som ikke legges inn her, blir IKKE endret.
-    ℹ️ Hvis du angir en variabel som ikke finnes i dataframen, får du en advarsel.
-    ℹ️ Du kan la lister stå tomme hvis ingen variabler skal konverteres i en gitt gruppe.
+    Eksempel::
+
+        dtype_mapping = {
+            "klassifikasjonsvariabel": ["var1", "var2"],  # Legg inn variablene du vil klassifikasjonsverdier
+            "heltall": ["var3", "var4"],  # Legg inn variablene du vil runde av til heltall (kommersiell avrunding)
+            "desimaltall_1_des": ["var5", "var6"],  # Legg inn variablene du vil runde til 1 desimal
+            "desimaltall_2_des": ["var7", "var8"],  # Legg inn variablene du vil runde til 2 desimaler
+            "stringvar": ["var9", "var10"],  # Legg inn variablene du vil konvertere til tekst
+            "bool_var": ["var11", "var12"],  # Legg inn variablene du vil konvertere til boolske verdier
+        }
+
+    Merknader:
+
+    - Variabler som ikke legges inn her, blir ikke endret.
+    - Hvis du angir en variabel som ikke finnes i dataframen, får du en advarsel.
+    - Du kan la lister stå tomme hvis ingen variabler skal konverteres i en gitt gruppe.
     """
     df = df.copy()
     warnings = []

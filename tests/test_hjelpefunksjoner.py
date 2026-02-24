@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,7 +12,7 @@ from ssb_kostra_python.hjelpefunksjoner import konvertere_komma_til_punktdesimal
 class TestFormatFil:
     """Tests for `format_fil(df)`."""
 
-    def test_formats_periode_and_alder_fixed_width(self):
+    def test_formats_periode_and_alder_fixed_width(self) -> None:
         """Checking correct conversions."""
         df = pd.DataFrame(
             {
@@ -30,7 +32,7 @@ class TestFormatFil:
         assert pd.api.types.is_string_dtype(out["periode"])
         assert pd.api.types.is_string_dtype(out["alder"])
 
-    def test_kommuneregion_pads_only_digits_and_only_when_too_short(self):
+    def test_kommuneregion_pads_only_digits_and_only_when_too_short(self) -> None:
         """Verify the rules for kommuneregion formatting."""
         df = pd.DataFrame(
             {
@@ -50,7 +52,7 @@ class TestFormatFil:
         assert out["kommuneregion"].tolist() == ["0301", "0301", "12A", "12345", pd.NA]
         assert pd.api.types.is_string_dtype(out["kommuneregion"])
 
-    def test_fylkesregion_pads_only_digits_and_only_when_too_short(self):
+    def test_fylkesregion_pads_only_digits_and_only_when_too_short(self) -> None:
         """Verify the fylkesregion padding rule."""
         df = pd.DataFrame(
             {
@@ -62,7 +64,7 @@ class TestFormatFil:
 
         assert out["fylkesregion"].tolist() == ["0003", "0003", "0301", "AB", ""]
 
-    def test_bydelsregion_pads_only_digits_and_only_when_too_short(self):
+    def test_bydelsregion_pads_only_digits_and_only_when_too_short(self) -> None:
         """Verify the bydelsregion padding rule."""
         df = pd.DataFrame(
             {
@@ -74,7 +76,7 @@ class TestFormatFil:
 
         assert out["bydelsregion"].tolist() == ["000301", "030101", "12A", "1234567"]
 
-    def test_raises_if_no_valid_region_column_present(self):
+    def test_raises_if_no_valid_region_column_present(self) -> None:
         """Checking if at least one valid region column exists."""
         df = pd.DataFrame({"periode": [1, 2], "alder": [10, 20]})
 
@@ -85,7 +87,7 @@ class TestFormatFil:
 class TestDefinereKlassifikasjonsvariable:
     """Defining klassifikasjonsvariable and statistikkvariable."""
 
-    def test_no_additional_variables(self, mocker):
+    def test_no_additional_variables(self, mocker: Any) -> None:
         """Checking df with no extra klassifikasjonsvariable."""
         df = pd.DataFrame(
             {
@@ -106,7 +108,7 @@ class TestDefinereKlassifikasjonsvariable:
         assert pd.api.types.is_string_dtype(df["periode"])
         assert pd.api.types.is_string_dtype(df["kommuneregion"])
 
-    def test_additional_variables_parsing_dedup_and_order(self, mocker):
+    def test_additional_variables_parsing_dedup_and_order(self, mocker: Any) -> None:
         """Verify parsing."""
         df = pd.DataFrame(
             {
@@ -129,7 +131,7 @@ class TestDefinereKlassifikasjonsvariable:
         assert pd.api.types.is_string_dtype(df["kjonn"])
         assert pd.api.types.is_string_dtype(df["alder"])
 
-    def test_fixed_vars_only_included_if_present(self, mocker):
+    def test_fixed_vars_only_included_if_present(self, mocker: Any) -> None:
         """Verifying that fixed vars are included ONLY if present in the DataFrame."""
         df = pd.DataFrame(
             {
@@ -153,15 +155,14 @@ class TestDefinereKlassifikasjonsvariable:
 class TestKonvertereKommaTilPunktdesimal:
     """Tests for `konvertere_komma_til_punktdesimal(df)`."""
 
-    def test_converts_comma_decimal_to_float(self):
+    def test_converts_comma_decimal_to_float(self) -> None:
         """Verify that comma-decimal strings are converted to floats."""
         df = pd.DataFrame({"a": ["1,5", "2,0", "3,25"]})
         out = konvertere_komma_til_punktdesimal(df)
-
-        assert np.allclose(out["a"].values, [1.5, 2.0, 3.25])
+        assert np.allclose(out["a"].to_numpy(), [1.5, 2.0, 3.25])
         assert pd.api.types.is_float_dtype(out["a"])
 
-    def test_leaves_columns_without_commas_unchanged(self):
+    def test_leaves_columns_without_commas_unchanged(self) -> None:
         """Verifying that columns that do NOT contain comma decimals are unchanged."""
         df = pd.DataFrame(
             {
@@ -175,15 +176,14 @@ class TestKonvertereKommaTilPunktdesimal:
         assert out["b"].tolist() == ["x", "y"]
         assert out["c"].tolist() == [10, 20]
 
-    def test_converts_column_if_any_value_contains_comma(self):
+    def test_converts_column_if_any_value_contains_comma(self) -> None:
         """Verifying the rule: if ANY value in a column contains a comma, convert the whole column."""
         df = pd.DataFrame({"a": ["1,5", "2"]})
         out = konvertere_komma_til_punktdesimal(df)
-
-        assert np.allclose(out["a"].values, [1.5, 2.0])
+        assert np.allclose(out["a"].to_numpy(), [1.5, 2.0])
         assert pd.api.types.is_float_dtype(out["a"])
 
-    def test_does_not_modify_input_dataframe(self):
+    def test_does_not_modify_input_dataframe(self) -> None:
         """Verify that konvertere_komma_til_punktdesimal does NOT mutate the input DataFrame."""
         df = pd.DataFrame({"a": ["1,5", "2,0"]})
         df_before = df.copy(deep=True)
