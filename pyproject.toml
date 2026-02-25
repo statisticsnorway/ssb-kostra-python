@@ -13,6 +13,7 @@ dependencies = [
     "pandas>=2.2.3",
     "pandas-stubs>=2.2.3.241126",
     "ssb-klass-python>=1.0.0",
+    "google-cloud-storage (>=3.9.0,<4.0.0)",
 ]
 
 [project.urls]
