@@ -32,7 +32,7 @@ from ssb_kostra_python.summere_til_aldersgrupperinger import summere_til_aldersg
 
 # %%
 folkemengde_kommune_2024 = pd.read_parquet(
-    "gs://ssb-off-fin-data-delt-kostra-befolkning-delt-prod/kommune/folkemengde_kommune_2024.parquet"
+    "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folkemengde_kommune_2024.parquet"
 )
 
 # %% [markdown] jupyter={"source_hidden": true}
@@ -91,7 +91,7 @@ folkemengde_kommune_2024, dtypes = konverter_dtypes(
 # #### Du vil se når funksjonen kjøres at "to" også er identifisert som en variabel. Den må også angis som klassifikasjonsvariabel i tekstfeltet. I dette tilfellet blir klassifikasjonsvariablene du skal angi i tekstfeltet (uten anførselstegn og adskilt med komma):  kjonn, alder, to.
 
 # %%
-hierarki_path = "gs://ssb-off-fin-data-produkt-prod/befolkning/_config/mapping_aldershierarki.parquet"
+hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet"
 
 rename_variabel, groupby_variable, df_sum_med_kjonn = (
     summere_til_aldersgrupperinger(
@@ -107,7 +107,7 @@ rename_variabel, groupby_variable, df_sum_med_kjonn = (
 # ##### predefined_input = "kjonn, alder, to"
 
 # %%
-hierarki_path = "gs://ssb-off-fin-data-produkt-prod/befolkning/_config/mapping_aldershierarki.parquet"
+hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet"
 
 predefined_input = "kjonn, alder, to"
 
