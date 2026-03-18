@@ -5,10 +5,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %%

@@ -5,10 +5,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %% [markdown]
@@ -28,8 +29,12 @@ from IPython.display import display  # for nice tables in notebooks
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
 
 # %%
+# folkemengde_kommune_2024 = pd.read_parquet(
+#     "gs://ssb-off-fin-data-delt-kostra-befolkning-delt-prod/kommune/folkemengde_kommune_2024.parquet"
+# )
+
 folkemengde_kommune_2024 = pd.read_parquet(
-    "gs://ssb-off-fin-data-delt-kostra-befolkning-delt-prod/kommune/folkemengde_kommune_2024.parquet"
+    "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folkemengde_kommune_2024.parquet"
 )
 
 # %% [markdown]

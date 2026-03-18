@@ -5,22 +5,23 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %%
-import logging
+# import logging
 
 import pandas as pd
+from fagfunksjoner import logger
 
 INPUT_PATCH_TARGET = "builtins.input"
 
 
-logger = logging.getLogger(__name__)
-
+# logger = logging.getLogger(__name__)
 
 # %%
 def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
@@ -75,19 +76,28 @@ def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
         )
 
     # Apply to possible region columns (pad only where appropriate)
-    _conditional_pad("kommuneregion", 4)
-    _conditional_pad("fylkesregion", 4)
-    _conditional_pad("bydelsregion", 6)  # 6 for bydelsregion
+    region_columns = {
+        "kommuneregion": 4, 
+        "fylkesregion": 4, 
+        "bydelsregion": 6
+    }
 
-    # If none of the region columns are present, raise
+    for region in region_columns:
+        _conditional_pad(region, region_columns[region])
+    
+    # _conditional_pad("kommuneregion", 4)
+    # _conditional_pad("fylkesregion", 4)
+    # _conditional_pad("bydelsregion", 6)  # 6 for bydelsregion
+
+
+    # If none of the region columns are present, warn user
     if not any(
         c in df_formatert.columns
-        for c in ("kommuneregion", "fylkesregion", "bydelsregion")
+        for c in region_columns
     ):
-        raise ValueError(
-            "No valid region column ('kommuneregion', 'fylkesregion', or 'bydelsregion') found."
-        )
-
+        logger.warning(f"No valid region column ({list(region_columns.keys())}) found.")
+    else:
+        logger.info("Formatting complete.")
     return df_formatert
 
 
@@ -107,8 +117,7 @@ def definere_klassifikasjonsvariable(
     Det gjør du i et tekstfelt som dukker opp når du kjører hierarkifunksjonen.
     """
     tot_cols = inputfil.columns.tolist()
-    print("Alle variable i datasettet:")
-    print(tot_cols)
+    logger.info(f"Alle variable i datasettet: {tot_cols}")
 
     # Always-fixed variables (keep order, include only if present)
     alltid_faste_klassifikasjonsvariable = [
@@ -135,10 +144,9 @@ def definere_klassifikasjonsvariable(
         if var.strip()
     ]
     if len(andre_klassifikasjonsvariable) == 0:
-        print("Ingen andre klassifikasjonsvariable valgt.")
+        logger.info("Ingen andre klassifikasjonsvariable valgt.")
     else:
-        print("Andre klassifikasjonsvariable:")
-        print(andre_klassifikasjonsvariable)
+        logger.info(f"Andre klassifikasjonsvariable: {andre_klassifikasjonsvariable}")
 
     # Helper to deduplicate while preserving order
     # def uniq(seq):
@@ -157,17 +165,15 @@ def definere_klassifikasjonsvariable(
     )
     statistikkvariable = [c for c in tot_cols if c not in klassifikasjonsvariable]
 
-    print("Klassifikasjonsvariable i datasettet:")
-    print(klassifikasjonsvariable)
+    logger.info(f"Klassifikasjonsvariable i datasettet: {klassifikasjonsvariable}")
 
     inputfil[klassifikasjonsvariable] = inputfil[klassifikasjonsvariable].astype(
         "string"
     )
 
-    print("Statistikkvariable i datasettet:")
-    print(statistikkvariable)
+    logger.info(f"Statistikkvariable i datasettet: {statistikkvariable}")
 
-    print("Oppdaterte datatyper:")
+    logger.info("Oppdaterte datatyper:")
     print(inputfil.dtypes)
 
     return klassifikasjonsvariable, statistikkvariable

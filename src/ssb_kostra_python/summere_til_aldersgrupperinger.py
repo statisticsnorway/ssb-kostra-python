@@ -5,15 +5,17 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %%
 import pandas as pd
 from IPython.display import display  # for nice tables in notebooks
+from fagfunksjoner import logger
 
 INPUT_PATCH_TARGET = "builtins.input"
 from ssb_kostra_python import hjelpefunksjoner
@@ -78,10 +80,15 @@ def summere_til_aldersgrupperinger(
     - Funksjonen forutsetter at hjelpefunksjoner håndterer korrekt identifikasjon av klassifikasjons- og statistikkvariabler.
     """
     aldershierarki = pd.read_parquet(hierarki_path)
+    logger.info("Formatting hierarchy file.")
+    aldershierarki = hjelpefunksjoner.format_fil(aldershierarki)
+    print("")
     inputfil_copy = inputfil.copy()
     # Ensure correct types and formatting for merging
     # Sørger for at formatet på klassifikasjonsvariablene er "string"
+    logger.info("Formatting input file.")
     inputfil_copy_formatted = hjelpefunksjoner.format_fil(inputfil_copy)
+    print("")
     # Filter mapping to only include the year(s) present in the main dataset
     # Henter ut det ene året som ligger i folketallsfilen
     available_years = inputfil_copy["periode"].unique()
@@ -110,17 +117,14 @@ def summere_til_aldersgrupperinger(
         hjelpefunksjoner.definere_klassifikasjonsvariable(df_merged)
     )
 
-    print(df_merged.dtypes)
-
     # Group by cohort and region, summing the persons
     # Genererer datasett kun med antall summert på aldersgrupperinger
     rename_variabel = ["alder"]
     groupby_variable = [x for x in klassifikasjonsvariable if x not in rename_variabel]
-    print(
+    logger.info(
         f"Aggregerer statistikkvariablen(e) {statistikkvariable} til aldersgrupperinger."
     )
-    print("groupby_variable:")
-    print(groupby_variable)
+    logger.info(f"groupby_variable: {groupby_variable}")
 
     df_cohorts = (
         df_merged.groupby(groupby_variable, as_index=False)[statistikkvariable]

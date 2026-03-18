@@ -5,10 +5,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %% [markdown]
@@ -35,7 +36,7 @@ folkemengde_kommune_2024 = pd.read_parquet(
     "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folkemengde_kommune_2024.parquet"
 )
 
-# %% [markdown] jupyter={"source_hidden": true}
+# %% [markdown]
 # ## Gjemt. Dobbeltklikk på den blå søylen til venstre for cellen for å åpne opp.
 # ### Nedenfor endrer vi variabeltypene. "personer" skal naturligvis være heltall, men klassifikasjonsvariablene må gjøres om fra heltall til string.
 # ### Det er en god idé å skrive ut instruksen for å se hvordan du skal lage mappingen. Dette gjør du med:
@@ -44,7 +45,7 @@ folkemengde_kommune_2024 = pd.read_parquet(
 # #### df_avrundet, dtypes = avrunding.konverter_dtypes(df_som_skal_behandles, dtype_mapping) der
 # #### df_avrundet er det endelige datasettet, dtypes er de nye typene etter konvertering, df_som_skal_behandles er datasettet som skal behandles og dtype_mapping er mappingen du bestemmer.
 
-# %% [markdown] jupyter={"source_hidden": true}
+# %% [markdown]
 # ### Gjemt. Dobbeltklikk på den blå søylek til venstre for å åpne opp.
 # #### Her koverterer vi datatypene. Dette er tidligere vist i eksempelarket "avrunding_eksempel", og er ikke poenget med dette eksempelarket.
 
@@ -117,3 +118,5 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             folkemengde_kommune_2024, hierarki_path
         )
     )
+
+# %%

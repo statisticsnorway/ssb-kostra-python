@@ -5,10 +5,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %% [markdown]
@@ -40,7 +41,7 @@ from IPython.display import display  # for nice tables in notebooks
 
 # %%
 folkemengde_kommune_2024 = pd.read_parquet(
-    "gs://ssb-off-fin-data-delt-kostra-befolkning-delt-prod/kommune/folkemengde_kommune_2024.parquet"
+    "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folkemengde_kommune_2024.parquet"
 )
 
 # %% [markdown]
@@ -134,7 +135,7 @@ folkemengde_kommune_2024, dtypes = avrunding.konverter_dtypes(
 
 # %%
 # %%capture
-hierarki_path = "gs://ssb-off-fin-data-produkt-prod/befolkning/_config/mapping_aldershierarki.parquet"
+hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet"
 
 predefined_input = "kjonn, alder, to"
 

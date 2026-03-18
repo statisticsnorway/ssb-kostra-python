@@ -5,10 +5,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %% [markdown]
@@ -39,6 +40,10 @@ from ssb_kostra_python import hjelpefunksjoner
 
 # %% [markdown]
 # ### Først henter vi ned en folketallsfil som fordeler Oslo-befolkningen på kjønn, bydel og alder.
+
+# %%
+# folketall_bydeler_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/Folketall 3sifra 2024 Bydeler.csv"
+# folketall_bydeler = pd.read_parquet(folketall_bydeler_path)
 
 # %%
 # Henter ned fil
