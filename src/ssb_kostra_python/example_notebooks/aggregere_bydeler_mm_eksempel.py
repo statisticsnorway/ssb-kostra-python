@@ -46,21 +46,26 @@ from ssb_kostra_python import hjelpefunksjoner
 # folketall_bydeler = pd.read_parquet(folketall_bydeler_path)
 
 # %%
-# Henter ned fil
-folketall_bydeler = pd.read_csv(
-    "gs://ssb-off-fin-data-tilsky-prod/befolkning/Folketall 3sifra 2024 Bydeler.csv",
-    delimiter=";",
-    encoding="latin1",
+folketall_bydeler_2024 = folketall_bydeler = pd.read_csv("Folketall 3sifra 2024 Bydeler.csv",delimiter=";",encoding="latin1")
+display(folketall_bydeler_2024)
+
+# %%
+# folketall_bydeler_2024.to_parquet("gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folketall_bydeler_2024.parquet")
+
+# %%
+folkemengde_kommune_2024 = pd.read_parquet(
+    "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folketall_bydeler_2024.parquet"
 )
-# Viser fil
-display(folketall_bydeler)
+
+display(folkemengde_kommune_2024)
 
 # %% [markdown]
 # ### Vi må også hente ned en manuelt laget mappingfil for aldersgrupperingene.
 # #### Mappingen lagres som hierarki_path.
 
 # %%
-hierarki_path = "gs://ssb-off-fin-data-produkt-prod/befolkning/_config/mapping_aldershierarki.parquet"
+# hierarki_path = "gs://ssb-off-fin-data-produkt-prod/befolkning/_config/mapping_aldershierarki.parquet"
+hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet"
 
 # %% [markdown]
 # ### Kjøre aldersaggregeringsfunksjon uten forhåndsdefinerte klassifikasjonsvariable.
@@ -99,6 +104,12 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
 # Skriver ut instruksen
 instruks = print_instruks_konverter_dtypes()
 
+# %% [markdown]
+# #### Vi kan kopiere malen over og føre inn variablene som må endres.
+# #### avrundet, avrundet_dtypes = konverter_dtypes(df_sum_med_kjonn, dtype_mapping) betyr:
+# ##### avrundet er datasettet som spyttes ut etter konvertering.
+# ##### avrundet_dtypes er oversikten over variabeltypene. Vi ser nederst at person har blitt omgjort til Int64.
+
 # %%
 dtype_mapping = {
     "klassifikasjonsvariabel": [
@@ -108,7 +119,7 @@ dtype_mapping = {
         "alder",
     ],
     "heltall": [
-        "personer",
+        "personer", # <------- Vi gjør om "personer" til heltall (Int64)
     ],
     "desimaltall_1_des": [],
     "desimaltall_2_des": [],
@@ -132,6 +143,20 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
 
 display(klassifikasjonsvariable)
 display(statistikkvariable)
+
+# %%
+
+# %% [markdown]
+# ### Her kan vi editere et datasett.
+# #### Vi må først angi klassifikasjonsvariablene utover periode og region. Gjør det med predefined_input = "kjonn, alder, __row_id__".
+# #### __row_id__ legger seg alltid på datasettet for å kunne identifisere radnummer. Denne må også identifiseres som klassifikasjonsvariabel.
+# #### Så kan du iverksette funksjonen på datasettet som skal editeres, i dette tilfelle "avrundet", som ble generert lenger oppe.
+# #### Det åpner seg en meny der du fører inn endringene.
+# #### Vi ønsker å endre rad 0 (__row_id__ = 0) og trykker "Apply filter".
+# #### Under "preview & Edit" vises raden som er søkt opp.
+# #### Vi ønsker å endre verdien på "personer" fra 480 til 100000. Vi fører 100000 i "New value".
+# #### Vi må også føre en årsak til endring. Til slutt trykker vi  på "Commit Edit".
+# #### Nytt datasett med endringer og logg.
 
 # %%
 predefined_input = "kjonn, alder, __row_id__"
