@@ -18,7 +18,6 @@
 # ### Vi laster den inn med "from functions.funksjoner import avrunding"
 
 # %%
-
 import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
@@ -29,10 +28,6 @@ from IPython.display import display  # for nice tables in notebooks
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
 
 # %%
-# folkemengde_kommune_2024 = pd.read_parquet(
-#     "gs://ssb-off-fin-data-delt-kostra-befolkning-delt-prod/kommune/folkemengde_kommune_2024.parquet"
-# )
-
 folkemengde_kommune_2024 = pd.read_parquet(
     "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folkemengde_kommune_2024.parquet"
 )
@@ -75,5 +70,3 @@ folkemengde_kommune_2024, dtypes = avrunding.konverter_dtypes(
     folkemengde_kommune_2024, dtype_mapping
 )
 
-
-# %%

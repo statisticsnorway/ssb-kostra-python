@@ -18,9 +18,7 @@
 # ### Vi laster den inn med "from functions.funksjoner import regionshierarki".
 
 # %%
-
 from unittest.mock import patch
-
 import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
@@ -29,11 +27,6 @@ from ssb_kostra_python import avrunding
 from ssb_kostra_python import regionshierarki
 from ssb_kostra_python import summere_kjonn
 from ssb_kostra_python import summere_til_aldersgrupperinger
-
-#from functions.funksjoner import avrunding
-#from functions.funksjoner import regionshierarki
-#from functions.funksjoner import summere_kjonn
-#from functions.funksjoner import summere_til_aldersgrupperinger
 from IPython.display import display  # for nice tables in notebooks
 
 # %% [markdown]

@@ -102,9 +102,6 @@ def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
 
 
 # %%
-# def definere_klassifikasjonsvariable(inputfil: pd.DataFrame):
-
-
 def definere_klassifikasjonsvariable(
     inputfil: pd.DataFrame,
 ) -> tuple[list[str], list[str]]:

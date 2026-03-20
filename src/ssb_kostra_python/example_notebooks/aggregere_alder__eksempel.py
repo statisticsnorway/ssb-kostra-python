@@ -18,7 +18,6 @@
 # ### Vi laster den inn med "from functions.funksjoner import summere_til_aldersgrupperinger"
 
 # %%
-
 from unittest.mock import patch
 
 import pandas as pd

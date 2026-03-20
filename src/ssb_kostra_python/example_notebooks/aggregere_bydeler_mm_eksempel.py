@@ -33,38 +33,21 @@ from ssb_kostra_python.summere_til_aldersgrupperinger import summere_til_aldersg
 from ssb_kostra_python import enkel_editering
 from ssb_kostra_python import hjelpefunksjoner
 
-#from functions.funksjoner import avrunding
-#from functions.funksjoner import enkel_editering
-#from functions.funksjoner import hjelpefunksjoner
-#from functions.funksjoner import summere_til_aldersgrupperinger
-
 # %% [markdown]
 # ### Først henter vi ned en folketallsfil som fordeler Oslo-befolkningen på kjønn, bydel og alder.
 
 # %%
-# folketall_bydeler_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/Folketall 3sifra 2024 Bydeler.csv"
-# folketall_bydeler = pd.read_parquet(folketall_bydeler_path)
-
-# %%
-folketall_bydeler_2024 = folketall_bydeler = pd.read_csv("Folketall 3sifra 2024 Bydeler.csv",delimiter=";",encoding="latin1")
-display(folketall_bydeler_2024)
-
-# %%
-# folketall_bydeler_2024.to_parquet("gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folketall_bydeler_2024.parquet")
-
-# %%
-folkemengde_kommune_2024 = pd.read_parquet(
+folkemengde_bydeler_2024 = pd.read_parquet(
     "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folketall_bydeler_2024.parquet"
 )
 
-display(folkemengde_kommune_2024)
+display(folkemengde_bydeler_2024)
 
 # %% [markdown]
 # ### Vi må også hente ned en manuelt laget mappingfil for aldersgrupperingene.
 # #### Mappingen lagres som hierarki_path.
 
 # %%
-# hierarki_path = "gs://ssb-off-fin-data-produkt-prod/befolkning/_config/mapping_aldershierarki.parquet"
 hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet"
 
 # %% [markdown]
@@ -75,7 +58,7 @@ hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/map
 # %%
 rename_variabel, groupby_variable, df_sum_med_kjonn = (
     summere_til_aldersgrupperinger(
-        folketall_bydeler, hierarki_path
+        folkemengde_bydeler_2024, hierarki_path
     )
 )
 
@@ -90,7 +73,7 @@ predefined_input = "kjonn, alder, to"
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     rename_variabel, groupby_variable, df_sum_med_kjonn = (
         summere_til_aldersgrupperinger(
-            folketall_bydeler, hierarki_path
+            folkemengde_bydeler_2024, hierarki_path
         )
     )
 
@@ -143,8 +126,6 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
 
 display(klassifikasjonsvariable)
 display(statistikkvariable)
-
-# %%
 
 # %% [markdown]
 # ### Her kan vi editere et datasett.
