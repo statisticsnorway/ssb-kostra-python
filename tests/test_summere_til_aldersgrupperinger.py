@@ -38,7 +38,8 @@ class TestSummereTilAldersgrupperinger:
         def fake_format_fil(df: pd.DataFrame) -> pd.DataFrame:
             df = df.copy()
             df["periode"] = df["periode"].astype(str)
-            df["alder"] = df["alder"].astype(str).str.zfill(3)
+            if "alder" in df.columns:
+                df["alder"] = df["alder"].astype(str).str.zfill(3)
             return df
 
         mock_format_fil = mocker.patch(
@@ -72,5 +73,5 @@ class TestSummereTilAldersgrupperinger:
 
         # 8) Assert: calls happened
         mock_read_parquet.assert_called_once()
-        mock_format_fil.assert_called_once()
+        assert mock_format_fil.call_count == 2
         mock_definer_klass.assert_called_once()
