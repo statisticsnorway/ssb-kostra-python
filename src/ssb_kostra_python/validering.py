@@ -518,7 +518,9 @@ def _klass_check(
             klass_id = int(raw)
             # quick verify: attempt to fetch codes for this (klass_id, periode)
             try:
-                test = KlassClassification(klass_id, language="en", include_future=True)
+                test = KlassClassification(
+                    str(klass_id), language="en", include_future=True
+                )
                 codes = test.get_codes(
                     from_date=f"{periode}-01-01", to_date=f"{periode}-12-31"
                 )
@@ -564,7 +566,7 @@ def _klass_check(
         key = (klass_id, year)
         if key in _cache:
             return _cache[key]
-        k = KlassClassification(klass_id, language="en", include_future=True)
+        k = KlassClassification(str(klass_id), language="en", include_future=True)
         result = k.get_codes(from_date=f"{year}-01-01", to_date=f"{year}-12-31")
         df_codes: Any = getattr(result, "data", result)
         codes = (

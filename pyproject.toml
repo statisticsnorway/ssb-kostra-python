@@ -1,6 +1,6 @@
 [project]
 name = "ssb-kostra-python"
-version = "0.0.3"
+version = "0.0.4"
 description = "SSB Kostra Python"
 authors = [{ name = "Christopher Okazaki Hansen", email = "coh@ssb.no" }]
 maintainers = [{ name = "Statistics Norway, Public finance Department (212)" }]
@@ -10,9 +10,11 @@ requires-python = ">=3.12"
 dynamic = ["classifiers"]
 dependencies = [
     "click>=8.0.1",
-    "pandas>=2.2.3",
+    "pandas (>=3.0.1,<4.0.0)",
     "pandas-stubs>=2.2.3.241126",
     "ssb-klass-python>=1.0.0",
+    "google-cloud-storage (>=3.9.0,<4.0.0)",
+    "ssb-fagfunksjoner (>=1.1.4,<2.0.0)",
 ]
 
 [project.urls]
@@ -54,6 +56,7 @@ dev = [
     "xdoctest[colors]>=1.3.0",
     "pytest-mock>=3.15.1",
     "types-requests",
+    "ipykernel (>=7.2.0,<8.0.0)",
 ]
 
 [tool.poetry]
@@ -93,6 +96,7 @@ show_error_context = true
 module = [
     "ipywidgets.*",
     "IPython.*",
+    "google.*"
 ]
 ignore_missing_imports = true
 follow_imports = "skip"

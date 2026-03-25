@@ -108,7 +108,7 @@ def test_fetch_mapping_for_year_returns_two_col_mapping_and_level(mocker: Any) -
         year=2024,
         language="nb",
         include_future=True,
-        select_level=None,
+        select_level=1,
     )
 
     assert level == 1
@@ -174,7 +174,9 @@ def test_attach_one_mapping_raises_if_code_col_missing(mocker: Any) -> None:
     )
     df_in = pd.DataFrame({"periode": [2024], "value": [1]})
     with pytest.raises(ValueError, match="Column 'kommuneregion' not found"):
-        _attach_one_mapping(df_in, year=2024, code_col="kommuneregion", klass_id=231)
+        _attach_one_mapping(
+            df_in, year=2024, code_col="kommuneregion", klass_id=231, select_level=1
+        )
 
 
 # -----------------------

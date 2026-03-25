@@ -199,7 +199,7 @@ def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     Her lages kun en mappingfil som viser hvordan Oslos bydeler inngår i samlebydelen "EAB".
     Dette er altså bare en hjelpefunksjon som inngår i en annen funksjon, hierarkifunksjonen, som aggregerer opp bydelsdata til "EAB" kun dersom inputfilen er en bydelsfil.
     """
-    nus = KlassClassification(241, language="nb", include_future=True)
+    nus = KlassClassification("241", language="nb", include_future=True)
     nuskoder = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
     klass_bydeler_oslo = nuskoder.pivot_level()
@@ -267,7 +267,7 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     # display(komm_kostra_gr)
 
     nus: KlassClassification = KlassClassification(
-        131, language="nb", include_future=True
+        "131", language="nb", include_future=True
     )
     nuskoder: Any = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
@@ -281,7 +281,7 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     klass_kommuner_landet["to"] = "EAK"
     # display(klass_kommuner_landet)
 
-    nus = KlassClassification(131, language="nb", include_future=True)
+    nus = KlassClassification("131", language="nb", include_future=True)
     nuskoder = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
     klass_kommuner_u_oslo: pd.DataFrame = nuskoder.pivot_level()
@@ -371,7 +371,7 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     fylkeskomm_kostraregion_df = fylkeskomm_kostraregion_df[["from", "to"]]
 
     nus: KlassClassification = KlassClassification(
-        127, language="nb", include_future=True
+        "127", language="nb", include_future=True
     )
     nuskoder: Any = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
@@ -384,7 +384,7 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     )
     klass_fylkeskommuner_landet["to"] = "EAFK"
 
-    nus = KlassClassification(127, language="nb", include_future=True)
+    nus = KlassClassification("127", language="nb", include_future=True)
     nuskoder = nus.get_codes(f"{year}-01-01")
     ### Oppretter en korrespondansetabell for bydelene i Oslo som tilbyr tjenester
     klass_fylkeskommuner_landet_u_oslo: pd.DataFrame = nuskoder.pivot_level()
