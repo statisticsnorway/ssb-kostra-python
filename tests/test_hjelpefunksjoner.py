@@ -2,7 +2,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
 from ssb_kostra_python.hjelpefunksjoner import format_fil
@@ -75,6 +74,7 @@ class TestFormatFil:
         out = format_fil(df.copy())
 
         assert out["bydelsregion"].tolist() == ["000301", "030101", "12A", "1234567"]
+
 
 class TestDefinereKlassifikasjonsvariable:
     """Defining klassifikasjonsvariable and statistikkvariable."""
