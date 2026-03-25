@@ -19,15 +19,17 @@
 
 # %%
 from unittest.mock import patch
+
 import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
+
+from IPython.display import display  # for nice tables in notebooks
 
 from ssb_kostra_python import avrunding
 from ssb_kostra_python import regionshierarki
 from ssb_kostra_python import summere_kjonn
 from ssb_kostra_python import summere_til_aldersgrupperinger
-from IPython.display import display  # for nice tables in notebooks
 
 # %% [markdown]
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.

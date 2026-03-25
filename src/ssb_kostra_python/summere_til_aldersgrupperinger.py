@@ -14,8 +14,8 @@
 
 # %%
 import pandas as pd
-from IPython.display import display  # for nice tables in notebooks
 from fagfunksjoner import logger
+from IPython.display import display  # for nice tables in notebooks
 
 INPUT_PATCH_TARGET = "builtins.input"
 from ssb_kostra_python import hjelpefunksjoner

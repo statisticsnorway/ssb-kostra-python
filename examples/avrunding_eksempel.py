@@ -21,8 +21,9 @@
 import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
-from ssb_kostra_python import avrunding
 from IPython.display import display  # for nice tables in notebooks
+
+from ssb_kostra_python import avrunding
 
 # %% [markdown]
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
@@ -69,4 +70,3 @@ dtype_mapping = {
 folkemengde_kommune_2024, dtypes = avrunding.konverter_dtypes(
     folkemengde_kommune_2024, dtype_mapping
 )
-

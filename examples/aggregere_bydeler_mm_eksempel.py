@@ -27,11 +27,13 @@ from IPython.display import display  # for nice tables in notebooks
 
 INPUT_PATCH_TARGET = "builtins.input"
 
-from ssb_kostra_python.avrunding import konverter_dtypes
-from ssb_kostra_python.avrunding import print_instruks_konverter_dtypes
-from ssb_kostra_python.summere_til_aldersgrupperinger import summere_til_aldersgrupperinger
 from ssb_kostra_python import enkel_editering
 from ssb_kostra_python import hjelpefunksjoner
+from ssb_kostra_python.avrunding import konverter_dtypes
+from ssb_kostra_python.avrunding import print_instruks_konverter_dtypes
+from ssb_kostra_python.summere_til_aldersgrupperinger import (
+    summere_til_aldersgrupperinger,
+)
 
 # %% [markdown]
 # ### Først henter vi ned en folketallsfil som fordeler Oslo-befolkningen på kjønn, bydel og alder.
@@ -56,10 +58,8 @@ hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/map
 # #### df_sum_med_kjonn er datasettet som genereres etter at funksjonen er kjørt. Datasettet inneholder de aggregerte aldersgrupperingene.
 
 # %%
-rename_variabel, groupby_variable, df_sum_med_kjonn = (
-    summere_til_aldersgrupperinger(
-        folkemengde_bydeler_2024, hierarki_path
-    )
+rename_variabel, groupby_variable, df_sum_med_kjonn = summere_til_aldersgrupperinger(
+    folkemengde_bydeler_2024, hierarki_path
 )
 
 # %% [markdown]
@@ -72,9 +72,7 @@ predefined_input = "kjonn, alder, to"
 
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     rename_variabel, groupby_variable, df_sum_med_kjonn = (
-        summere_til_aldersgrupperinger(
-            folkemengde_bydeler_2024, hierarki_path
-        )
+        summere_til_aldersgrupperinger(folkemengde_bydeler_2024, hierarki_path)
     )
 
 # %% [markdown]
@@ -102,7 +100,7 @@ dtype_mapping = {
         "alder",
     ],
     "heltall": [
-        "personer", # <------- Vi gjør om "personer" til heltall (Int64)
+        "personer",  # <------- Vi gjør om "personer" til heltall (Int64)
     ],
     "desimaltall_1_des": [],
     "desimaltall_2_des": [],

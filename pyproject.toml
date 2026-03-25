@@ -1,6 +1,6 @@
 [project]
 name = "ssb-kostra-python"
-version = "0.0.3"
+version = "0.0.4"
 description = "SSB Kostra Python"
 authors = [{ name = "Christopher Okazaki Hansen", email = "coh@ssb.no" }]
 maintainers = [{ name = "Statistics Norway, Public finance Department (212)" }]

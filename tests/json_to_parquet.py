@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pandas as pd
 
 
@@ -8,8 +9,7 @@ def json_to_parquet(
     orient: str = "records",
     lines: bool | None = None,
 ) -> None:
-    """
-    Convert a JSON file to Parquet.
+    """Convert a JSON file to Parquet.
 
     Parameters
     ----------
@@ -24,7 +24,7 @@ def json_to_parquet(
         If None, inferred from file suffix (.jsonl → True).
     """
     json_path = Path(json_path)
-    #parquet_path = Path(parquet_path)
+    # parquet_path = Path(parquet_path)
 
     if lines is None:
         lines = json_path.suffix in {".jsonl", ".ndjson"}
@@ -35,4 +35,7 @@ def json_to_parquet(
 
 
 if __name__ == "__main__":
-    json_to_parquet("mapping_aldershierarki.json", "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet")
+    json_to_parquet(
+        "mapping_aldershierarki.json",
+        "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet",
+    )

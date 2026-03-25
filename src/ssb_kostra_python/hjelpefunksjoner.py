@@ -23,6 +23,7 @@ INPUT_PATCH_TARGET = "builtins.input"
 
 # logger = logging.getLogger(__name__)
 
+
 # %%
 def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
     """Formatering av periode- og regionsvariabelen.
@@ -45,9 +46,6 @@ def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         Dataframe med formatert periode og regionvariabler.
-
-    Raises:
-        ValueError: If no valid region column is found.
     """
     df_formatert = df_uformatert.copy()
 
@@ -76,25 +74,17 @@ def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
         )
 
     # Apply to possible region columns (pad only where appropriate)
-    region_columns = {
-        "kommuneregion": 4, 
-        "fylkesregion": 4, 
-        "bydelsregion": 6
-    }
+    region_columns = {"kommuneregion": 4, "fylkesregion": 4, "bydelsregion": 6}
 
     for region in region_columns:
         _conditional_pad(region, region_columns[region])
-    
+
     # _conditional_pad("kommuneregion", 4)
     # _conditional_pad("fylkesregion", 4)
     # _conditional_pad("bydelsregion", 6)  # 6 for bydelsregion
 
-
     # If none of the region columns are present, warn user
-    if not any(
-        c in df_formatert.columns
-        for c in region_columns
-    ):
+    if not any(c in df_formatert.columns for c in region_columns):
         logger.warning(f"No valid region column ({list(region_columns.keys())}) found.")
     else:
         logger.info("Formatting complete.")

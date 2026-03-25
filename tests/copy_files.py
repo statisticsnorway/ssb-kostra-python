@@ -1,11 +1,10 @@
-from google.cloud import storage
 from urllib.parse import urlparse
+
+from google.cloud import storage
 
 
 def parse_gs_uri(gs_uri: str) -> tuple[str, str]:
-    """
-    Split gs://bucket/path into (bucket, blob_path)
-    """
+    """Split gs://bucket/path into (bucket, blob_path)."""
     parsed = urlparse(gs_uri)
     if parsed.scheme != "gs":
         raise ValueError(f"Not a valid gs:// URI: {gs_uri}")
@@ -17,10 +16,7 @@ def parse_gs_uri(gs_uri: str) -> tuple[str, str]:
 
 
 def copy_gs_uri(source_uri: str, dest_uri: str) -> None:
-    """
-    Copy a single GCS object using gs:// URIs
-    """
-
+    """Copy a single GCS object using gs:// URIs."""
     client = storage.Client()
 
     src_bucket_name, src_blob_name = parse_gs_uri(source_uri)

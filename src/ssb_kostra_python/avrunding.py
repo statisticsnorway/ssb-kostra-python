@@ -144,4 +144,3 @@ def konverter_dtypes(
     display(df_dtypes)
 
     return df, df_dtypes
-
