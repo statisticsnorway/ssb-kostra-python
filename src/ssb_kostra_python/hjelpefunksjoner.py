@@ -13,15 +13,12 @@
 # ---
 
 # %%
-# import logging
-
+import logging
 import pandas as pd
-from fagfunksjoner import logger
 
 INPUT_PATCH_TARGET = "builtins.input"
 
-
-# logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # %%
