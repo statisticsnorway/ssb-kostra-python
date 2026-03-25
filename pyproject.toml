@@ -96,6 +96,7 @@ show_error_context = true
 module = [
     "ipywidgets.*",
     "IPython.*",
+    "google.*"
 ]
 ignore_missing_imports = true
 follow_imports = "skip"

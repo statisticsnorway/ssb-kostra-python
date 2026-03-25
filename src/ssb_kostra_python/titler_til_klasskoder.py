@@ -232,8 +232,8 @@ def kodelister_navn(
         klass_id = item["klass_id"]
         name_col_out = item.get("name_col_out")
         select_level = item.get("select_level")
-        if select_level is None or name_col_out is None:
-            raise ValueError("Undefined select_level or name_col_out.")
+        if select_level is None:
+            raise ValueError("Undefined select_level.")
 
         out, diag = _attach_one_mapping(
             out,
