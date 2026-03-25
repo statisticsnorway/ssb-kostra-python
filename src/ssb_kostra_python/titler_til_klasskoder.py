@@ -93,14 +93,14 @@ def _fetch_mapping_for_year(
     *,
     language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
-    select_level: int | None = None,
+    select_level: int,
 ) -> tuple[pd.DataFrame, int]:
     """Return a 2-col DF: ['_map_code','_map_name'] and the level used."""
     from_date = f"{year}-01-01"
     to_date = f"{year}-12-31"
 
     klass = KlassClassification(
-        int(klass_id), language=language, include_future=include_future
+        str(klass_id), language=language, include_future=include_future
     )
     codes = klass.get_codes(
         from_date=from_date,
@@ -130,7 +130,7 @@ def _attach_one_mapping(
     name_col_out: str | None = None,
     language: Literal["nb", "nn", "en"] = "nb",
     include_future: bool = True,
-    select_level: int | None = None,
+    select_level: int,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Attach names for one (code_col, klass_id) pair; returns new df and diagnostics."""
     if code_col not in df_in.columns:
@@ -232,6 +232,8 @@ def kodelister_navn(
         klass_id = item["klass_id"]
         name_col_out = item.get("name_col_out")
         select_level = item.get("select_level")
+        if select_level is None or name_col_out is None:
+            raise ValueError("Undefined select_level or name_col_out.")
 
         out, diag = _attach_one_mapping(
             out,

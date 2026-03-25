@@ -14,6 +14,7 @@
 
 # %%
 import logging
+
 import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
