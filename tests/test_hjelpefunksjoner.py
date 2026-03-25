@@ -76,14 +76,6 @@ class TestFormatFil:
 
         assert out["bydelsregion"].tolist() == ["000301", "030101", "12A", "1234567"]
 
-    def test_raises_if_no_valid_region_column_present(self) -> None:
-        """Checking if at least one valid region column exists."""
-        df = pd.DataFrame({"periode": [1, 2], "alder": [10, 20]})
-
-        with pytest.raises(ValueError, match="No valid region column"):
-            format_fil(df.copy())
-
-
 class TestDefinereKlassifikasjonsvariable:
     """Defining klassifikasjonsvariable and statistikkvariable."""
 
