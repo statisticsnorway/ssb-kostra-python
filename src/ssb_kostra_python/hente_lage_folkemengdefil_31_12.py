@@ -343,7 +343,7 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
                 rename_variabel,
                 groupby_variable,
                 df_folkemengde_31_12_agg_alder,
-            ) = mapping_hierarki.summere_til_aldersgrupperinger(df_folkemengde_31_12)
+            ) = summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(df_folkemengde_31_12, hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet")
 
         print("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
 
@@ -356,7 +356,7 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
     try:
         predefined_input = "kjonn, alder"
         with patch("builtins.input", return_value=predefined_input):
-            df_folkemengde_31_12_agg_kjonn = mapping_hierarki.summere_over_kjonn(
+            df_folkemengde_31_12_agg_kjonn = summere_kjonn.summere_over_kjonn(
                 df_folkemengde_31_12_agg_alder
             )
 
@@ -371,7 +371,7 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
     try:
         predefined_input = "alder"
         with patch("builtins.input", return_value=predefined_input):
-            df_folkemengde_31_12_agg_kostra = mapping_hierarki.hierarki(
+            df_folkemengde_31_12_agg_kostra = regionshierarki.hierarki(
                 df_folkemengde_31_12_agg_kjonn
             )
 
@@ -470,7 +470,7 @@ def hent_folkemengde_31_12_fk(statistikkaar):
         predefined_input = "kjonn, alder, to"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             rename_variabel, groupby_variable, df_sum_med_kjonn = (
-                mapping_hierarki.summere_til_aldersgrupperinger(df_folkemengde_31_12)
+                summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(df_folkemengde_31_12, hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet")
             )
 
         print("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
@@ -483,7 +483,7 @@ def hent_folkemengde_31_12_fk(statistikkaar):
     try:
         predefined_input = "kjonn, alder"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-            df_sum_kjonn = mapping_hierarki.summere_over_kjonn(df_sum_med_kjonn)
+            df_sum_kjonn = summere_kjonn.summere_over_kjonn(df_sum_med_kjonn)
 
         print("✅Operasjonen summere_over_kjonn ble gjennomført.")
 
@@ -495,7 +495,7 @@ def hent_folkemengde_31_12_fk(statistikkaar):
     try:
         predefined_input = "alder"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-            folkemengde_31_12_fk = mapping_hierarki.hierarki(
+            folkemengde_31_12_fk = regionshierarki.hierarki(
                 df_sum_kjonn,
                 aggregeringstype="kommune_til_fylkeskommune"
             )
@@ -513,7 +513,7 @@ def hent_folkemengde_31_12_fk(statistikkaar):
     try:
         predefined_input = "alder"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-            folkemengde_31_12_eafk = mapping_hierarki.hierarki(folkemengde_31_12_fk)
+            folkemengde_31_12_eafk = regionshierarki.hierarki(folkemengde_31_12_fk)
 
         print("✅Operasjonen hierarki til KOSTRA-fylkesregioner/EAFK ble gjennomført.")
 
