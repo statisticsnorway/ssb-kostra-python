@@ -5,18 +5,18 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %%
-
 from typing import Literal
-
 import pandas as pd
 from klass import KlassClassification
+import re
 
 # %%
 """Fest navn/tittel til klassifikasjonskoder basert på KLASS.
@@ -265,3 +265,111 @@ def kodelister_navn(
             print(msg)
 
     return out, diagnostics
+
+
+
+KLASS_IDS = {
+    "kommuneregion": 231,
+    "fylkesregion": 232,
+    "bydelsregion": 241,
+}
+TOKENS = {"nan", "<na>", "none", "nul", "null", "na", "n/a", ""}
+ZFILLS = {"kommuneregion": 4, "fylkesregion": 4, "bydelsregion": 6}
+
+def mapping_regionsnavn(
+    inputfil: pd.DataFrame,
+    *,
+    language: str = "nb",
+    region_col: str | None = None,   # allow explicit override; else auto-detect
+    name_suffix: str = "_navn",
+) -> pd.DataFrame:
+    if "periode" not in inputfil.columns:
+        raise ValueError("Column 'periode' is required in inputfil.")
+
+    """
+    Denne funksjonen kan du bruke til å feste regionsnavn på regionskodene dine. Denne funksjonen bør du bruke ETTER at du har utført hierarkiaggregeringen, og IKKE før.
+    Grunnen til dette er at hierarkiaggregeringsfunksjonen fungerer til å aggregere regionskodene, men ikke regionsnavnene
+    """
+    
+    # 1) region column: explicit or auto-detect (must be exactly one)
+    regionsvariable = ["kommuneregion", "fylkesregion", "bydelsregion"]
+    if region_col is None:
+        present = [c for c in regionsvariable if c in inputfil.columns]
+        if not present:
+            raise ValueError("No region column found (expected one of kommuneregion/fylkesregion/bydelsregion).")
+        if len(present) > 1:
+            raise ValueError(f"Multiple region columns present: {present}. Please specify region_col=...")
+        region_col = present[0]
+    elif region_col not in inputfil.columns:
+        raise ValueError(f"Specified region_col '{region_col}' not in dataframe.")
+
+    # 2) determine a single valid year from 'periode'
+    s = inputfil["periode"].astype("string")
+    uniq = pd.Series(s.unique())
+    valid_years = []
+    for v in uniq:
+        if pd.isna(v):
+            continue
+        sv = str(v).strip()
+        if not sv:
+            continue
+        core = sv.lstrip("0").lower()
+        if core in TOKENS:
+            continue
+        if re.fullmatch(r"\d{4}", sv):
+            valid_years.append(sv)
+    valid_years = sorted(set(valid_years))
+    if len(valid_years) != 1:
+        raise ValueError(f"Need exactly one valid 4-digit 'periode'; found {valid_years or 'none'}.")
+    year = valid_years[0]
+
+    # 3) fetch KLASS mapping table for (region_col, year)
+    klass_id = KLASS_IDS[region_col]
+    klass = KlassClassification(klass_id, language=language, include_future=True)
+    codes = klass.get_codes(from_date=f"{year}-01-01", to_date=f"{year}-12-31")
+
+    mapping = codes.pivot_level()
+    try:
+        map_code_col = next(c for c in mapping.columns if c.lower().startswith("code"))
+        map_name_col = next(c for c in mapping.columns if c.lower().startswith("name"))
+    except StopIteration:
+        raise ValueError("Mapping must have columns starting with 'code' and 'name' (e.g. 'code_1', 'name_1').")
+
+    # 4) normalize both sides (strings + trim)
+    out = inputfil.copy()
+    out[region_col] = out[region_col].astype("string").str.strip()
+    mapping[map_code_col] = mapping[map_code_col].astype("string").str.strip()
+    mapping[map_name_col] = mapping[map_name_col].astype("string").str.strip()
+
+    # --- CONDITIONAL padding: only if digit-only AND length < target width ---
+    width = ZFILLS[region_col]
+
+    # Left side (data)
+    mask_left_digits_short = out[region_col].str.fullmatch(r"\d+") & (out[region_col].str.len() < width)
+    out[region_col] = out[region_col].where(~mask_left_digits_short, other=out[region_col].str.zfill(width))
+
+    # Right side (mapping)
+    mask_right_digits_short = mapping[map_code_col].str.fullmatch(r"\d+") & (mapping[map_code_col].str.len() < width)
+    mapping[map_code_col] = mapping[map_code_col].where(~mask_right_digits_short, other=mapping[map_code_col].str.zfill(width))
+    # ------------------------------------------------------------------------
+
+    # ensure one name per code in mapping
+    mapping = mapping.drop_duplicates(subset=[map_code_col])
+
+    merged = out.merge(
+        mapping[[map_code_col, map_name_col]],
+        how="left",
+        left_on=region_col,
+        right_on=map_code_col,
+        validate="m:1",
+        suffixes=("", "_map"),
+    )
+
+    new_name_col = f"{region_col}{name_suffix}"
+    merged.rename(columns={map_name_col: new_name_col}, inplace=True)
+    if map_code_col != region_col:
+        merged.drop(columns=[map_code_col], inplace=True)
+
+    return merged
+
+# %%
