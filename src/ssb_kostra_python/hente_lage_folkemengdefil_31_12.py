@@ -19,10 +19,10 @@ import os
 import re
 from collections import Counter, defaultdict
 
-import dapla as dp
+# import dapla as dp
 import pandas as pd
 import numpy as np
-from dapla import FileClient
+# from dapla import FileClient
 from klass import KlassClassification
 from klass import KlassCorrespondence
 from requests.exceptions import HTTPError
