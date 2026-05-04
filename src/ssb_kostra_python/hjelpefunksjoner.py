@@ -19,7 +19,9 @@ import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
 from fagfunksjoner import logger
+
 # logger = logging.getLogger(__name__)
+
 
 # %%
 def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:

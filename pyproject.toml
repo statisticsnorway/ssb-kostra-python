@@ -58,6 +58,10 @@ dev = [
     "pytest-mock>=3.15.1",
     "types-requests",
     "ipykernel (>=7.2.0,<8.0.0)",
+    "black[jupyter] (>=26.3.1,<27.0.0)",
+    "isort (>=8.0.1,<9.0.0)",
+    "pre-commit (>=4.6.0,<5.0.0)",
+    "pre-commit-hooks (>=6.0.0,<7.0.0)",
 ]
 
 [tool.poetry]
@@ -66,6 +70,11 @@ requires-poetry = ">=2.3"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.9"
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+lines_after_imports = 2
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

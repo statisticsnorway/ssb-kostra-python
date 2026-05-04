@@ -446,16 +446,14 @@ class TestHentFolkemengde3112Fk(unittest.TestCase):
 
         self.assertEqual(mock_hierarki.call_count, 2)
 
-        from unittest.mock import call
-        
         # Extract calls
         calls = mock_hierarki.call_args_list
-        
+
         # First call assertions
         args, kwargs = calls[0]
         pd.testing.assert_frame_equal(args[0], df_sum_kjonn)
         self.assertEqual(kwargs, {"aggregeringstype": "kommune_til_fylkeskommune"})
-        
+
         # Second call assertions
         args, kwargs = calls[1]
         pd.testing.assert_frame_equal(args[0], df_fk)

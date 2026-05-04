@@ -284,14 +284,13 @@ def mapping_regionsnavn(
     region_col: str | None = None,  # allow explicit override; else auto-detect
     name_suffix: str = "_navn",
 ) -> pd.DataFrame:
-    if "periode" not in inputfil.columns:
-        raise ValueError("Column 'periode' is required in inputfil.")
+    """Denne funksjonen kan du bruke til å feste regionsnavn på regionskodene dine.
 
-    """
-    Denne funksjonen kan du bruke til å feste regionsnavn på regionskodene dine. Denne funksjonen bør du bruke ETTER at du har utført hierarkiaggregeringen, og IKKE før.
+    Denne funksjonen bør du bruke ETTER at du har utført hierarkiaggregeringen, og IKKE før.
     Grunnen til dette er at hierarkiaggregeringsfunksjonen fungerer til å aggregere regionskodene, men ikke regionsnavnene
     """
-
+    if "periode" not in inputfil.columns:
+        raise ValueError("Column 'periode' is required in inputfil.")
     # 1) region column: explicit or auto-detect (must be exactly one)
     regionsvariable = ["kommuneregion", "fylkesregion", "bydelsregion"]
     if region_col is None:
@@ -339,10 +338,10 @@ def mapping_regionsnavn(
     try:
         map_code_col = next(c for c in mapping.columns if c.lower().startswith("code"))
         map_name_col = next(c for c in mapping.columns if c.lower().startswith("name"))
-    except StopIteration:
+    except StopIteration as err:
         raise ValueError(
             "Mapping must have columns starting with 'code' and 'name' (e.g. 'code_1', 'name_1')."
-        )
+        ) from err
 
     # 4) normalize both sides (strings + trim)
     out = inputfil.copy()

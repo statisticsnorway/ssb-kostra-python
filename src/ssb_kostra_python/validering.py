@@ -20,13 +20,13 @@ from typing import cast
 
 import ipywidgets as widgets
 import pandas as pd
+
+# logger = logging.getLogger(__name__)
+from fagfunksjoner import logger
 from IPython.display import display  # for nice tables in notebooks
 from klass import KlassClassification
 
 from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
-
-# logger = logging.getLogger(__name__)
-from fagfunksjoner import logger
 
 SEPARATOR = "-" * 230  # or whatever length you need
 
