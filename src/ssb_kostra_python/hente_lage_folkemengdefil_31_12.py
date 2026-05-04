@@ -13,36 +13,30 @@
 # ---
 
 # +
-import ast
-import csv
-import os
-import re
-from collections import Counter, defaultdict
 
 # import dapla as dp
-import pandas as pd
-import numpy as np
 # from dapla import FileClient
-from klass import KlassClassification
-from klass import KlassCorrespondence
-from requests.exceptions import HTTPError
 from unittest.mock import patch
+
+import pandas as pd
+
 INPUT_PATCH_TARGET = "builtins.input"
+import warnings
+
+import duckdb
+from fagfunksjoner import latest_version_path
 from fagfunksjoner import logger
 from IPython.display import display  # for nice tables in notebooks
-from pathlib import Path
-import warnings
-from fagfunksjoner import logger, latest_version_path, next_version_path
-import duckdb
-import ssb_kostra_python
-from ssb_kostra_python import summere_til_aldersgrupperinger, hjelpefunksjoner, summere_til_aldersgrupperinger, summere_kjonn, regionshierarki, validering, titler_til_klasskoder
 
+from ssb_kostra_python import regionshierarki
+from ssb_kostra_python import summere_kjonn
+from ssb_kostra_python import summere_til_aldersgrupperinger
 
 # -
 
+
 def hent_folkemengde_bydeler_31_12(statistikkaar):
-    """
-    Henter, bearbeider og aggregerer folkemengdedata for bydeler per 31.12
+    """Henter, bearbeider og aggregerer folkemengdedata for bydeler per 31.12
     for et gitt statistikkår.
 
     Funksjonen henter først bydeldata fra bøtte, og kjører deretter følgende
@@ -75,7 +69,6 @@ def hent_folkemengde_bydeler_31_12(statistikkaar):
     Ved feil gis en advarsel og funksjonen stopper, fordi hvert trinn er
     avhengig av resultatet fra forrige trinn.
     """
-
     INPUT_PATCH_TARGET = "builtins.input"
 
     # ---------- Hent filsti ----------
@@ -113,11 +106,13 @@ def hent_folkemengde_bydeler_31_12(statistikkaar):
             rename_variabel, groupby_variable, df_sum_med_kjonn = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
                     folketall_bydeler,
-                    hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet"
+                    hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet",
                 )
             )
 
-        print("✅Operasjonen summere_til_aldersgrupperinger for bydeler ble gjennomført.")
+        print(
+            "✅Operasjonen summere_til_aldersgrupperinger for bydeler ble gjennomført."
+        )
 
     except Exception as e:
         msg = f"❌Operasjonen summere_til_aldersgrupperinger for bydeler feilet: {e}"
@@ -145,7 +140,9 @@ def hent_folkemengde_bydeler_31_12(statistikkaar):
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             folkemengde_31_12_b = regionshierarki.hierarki(df_sum_kjonn)
 
-        print("✅Operasjonen regionshierarki.hierarki for Oslo-bydeler ble gjennomført.")
+        print(
+            "✅Operasjonen regionshierarki.hierarki for Oslo-bydeler ble gjennomført."
+        )
 
     except Exception as e:
         msg = f"❌Operasjonen regionshierarki.hierarki for Oslo-bydeler feilet: {e}"
@@ -155,8 +152,22 @@ def hent_folkemengde_bydeler_31_12(statistikkaar):
     # ---------- Filtrer bort ettårige alderskoder ----------
     try:
         aldre_som_fjernes = [
-            "105", "106", "107", "108", "109", "110", "111", "112",
-            "113", "114", "115", "116", "117", "118", "119", "120"
+            "105",
+            "106",
+            "107",
+            "108",
+            "109",
+            "110",
+            "111",
+            "112",
+            "113",
+            "114",
+            "115",
+            "116",
+            "117",
+            "118",
+            "119",
+            "120",
         ]
 
         folkemengde_31_12_b = folkemengde_31_12_b[
@@ -178,8 +189,7 @@ display(folkemengde_31_12_b)
 
 
 def hent_folkemengde_kommune_31_12(statistikkaar):
-    """
-    Henter og bearbeider befolkningsdata per 31.12 for et gitt statistikkår.
+    """Henter og bearbeider befolkningsdata per 31.12 for et gitt statistikkår.
 
     Funksjonen forsøker å hente data fra to kilder:
     - Kommunedata (per 31.12.<år>)
@@ -243,8 +253,6 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
       internt i funksjonen
     - Outputmeldinger skrives til konsoll for transparens i kjøringen
     """
-
-    
     statistikkaar = str(statistikkaar)
     bef_buckets_shared = "/buckets/shared/bef-statistikk/folketall"
 
@@ -320,11 +328,9 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
     else:
         df_folkemengde = pd.concat(dataframes, ignore_index=True)
 
-    df_folkemengde_31_12 = (
-        df_folkemengde
-        .groupby(["periode", "kommuneregion", "kjonn", "alder"], as_index=False)["personer"]
-        .sum()
-    )
+    df_folkemengde_31_12 = df_folkemengde.groupby(
+        ["periode", "kommuneregion", "kjonn", "alder"], as_index=False
+    )["personer"].sum()
 
     print(f"Datagrunnlag for {statistikkaar}: {', '.join(kilder_brukt)} brukt.")
 
@@ -343,7 +349,10 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
                 rename_variabel,
                 groupby_variable,
                 df_folkemengde_31_12_agg_alder,
-            ) = summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(df_folkemengde_31_12, hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet")
+            ) = summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
+                df_folkemengde_31_12,
+                hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet",
+            )
 
         print("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
 
@@ -384,14 +393,28 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
         return df_folkemengde_31_12, None
 
     try:
-        df_folkemengde_31_12_kostra_agg_filtrert = (
-            df_folkemengde_31_12_agg_kostra[
-                ~df_folkemengde_31_12_agg_kostra["alder"].isin([
-                    "105", "106", "107", "108", "109", "110", "111", "112",
-                    "113", "114", "115", "116", "117", "118", "119", "120"
-                ])
-            ]
-        )
+        df_folkemengde_31_12_kostra_agg_filtrert = df_folkemengde_31_12_agg_kostra[
+            ~df_folkemengde_31_12_agg_kostra["alder"].isin(
+                [
+                    "105",
+                    "106",
+                    "107",
+                    "108",
+                    "109",
+                    "110",
+                    "111",
+                    "112",
+                    "113",
+                    "114",
+                    "115",
+                    "116",
+                    "117",
+                    "118",
+                    "119",
+                    "120",
+                ]
+            )
+        ]
 
         print("✅Operasjonen filtrering av alder 105-120 ble gjennomført.")
 
@@ -403,14 +426,21 @@ def hent_folkemengde_kommune_31_12(statistikkaar):
 
     if df_folkemengde_31_12_kostra_agg_filtrert is not None:
         if len(kilder_brukt) == 2:
-            print("\n✅Sluttresultat (KOSTRA-aggregert) er basert på begge datakilder: kommuner og svalbard.")
+            print(
+                "\n✅Sluttresultat (KOSTRA-aggregert) er basert på begge datakilder: kommuner og svalbard."
+            )
         else:
-            print(f"\nℹ️Sluttresultat (KOSTRA-aggregert) er kun basert på én datakilde: {kilder_brukt[0]}.")
+            print(
+                f"\nℹ️Sluttresultat (KOSTRA-aggregert) er kun basert på én datakilde: {kilder_brukt[0]}."
+            )
 
     return df_folkemengde_31_12, df_folkemengde_31_12_kostra_agg_filtrert
 
+
 # +
-df_folkemengde_31_12, df_folkemengde_31_12_kostra_agg_filtrert = hent_folkemengde_kommune_31_12(2025)
+df_folkemengde_31_12, df_folkemengde_31_12_kostra_agg_filtrert = (
+    hent_folkemengde_kommune_31_12(2025)
+)
 
 display(df_folkemengde_31_12)
 display(df_folkemengde_31_12_kostra_agg_filtrert)
@@ -418,9 +448,9 @@ display(df_folkemengde_31_12_kostra_agg_filtrert)
 
 # -
 
+
 def hent_folkemengde_31_12_fk(statistikkaar):
-    """
-    Henter, aggregerer og grupperer folkemengdedata per 31.12 for et gitt statistikkår.
+    """Henter, aggregerer og grupperer folkemengdedata per 31.12 for et gitt statistikkår.
 
     Funksjonen bygger på `hent_folkemengde_kommune_31_12`, og returnerer et
     ferdig aggregert datasett på EAFK/KOSTRA-fylkesregionnivå.
@@ -454,7 +484,6 @@ def hent_folkemengde_31_12_fk(statistikkaar):
     operasjonen som feilet, og funksjonen stopper fordi senere trinn er avhengige
     av tidligere trinn.
     """
-
     INPUT_PATCH_TARGET = "builtins.input"
 
     try:
@@ -470,7 +499,10 @@ def hent_folkemengde_31_12_fk(statistikkaar):
         predefined_input = "kjonn, alder, to"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             rename_variabel, groupby_variable, df_sum_med_kjonn = (
-                summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(df_folkemengde_31_12, hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet")
+                summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
+                    df_folkemengde_31_12,
+                    hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet",
+                )
             )
 
         print("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
@@ -496,11 +528,12 @@ def hent_folkemengde_31_12_fk(statistikkaar):
         predefined_input = "alder"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             folkemengde_31_12_fk = regionshierarki.hierarki(
-                df_sum_kjonn,
-                aggregeringstype="kommune_til_fylkeskommune"
+                df_sum_kjonn, aggregeringstype="kommune_til_fylkeskommune"
             )
 
-        print("✅Operasjonen hierarki med aggregeringstype='kommune_til_fylkeskommune' ble gjennomført.")
+        print(
+            "✅Operasjonen hierarki med aggregeringstype='kommune_til_fylkeskommune' ble gjennomført."
+        )
 
     except Exception as e:
         msg = (
@@ -524,9 +557,23 @@ def hent_folkemengde_31_12_fk(statistikkaar):
 
     try:
         aldre_som_fjernes = [
-            "105", "106", "107", "108", "109", "110", "111", "112",
-            "113", "114", "115", "116", "117", "118", "119", "120",
-            "F025-029"
+            "105",
+            "106",
+            "107",
+            "108",
+            "109",
+            "110",
+            "111",
+            "112",
+            "113",
+            "114",
+            "115",
+            "116",
+            "117",
+            "118",
+            "119",
+            "120",
+            "F025-029",
         ]
 
         folkemengde_31_12_eafk = folkemengde_31_12_eafk[
@@ -545,5 +592,3 @@ def hent_folkemengde_31_12_fk(statistikkaar):
 
 folkemengde_31_12_eafk = hent_folkemengde_31_12_fk(2025)
 display(folkemengde_31_12_eafk)
-
-

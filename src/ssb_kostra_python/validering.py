@@ -5,14 +5,15 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
+#       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: kostra-fellesfunksjoner
+#     display_name: ssb-kostra-python
 #     language: python
-#     name: kostra-fellesfunksjoner
+#     name: ssb-kostra-python
 # ---
 
 # %%
-import logging
+# import logging
 import re
 from typing import Any
 from typing import cast
@@ -24,7 +25,8 @@ from klass import KlassClassification
 
 from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
+from fagfunksjoner import logger
 
 SEPARATOR = "-" * 230  # or whatever length you need
 

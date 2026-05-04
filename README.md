@@ -26,7 +26,10 @@
 
 ## Features
 
-- TODO
+- Denne pakken er til bruk for KOSTRA-brukere og gjenskaper noen av funksjonene dere var vant med fra KOMPIS. Disse er ikke like smidige som dem som ble brukt i KOMPIS, men de utfører i stor grad de samme oppgavene, og med litt tilvenning vil dere forhåpentligvis slippe å lage helt egne funksjoner for de vanligste KOMPIS-operasjonene. Med denne pakken kan dere:
+- Oppgave - funksjon
+- Konvertere variabeltype/runde av med valgt antall desimaler - def konverter_dtypes
+- 
 
 ## Requirements
 

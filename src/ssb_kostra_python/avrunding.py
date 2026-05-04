@@ -13,14 +13,13 @@
 # ---
 
 # %%
-import logging
-
+# import logging
+from fagfunksjoner import logger
 import numpy as np
 import pandas as pd
 from IPython.display import display  # for nice tables in notebooks
 
-logger = logging.getLogger(__name__)
-
+# logger = logging.getLogger(__name__)
 
 # %%
 def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:

@@ -13,14 +13,13 @@
 # ---
 
 # %%
-import logging
+# import logging
 
 import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
-
-logger = logging.getLogger(__name__)
-
+from fagfunksjoner import logger
+# logger = logging.getLogger(__name__)
 
 # %%
 def format_fil(df_uformatert: pd.DataFrame) -> pd.DataFrame:
