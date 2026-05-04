@@ -17,7 +17,7 @@ import pandas as pd
 
 # %%
 # import logging
-from fagfunksjoner import logger
+from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
 
 # logger = logging.getLogger(__name__)

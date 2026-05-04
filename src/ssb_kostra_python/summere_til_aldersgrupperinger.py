@@ -15,11 +15,12 @@
 # %%
 # import logging
 import pandas as pd
-from fagfunksjoner import logger
+from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
 
 # logger = logging.getLogger(__name__)
 INPUT_PATCH_TARGET = "builtins.input"
+
 from ssb_kostra_python import hjelpefunksjoner
 
 
@@ -81,7 +82,7 @@ def summere_til_aldersgrupperinger(
     - Aldershierarkiet forventes å være entydig per periode og alder.
     - Funksjonen forutsetter at hjelpefunksjoner håndterer korrekt identifikasjon av klassifikasjons- og statistikkvariabler.
     """
-    aldershierarki = pd.read_parquet(hierarki_path)
+    aldershierarki: pd.DataFrame = pd.read_parquet(hierarki_path)
     logger.info("Formatting hierarchy file.")
     aldershierarki = hjelpefunksjoner.format_fil(aldershierarki)
     print("")

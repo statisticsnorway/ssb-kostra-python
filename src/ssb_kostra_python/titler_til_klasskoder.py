@@ -280,7 +280,7 @@ ZFILLS = {"kommuneregion": 4, "fylkesregion": 4, "bydelsregion": 6}
 def mapping_regionsnavn(
     inputfil: pd.DataFrame,
     *,
-    language: str = "nb",
+    language: Literal["nb", "nn", "en"] = "nb",
     region_col: str | None = None,  # allow explicit override; else auto-detect
     name_suffix: str = "_navn",
 ) -> pd.DataFrame:
@@ -310,11 +310,11 @@ def mapping_regionsnavn(
     # 2) determine a single valid year from 'periode'
     s = inputfil["periode"].astype("string")
     uniq = pd.Series(s.unique())
-    valid_years = []
+    valid_years: list[str] = []
     for v in uniq:
         if pd.isna(v):
-            continue
-        sv = str(v).strip()
+            continue  # type: ignore[unreachable]
+        sv = str(v).strip()  # type: ignore[unreachable]
         if not sv:
             continue
         core = sv.lstrip("0").lower()

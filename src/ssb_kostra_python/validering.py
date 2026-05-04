@@ -22,7 +22,7 @@ import ipywidgets as widgets
 import pandas as pd
 
 # logger = logging.getLogger(__name__)
-from fagfunksjoner import logger
+from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
 from klass import KlassClassification
 

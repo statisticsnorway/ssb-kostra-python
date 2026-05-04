@@ -22,9 +22,10 @@ import pandas as pd
 
 INPUT_PATCH_TARGET = "builtins.input"
 
+
 import duckdb
 from fagfunksjoner import latest_version_path
-from fagfunksjoner import logger
+from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
 
 from ssb_kostra_python import regionshierarki
@@ -192,7 +193,9 @@ folkemengde_31_12_b = hent_folkemengde_bydeler_31_12(2024)
 display(folkemengde_31_12_b)
 
 
-def hent_folkemengde_kommune_31_12(statistikkaar: str | int) -> pd.DataFrame:
+def hent_folkemengde_kommune_31_12(
+    statistikkaar: str | int,
+) -> tuple[pd.DataFrame, pd.DataFrame | None]:
     """Henter og bearbeider befolkningsdata per 31.12 for et gitt statistikkår.
 
     Funksjonen forsøker å hente data fra to kilder:
@@ -336,7 +339,7 @@ def hent_folkemengde_kommune_31_12(statistikkaar: str | int) -> pd.DataFrame:
 
     df_folkemengde_31_12 = df_folkemengde.groupby(
         ["periode", "kommuneregion", "kjonn", "alder"], as_index=False
-    )["personer"].sum()
+    )[["personer"]].sum()
 
     print(f"Datagrunnlag for {statistikkaar}: {', '.join(kilder_brukt)} brukt.")
 
