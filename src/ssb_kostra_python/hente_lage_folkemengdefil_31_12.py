@@ -26,7 +26,6 @@ INPUT_PATCH_TARGET = "builtins.input"
 import duckdb
 from fagfunksjoner import latest_version_path
 from fagfunksjoner.fagfunksjoner_logger import logger
-from IPython.display import display  # for nice tables in notebooks
 
 from ssb_kostra_python import regionshierarki
 from ssb_kostra_python import summere_kjonn
@@ -189,8 +188,10 @@ def hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     return folkemengde_31_12_b
 
 
-folkemengde_31_12_b = hent_folkemengde_bydeler_31_12(2024)
-display(folkemengde_31_12_b)
+# +
+# folkemengde_31_12_b = hent_folkemengde_bydeler_31_12(2024)
+# display(folkemengde_31_12_b)
+# -
 
 
 def hent_folkemengde_kommune_31_12(
@@ -451,12 +452,12 @@ def hent_folkemengde_kommune_31_12(
 
 
 # +
-df_folkemengde_31_12, df_folkemengde_31_12_kostra_agg_filtrert = (
-    hent_folkemengde_kommune_31_12(2025)
-)
+# df_folkemengde_31_12, df_folkemengde_31_12_kostra_agg_filtrert = (
+#     hent_folkemengde_kommune_31_12(2025)
+# )
 
-display(df_folkemengde_31_12)
-display(df_folkemengde_31_12_kostra_agg_filtrert)
+# display(df_folkemengde_31_12)
+# display(df_folkemengde_31_12_kostra_agg_filtrert)
 
 
 # -
@@ -609,5 +610,6 @@ def hent_folkemengde_31_12_fk(statistikkaar: str | int) -> pd.DataFrame:
     return folkemengde_31_12_eafk
 
 
-folkemengde_31_12_eafk = hent_folkemengde_31_12_fk(2025)
-display(folkemengde_31_12_eafk)
+# +
+# folkemengde_31_12_eafk = hent_folkemengde_31_12_fk(2025)
+# display(folkemengde_31_12_eafk)
