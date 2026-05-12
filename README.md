@@ -27,9 +27,17 @@
 ## Features
 
 - Denne pakken er til bruk for KOSTRA-brukere og gjenskaper noen av funksjonene dere var vant med fra KOMPIS. Disse er ikke like smidige som dem som ble brukt i KOMPIS, men de utfører i stor grad de samme oppgavene, og med litt tilvenning vil dere forhåpentligvis slippe å lage helt egne funksjoner for de vanligste KOMPIS-operasjonene. Med denne pakken kan dere:
-- Oppgave - funksjon
-- Konvertere variabeltype/runde av med valgt antall desimaler - def konverter_dtypes
--
+- Oppgave - mappe.funksjon
+- Konvertere variabeltype/runde av med valgt antall desimaler - avrunding.konverter_dtypes
+- Hente/lage folkemengdefil 31.12.20XX for bydeler - hente_lage_folkemengdefil_31_12.hent_folkemengde_bydeler_31_12
+- Hente/lage folkemengdefil 31.12.20XX for kommuner - hente_lage_folkemengdefil_31_12.hent_folkemengde_kommune_31_12
+- Hente/lage folkemengdefil 31.12.20XX for fylkeskommuner - hente_lage_folkemengdefil_31_12.hent_folkemengde_31_12_fk
+- Aggregere bydelsdata til aggregert KOSTRA-regioner (EAB) -  regionshierarki.hierarki (identifiserer riktig regionsnivå automatisk så lenge regionsvariabelen heter bydelsregion, kommuneregion eller fylkesregion)
+- Aggregere kommunedata til aggregerte KOSTRA-regioner (EAK, EAKUO, EKA, EKG) - def regionshierarki.hierarki (identifiserer riktig regionsnivå automatisk så lenge regionsvariabelen heter bydelsregion, kommuneregion eller fylkesregion)
+- Aggregere fylkeskommunedata til aggregerte KOSTRA-regioner (EAFK, EAFKUO) - def regionshierarki.hierarki (identifiserer riktig regionsnivå automatisk så lenge regionsvariabelen heter bydelsregion, kommuneregion eller fylkesregion)
+- Summere et datasett med kjønnsvariabel over kjønnene - summere_kjonn.summere_over_kjonn
+- Summere et datasett som er fordelt på ettårige aldersgrupperinger til aggregerte KOSTRA-aldersgrupperinger - summere_til_aldersgrupperinger.summere_til_aldersgrupperinger
+- Feste en kolonne med titler til KLASS-koder (f.eks 0301 - Oslo) - titler_til_klasskoder.kodelister_navn
 
 ## Requirements
 

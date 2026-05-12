@@ -463,7 +463,8 @@ def hent_folkemengde_kommune_31_12(
 # -
 
 
-def hent_folkemengde_31_12_fk(statistikkaar: str | int) -> pd.DataFrame:
+# def hent_folkemengde_31_12_fk(statistikkaar: str | int) -> pd.DataFrame:
+def hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFrame:
     """Henter, aggregerer og grupperer folkemengdedata per 31.12 for et gitt statistikkår.
 
     Funksjonen bygger på `hent_folkemengde_kommune_31_12`, og returnerer et
@@ -608,8 +609,3 @@ def hent_folkemengde_31_12_fk(statistikkaar: str | int) -> pd.DataFrame:
         raise RuntimeError(msg) from e
 
     return folkemengde_31_12_eafk
-
-
-# +
-# folkemengde_31_12_eafk = hent_folkemengde_31_12_fk(2025)
-# display(folkemengde_31_12_eafk)

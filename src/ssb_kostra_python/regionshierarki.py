@@ -432,10 +432,10 @@ def hierarki(
     Eksempler::
 
         # La funksjonen velge aggregeringstype automatisk
-        df_agg = mapping_hierarki.hierarki(df)
+        df_agg = regionshierarki.hierarki(df)
 
         # Overstyring i kommunedata (ikke anbefalt, men mulig)
-        df_agg = mapping_hierarki.hierarki(df, aggregeringstype="kommune_til_fylkeskommune")
+        df_agg = regionshierarki.hierarki(df, aggregeringstype="kommune_til_fylkeskommune")
 
     For at aggregeringen skal bli korrekt, må du angi klassifikasjonsvariabler i datasettet
     utover periode- og regionsvariabelen. Disse identifiseres automatisk hvis de er riktig navngitt.
