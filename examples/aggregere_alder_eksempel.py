@@ -13,19 +13,23 @@
 # ---
 
 # %% [markdown]
-# ### I dette eksempelarket ser vi på hvordan vi aggregerer opp antallet mennesker på kjønn i et datasett som fordeler på mann og kvinne.
-# ### Funksjonen vi bruker heter "summere_kjonn". Denne ligger på ssb-kostra-python/src/funksjoner.
-# ### Vi laster den inn med "from ssb_kostra_python import summere_kjonn".
+# ## I dette eksempelarket ser vi på hvordan vi aggregerer opp ettårige aldersgrupper til sammensatte KOSTRA-aldersgrupperinger.
+# ## Funksjonen vi bruker heter "summere_til_aldersgrupperinger". Denne ligger på ssb-kostra-python/src/funksjoner
+# ## Vi laster den inn med from ssb_kostra_python.summere_til_aldersgrupperinger import (summere_til_aldersgrupperinger,)
+
+# %% [markdown]
+# ### Laster ned pakker
 
 # %%
-
 import pandas as pd
 from fagfunksjoner import latest_version_path
 
 INPUT_PATCH_TARGET = "builtins.input"
 from IPython.display import display  # for nice tables in notebooks
 
-from ssb_kostra_python import summere_kjonn
+from ssb_kostra_python.summere_til_aldersgrupperinger import (
+    summere_til_aldersgrupperinger,
+)
 
 # %% [markdown]
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
@@ -40,8 +44,9 @@ folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler_2024)
 # Viser datasettet.
 display(folketall_bydeler)
 
+# %% [markdown]
+# ### Summerer opp datasettet "folketall_bydeler" til KOSTRA-aldersgrupperinger
+
 # %%
-# Kjører funksjonen. folketall_bydeler_sum_kjonn er det endelige datasettet som genereres.
-folketall_bydeler_sum_kjonn = summere_kjonn.summere_over_kjonn(folketall_bydeler)
-# Viser det genererte datasettet. Du vil se at kolonnen for kjønn er borte, for nå er kjønnene summert opp.
-display(folketall_bydeler_sum_kjonn)
+# Summerer til KOSTRA-aldersgrupperinger
+folketall_bydeler_alder = summere_til_aldersgrupperinger(folketall_bydeler)

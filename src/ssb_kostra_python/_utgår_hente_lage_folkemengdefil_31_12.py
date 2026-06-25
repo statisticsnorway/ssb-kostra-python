@@ -34,7 +34,7 @@ from ssb_kostra_python import summere_til_aldersgrupperinger
 # -
 
 
-def hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
+def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     """Henter, bearbeider og aggregerer folkemengdedata for bydeler per 31.12 for et gitt statistikkår.
 
     Funksjonen henter først bydeldata fra bøtte, og kjører deretter følgende
@@ -106,7 +106,9 @@ def hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
             _rename_variabel, _groupby_variable, df_sum_med_kjonn = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
                     folketall_bydeler,
-                    hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet",
+                    #     hierarki_path="/buckets/produkt/befolkning/_config/mapping_aldershierarki.parquet",
+                    # )
+                    hierarki_path="/buckets/delt-kostra-befolkning-delt/aldershierarki/mapping_aldershierarki.parquet",
                 )
             )
 
@@ -185,7 +187,9 @@ def hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
         # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
-    return folkemengde_31_12_b
+    return folkemengde_31_12_b[
+        ["periode", "bydelsregion", "alder", "personer"]
+    ].reset_index(drop=True)
 
 
 # +
@@ -194,7 +198,7 @@ def hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
 # -
 
 
-def hent_folkemengde_kommune_31_12(
+def _hent_folkemengde_kommune_31_12(
     statistikkaar: str | int,
 ) -> tuple[pd.DataFrame, pd.DataFrame | None]:
     """Henter og bearbeider befolkningsdata per 31.12 for et gitt statistikkår.
@@ -246,7 +250,7 @@ def hent_folkemengde_kommune_31_12(
 
     Eksempel på bruk
     ----------------
-    >>> df_base, df_final = hent_folkemengde_kommune_31_12(2024)
+    >>> df_base, df_final = _hent_folkemengde_kommune_31_12(2024)
 
     >>> if df_final is not None:
     ...     display(df_final)
@@ -271,7 +275,7 @@ def hent_folkemengde_kommune_31_12(
     # ---------- Hent kommunedata ----------
     try:
         df_kommuner_data_path = latest_version_path(
-            f"{bef_buckets_shared}/bosatte/{statistikkaar}/bosatte_p{statistikkaar}-12-31_v1.parquet"
+            f"{bef_buckets_shared}/bosatte/{statistikkaar}/bosatte_p{statistikkaar}-12-31.parquet"
         )
 
         df_kommuner = duckdb.query(f"""
@@ -300,9 +304,20 @@ def hent_folkemengde_kommune_31_12(
         aar_inputmappe = int(statistikkaar) + 1
         filsti_input_svalbard = f"{bef_buckets_shared}/svalbard/{aar_inputmappe}"
 
-        df_svalbard_data_path = latest_version_path(
-            f"{filsti_input_svalbard}/svalbardbosatte_p{aar_inputmappe}-01-01"
-        )
+        # df_svalbard_data_path = latest_version_path(
+        #     f"{filsti_input_svalbard}/svalbardbosatte_p{aar_inputmappe}-01-01"
+        # )
+
+        # Her må du be om hjelp fra Andreas
+        if aar_inputmappe == 2018:
+            df_svalbard_data_path = latest_version_path(
+                f"{filsti_input_svalbard}/svalbardbosatte_p{aar_inputmappe}-07-01"
+            )
+        else:
+            df_svalbard_data_path = latest_version_path(
+                f"{filsti_input_svalbard}/svalbardbosatte_p{aar_inputmappe}-01-01"
+            )
+        # Her må du be om hjelp fra Andreas
 
         df_svalbard_data = duckdb.query(f"""
             SELECT kjoenn AS kjonn,
@@ -464,10 +479,10 @@ def hent_folkemengde_kommune_31_12(
 
 
 # def hent_folkemengde_31_12_fk(statistikkaar: str | int) -> pd.DataFrame:
-def hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFrame:
+def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFrame:
     """Henter, aggregerer og grupperer folkemengdedata per 31.12 for et gitt statistikkår.
 
-    Funksjonen bygger på `hent_folkemengde_kommune_31_12`, og returnerer et
+    Funksjonen bygger på `_hent_folkemengde_kommune_31_12`, og returnerer et
     ferdig aggregert datasett på EAFK/KOSTRA-fylkesregionnivå.
 
     Operasjoner:
@@ -502,11 +517,11 @@ def hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFra
     INPUT_PATCH_TARGET = "builtins.input"
 
     try:
-        df_folkemengde_31_12, _ = hent_folkemengde_kommune_31_12(statistikkaar)
-        print("✅Operasjonen hent_folkemengde_kommune_31_12 ble gjennomført.")
+        df_folkemengde_31_12, _ = _hent_folkemengde_kommune_31_12(statistikkaar)
+        print("✅Operasjonen _hent_folkemengde_kommune_31_12 ble gjennomført.")
 
     except Exception as e:
-        msg = f"❌Operasjonen hent_folkemengde_kommune_31_12 feilet: {e}"
+        msg = f"❌Operasjonen _hent_folkemengde_kommune_31_12 feilet: {e}"
         logger.warning(msg)
         # warnings.warn(msg)
         raise RuntimeError(msg) from e

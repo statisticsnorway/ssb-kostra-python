@@ -13,7 +13,6 @@
 # ---
 
 # %%
-# import logging
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
@@ -21,13 +20,29 @@ from IPython.display import display  # for nice tables in notebooks
 # logger = logging.getLogger(__name__)
 INPUT_PATCH_TARGET = "builtins.input"
 
+
 from ssb_kostra_python import hjelpefunksjoner
+from ssb_kostra_python.hjelpefunksjoner import ALDERSHIERARKI_PATH
+
+# import pandas as pd
+# from fagfunksjoner.fagfunksjoner_logger import logger
+# from IPython.display import display
+
+# from ssb_kostra_python.hjelpefunksjoner import (
+#     ALDERSHIERARKI_PATH,
+#     format_fil,
+#     definere_klassifikasjonsvariable,
+# )
 
 
 # %%
 def summere_til_aldersgrupperinger(
-    inputfil: pd.DataFrame, hierarki_path: str
-) -> tuple[list[str], list[str], pd.DataFrame]:
+    inputfil: pd.DataFrame, hierarki_path: str = ALDERSHIERARKI_PATH
+) -> pd.DataFrame:
+
+    # def summere_til_aldersgrupperinger(
+    #     inputfil: pd.DataFrame, hierarki_path: str = ALDERSHIERARKI_PATH
+    # ) -> tuple[list[str], list[str], pd.DataFrame]:
     """Aggregerer individbaserte aldersverdier til forhåndsdefinerte aldersgrupper.
 
     Dette gjøres ved hjelp av KOSTRA-aldersgrupperingshierarkiet, og de aggregerte verdiene
@@ -124,6 +139,15 @@ def summere_til_aldersgrupperinger(
     # Genererer datasett kun med antall summert på aldersgrupperinger
     rename_variabel = ["alder"]
     groupby_variable = [x for x in klassifikasjonsvariable if x not in rename_variabel]
+    if "to" not in groupby_variable and "to" in statistikkvariable:
+        logger.info(
+            "Klassifikasjonsvariabel 'to' lagt til som groupby_variable og fjernet fra statistikkvariable."
+        )
+        logger.info(
+            "Dette gjøres automatisk fordi brukeren ikke selv angav 'to' som klassifikasjonsvariabel."
+        )
+        groupby_variable.append("to")
+        statistikkvariable.remove("to")
     logger.info(
         f"Aggregerer statistikkvariablen(e) {statistikkvariable} til aldersgrupperinger."
     )
@@ -140,7 +164,8 @@ def summere_til_aldersgrupperinger(
     df_combined = pd.concat([inputfil_copy_formatted, df_cohorts], ignore_index=True)
 
     display(df_combined)
-    return rename_variabel, groupby_variable, df_combined
+    # return rename_variabel, groupby_variable, df_combined
+    return df_combined
 
 
 # %%

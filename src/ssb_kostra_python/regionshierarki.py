@@ -1,10 +1,22 @@
 # %%
-from collections.abc import Callable
+import logging
 from typing import Any
+from typing import cast
 
 import pandas as pd
+from klass import KlassClassification
+from klass import KlassCorrespondence
+from pandas.api.types import is_bool_dtype
+from pandas.api.types import is_float_dtype
+from pandas.api.types import is_integer_dtype
+
+from ssb_kostra_python import hjelpefunksjoner
+
+logger = logging.getLogger(__name__)
+from collections.abc import Callable
 
 
+# %%
 def _select_mapping(
     aggregeringstype: str | None, region_col: str, periode: str | int
 ) -> tuple[
@@ -172,21 +184,6 @@ def _restore_dtype(result: Any, orig: Any) -> Any:
 #     name: kostra-fellesfunksjoner
 # ---
 
-# %%
-import logging
-from typing import Any
-from typing import cast
-
-import pandas as pd
-from klass import KlassClassification
-from klass import KlassCorrespondence
-from pandas.api.types import is_bool_dtype
-from pandas.api.types import is_float_dtype
-from pandas.api.types import is_integer_dtype
-
-from ssb_kostra_python import hjelpefunksjoner
-
-logger = logging.getLogger(__name__)
 # %% [markdown]
 # ### Innhenting av filer til bruk
 
@@ -688,3 +685,6 @@ def gjennomsnitt_aggregerte_regioner(
         }
         return df, report
     return df
+
+
+# %%
