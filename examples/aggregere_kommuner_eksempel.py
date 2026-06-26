@@ -33,7 +33,7 @@ from ssb_kostra_python.regionshierarki import hierarki
 # ### Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik statistikkaar=20XX.
 
 # %%
-statistikkaar = 2024
+statistikkaar = 2015
 df_kommuner_data_path = latest_version_path(
     f"/buckets/shared/bef-statistikk/folketall/bosatte/{statistikkaar}/bosatte_p{statistikkaar}-12-31.parquet"
 )
