@@ -130,14 +130,19 @@ def hente_data_folkemengde(
             # )
             hjelpefunksjoner._hent_folkemengde_bydeler_31_12(int(kildeaar))
         )
+    # elif regionsnivaa.lower() == "kommune":
+    #     _, folkemengde_31_12 = (
+    #         hjelpefunksjoner._hent_folkemengde_kommune_31_12(int(kildeaar))
+    #     )
     elif regionsnivaa.lower() == "kommune":
-        _, folkemengde_31_12 = (
-            #     hente_lage_folkemengdefil_31_12._hent_folkemengde_kommune_31_12(
-            #         int(kildeaar)
-            #     )
-            # )
-            hjelpefunksjoner._hent_folkemengde_kommune_31_12(int(kildeaar))
+        _, folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_kommune_31_12(
+            int(kildeaar)
         )
+
+        if folkemengde_31_12 is None:
+            raise RuntimeError(
+                f"Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
+            )
     elif regionsnivaa.lower() == "fylkeskommune":
         folkemengde_31_12 = (
             #     hente_lage_folkemengdefil_31_12._hent_folkemengde_fylkeskommune_31_12(
