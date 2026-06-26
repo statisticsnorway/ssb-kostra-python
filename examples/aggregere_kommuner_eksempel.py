@@ -30,7 +30,7 @@ from ssb_kostra_python.regionshierarki import hierarki
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
 # ### Dataene kommer fra delt-bøtten til seksjon for befolkning.
 # ### Vi må bearbeide dataene litt slik at de blir likere dataene slik vi kjenner dem i KOMPIS.
-# ### Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik statistikkaar=20XX.
+# ### Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik: statistikkaar=20XX.
 
 # %%
 statistikkaar = 2015

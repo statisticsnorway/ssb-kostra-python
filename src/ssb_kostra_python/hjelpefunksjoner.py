@@ -13,8 +13,6 @@
 # ---
 
 # %%
-# import logging
-
 ALDERSHIERARKI_PATH = (
     "/buckets/delt-kostra-befolkning-delt/aldershierarki/mapping_aldershierarki.parquet"
 )
@@ -32,11 +30,6 @@ from fagfunksjoner.fagfunksjoner_logger import logger
 from ssb_kostra_python import regionshierarki
 from ssb_kostra_python import summere_kjonn
 from ssb_kostra_python import summere_til_aldersgrupperinger
-
-# from ssb_kostra_python.summere_til_aldersgrupperinger import (summere_til_aldersgrupperinger,)
-
-
-# logger = logging.getLogger(__name__)
 
 
 # %%
@@ -95,10 +88,6 @@ def format_fil(
 
     for region in region_columns:
         _conditional_pad(region, region_columns[region])
-
-    # _conditional_pad("kommuneregion", 4)
-    # _conditional_pad("fylkesregion", 4)
-    # _conditional_pad("bydelsregion", 6)  # 6 for bydelsregion
 
     # If none of the region columns are present, warn user
     if not any(c in df_formatert.columns for c in region_columns):
@@ -446,13 +435,11 @@ def _hent_folkemengde_kommune_31_12(
 
         dataframes.append(df_kommuner)
         kilder_brukt.append("kommuner")
-        # print(f"Kommunedata hentet for {statistikkaar}.")
         logger.info(f"✅Kommunedata hentet for {statistikkaar}. \n")
 
     except Exception as e:
         msg = f"❌Kommunefil mangler eller kunne ikke leses: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         mangler.append(msg)
 
     # ---------- Hent Svalbarddata ----------
@@ -460,11 +447,6 @@ def _hent_folkemengde_kommune_31_12(
         aar_inputmappe = int(statistikkaar) + 1
         filsti_input_svalbard = f"{bef_buckets_shared}/svalbard/{aar_inputmappe}"
 
-        # df_svalbard_data_path = latest_version_path(
-        #     f"{filsti_input_svalbard}/svalbardbosatte_p{aar_inputmappe}-01-01"
-        # )
-
-        # Her må du be om hjelp fra Andreas
         if aar_inputmappe == 2018:
             df_svalbard_data_path = latest_version_path(
                 f"{filsti_input_svalbard}/svalbardbosatte_p{aar_inputmappe}-07-01"
@@ -487,13 +469,11 @@ def _hent_folkemengde_kommune_31_12(
 
         dataframes.append(df_svalbard_data)
         kilder_brukt.append("svalbard")
-        # print(f"Svalbarddata hentet for statistikkår {statistikkaar}.")
         logger.info(f"✅Svalbarddata hentet for statistikkår {statistikkaar}. \n")
 
     except Exception as e:
         msg = f"❌Svalbardfil mangler eller kunne ikke leses: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         mangler.append(msg)
 
     # ---------- Ingen grunnlagsdata ----------
@@ -526,14 +506,7 @@ def _hent_folkemengde_kommune_31_12(
     try:
         predefined_input = "kjonn, alder, to"
         with patch("builtins.input", return_value=predefined_input):
-            # (
-            #     _rename_variabel,
-            #     _groupby_variable,
-            #     df_folkemengde_31_12_agg_alder,
-            # ) = summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
-            #     df_folkemengde_31_12,
-            #     hierarki_path=ALDERSHIERARKI_PATH,
-            # )
+
             df_folkemengde_31_12_agg_alder = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
                     df_folkemengde_31_12,
@@ -546,7 +519,6 @@ def _hent_folkemengde_kommune_31_12(
     except Exception as e:
         msg = f"❌Operasjonen summere_til_aldersgrupperinger feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         print(msg)
         return df_folkemengde_31_12, None
 

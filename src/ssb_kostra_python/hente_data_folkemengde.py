@@ -1,5 +1,4 @@
 INPUT_PATCH_TARGET = "builtins.input"
-# import ssb_kostra_python.hjelpefunksjoner
 import pandas as pd
 
 from ssb_kostra_python import hjelpefunksjoner
@@ -118,22 +117,11 @@ def hente_data_folkemengde(
             f"ℹ️Du har satt regionsnivået til \033[1m{regionsnivaa}\033[0m. Du har satt årgang til \033[1m{aar}\033[0m. Befolkningsdataene hentes fra den samme årgangen \033[1m{kildeaar}\033[0m. \n"
         )
 
-    # print(
-    #     f"ℹ️Du har satt regionsnivået til {regionsnivaa}. Du har satt årgang til {aar}. Testdatasettet hentes fra årgangen {kildeaar}. {kildeaar} byttes ut med {aar} i periodekolonnen.\n"
-    # )
-
     if regionsnivaa.lower() == "bydel":
-        folkemengde_31_12 = (
-            #     hente_lage_folkemengdefil_31_12._hent_folkemengde_bydeler_31_12(
-            #         int(kildeaar)
-            #     )
-            # )
-            hjelpefunksjoner._hent_folkemengde_bydeler_31_12(int(kildeaar))
+        folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_bydeler_31_12(
+            int(kildeaar)
         )
-    # elif regionsnivaa.lower() == "kommune":
-    #     _, folkemengde_31_12 = (
-    #         hjelpefunksjoner._hent_folkemengde_kommune_31_12(int(kildeaar))
-    #     )
+
     elif regionsnivaa.lower() == "kommune":
         _, folkemengde_kommune = hjelpefunksjoner._hent_folkemengde_kommune_31_12(
             int(kildeaar)
@@ -147,12 +135,8 @@ def hente_data_folkemengde(
         folkemengde_31_12 = folkemengde_kommune
 
     elif regionsnivaa.lower() == "fylkeskommune":
-        folkemengde_31_12 = (
-            #     hente_lage_folkemengdefil_31_12._hent_folkemengde_fylkeskommune_31_12(
-            #         int(kildeaar)
-            #     )
-            # )
-            hjelpefunksjoner._hent_folkemengde_fylkeskommune_31_12(int(kildeaar))
+        folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_fylkeskommune_31_12(
+            int(kildeaar)
         )
     else:
         raise ValueError(
