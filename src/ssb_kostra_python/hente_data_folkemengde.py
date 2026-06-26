@@ -54,12 +54,12 @@ def hente_data_folkemengde(
     ---------
     Hent reelle data for bydeler i 2024:
 
-    >>> datasett = hente_data_folkemengde(2024, "bydel")
+    datasett = hente_data_folkemengde(2024, "bydel")
 
     Lag testdata for kommuner i 2026 basert på 2025-data:
 
-    >>> testdatasett = hente_data_folkemengde(2026, "kommune", testdata=True)
-    >>> display(testdatasett)
+    testdatasett = hente_data_folkemengde(2026, "kommune", testdata=True)
+    display(testdatasett)
 
     Reiser
     ------

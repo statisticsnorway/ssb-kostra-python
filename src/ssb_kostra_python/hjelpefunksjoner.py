@@ -220,8 +220,8 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
 
     Eksempel
     --------
-    >>> folkemengde_31_12_b = hent_folkemengde_bydeler_31_12(2024)
-    >>> display(folkemengde_31_12_b)
+    folkemengde_31_12_b = hent_folkemengde_bydeler_31_12(2024)
+    display(folkemengde_31_12_b)
 
     Feilhåndtering
     ---------------
@@ -406,13 +406,13 @@ def _hent_folkemengde_kommune_31_12(
 
     Eksempel på bruk
     ----------------
-    >>> df_base, df_final = _hent_folkemengde_kommune_31_12(2024)
+    df_base, df_final = _hent_folkemengde_kommune_31_12(2024)
 
-    >>> if df_final is not None:
-    ...     display(df_final)
-    ... else:
-    ...     print("Videre prosessering feilet - viser kun grunnlagsdata.")
-    ...     display(df_base)
+    if df_final is not None:
+         display(df_final)
+    else:
+        print("Videre prosessering feilet - viser kun grunnlagsdata.")
+        display(df_base)
 
     Notater
     -------
@@ -656,8 +656,8 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
 
     Eksempel
     --------
-    >>> folkemengde_31_12_eafk = hent_folkemengde_31_12_eafk(2024)
-    >>> display(folkemengde_31_12_eafk)
+    folkemengde_31_12_eafk = hent_folkemengde_31_12_eafk(2024)
+    display(folkemengde_31_12_eafk)
 
     Feilhåndtering
     ---------------
