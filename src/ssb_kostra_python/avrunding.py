@@ -21,8 +21,6 @@ import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
 
-# logger = logging.getLogger(__name__)
-
 
 # %%
 def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:

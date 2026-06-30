@@ -218,8 +218,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     Ved feil gis en advarsel og funksjonen stopper, fordi hvert trinn er
     avhengig av resultatet fra forrige trinn.
     """
-    INPUT_PATCH_TARGET = "builtins.input"
-
     # ---------- Hent filsti ----------
     try:
         statistikkaar = str(statistikkaar)
@@ -254,7 +252,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
         predefined_input = "kjonn, alder, to"
 
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-            # _rename_variabel, _groupby_variable, df_sum_med_kjonn = (
             df_sum_med_kjonn = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
                     folketall_bydeler,
@@ -505,7 +502,7 @@ def _hent_folkemengde_kommune_31_12(
 
     try:
         predefined_input = "kjonn, alder, to"
-        with patch("builtins.input", return_value=predefined_input):
+        with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
 
             df_folkemengde_31_12_agg_alder = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
@@ -524,7 +521,7 @@ def _hent_folkemengde_kommune_31_12(
 
     try:
         predefined_input = "kjonn, alder"
-        with patch("builtins.input", return_value=predefined_input):
+        with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             df_folkemengde_31_12_agg_kjonn = summere_kjonn.summere_over_kjonn(
                 df_folkemengde_31_12_agg_alder
             )
@@ -540,7 +537,7 @@ def _hent_folkemengde_kommune_31_12(
 
     try:
         predefined_input = "alder"
-        with patch("builtins.input", return_value=predefined_input):
+        with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             df_folkemengde_31_12_agg_kostra = regionshierarki.hierarki(
                 df_folkemengde_31_12_agg_kjonn
             )
@@ -637,8 +634,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     operasjonen som feilet, og funksjonen stopper fordi senere trinn er avhengige
     av tidligere trinn.
     """
-    INPUT_PATCH_TARGET = "builtins.input"
-
     try:
         df_folkemengde_31_12, _ = _hent_folkemengde_kommune_31_12(statistikkaar)
         print("✅Operasjonen _hent_folkemengde_kommune_31_12 ble gjennomført.")
