@@ -19,6 +19,8 @@
 
 # %%
 INPUT_PATCH_TARGET = "builtins.input"
+from unittest.mock import patch
+
 import duckdb
 from fagfunksjoner import latest_version_path
 from IPython.display import display  # for nice tables in notebooks
@@ -61,6 +63,19 @@ display(df_folketall_kommuner)
 
 # %%
 folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner)
+display(folketall_kommuner_KOSTRA)
+
+# %% [markdown]
+# #### Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
+# #### Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+# #### Du forhåndsdefinerer klassifikasjonsvariablene i "predefined_input". Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
+
+# %%
+predefined_input = "kjonn, alder"
+
+with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
+    folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner)
+
 display(folketall_kommuner_KOSTRA)
 
 # %%

@@ -242,7 +242,6 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     komm_fylk_korr_df = komm_fylk_korr_df[["from", "to"]]
 
     komm_fylk_korr_df["to"] = "EKA" + komm_fylk_korr_df["to"].str[:2]
-    # display(komm_fylk_korr)
 
     komm_kostra_gr_corr: KlassCorrespondence = KlassCorrespondence(
         source_classification_id="131",

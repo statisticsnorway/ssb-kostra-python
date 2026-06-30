@@ -18,9 +18,9 @@
 # ### Vi laster den inn med "from functions.funksjoner import regionshierarki".
 
 # %%
-
-
 INPUT_PATCH_TARGET = "builtins.input"
+from unittest.mock import patch
+
 import duckdb
 from fagfunksjoner import latest_version_path
 from IPython.display import display  # for nice tables in notebooks
@@ -72,6 +72,26 @@ display(folketall_fylkeskommuner)
 
 # %%
 folketall_fylkeskommuner_KOSTRA = hierarki(folketall_fylkeskommuner)
+display(folketall_fylkeskommuner_KOSTRA)
+
+# %% [markdown]
+# #### Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
+# #### Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+# #### Du forhåndsdefinerer klassifikasjonsvariablene i “predefined_input”. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
+# #### I dette tilfellet kjøres hierarkioperasjonen to ganger. Først må kommunedatasettet aggregeres opp til fylkeskommuner. Deretter må fylkeskommunedatasettet aggregeres opp til KOSTRA-fylkeskommunegrupperingene. I begge operasjonene er klassifikasjonsvariablene (i tillegg til periode og fylkesregion) "kjonn" og "alder", så vi trenger bare å definere dem én gang.
+
+# %%
+predefined_input = "kjonn, alder"
+
+with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
+    folketall_fylkeskommuner = hierarki(
+        df_folketall_kommuner, "kommune_til_fylkeskommune"
+    )
+display(folketall_fylkeskommuner)
+
+
+with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
+    folketall_fylkeskommuner_KOSTRA = hierarki(folketall_fylkeskommuner)
 display(folketall_fylkeskommuner_KOSTRA)
 
 # %%
