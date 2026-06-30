@@ -142,7 +142,6 @@ def definere_klassifikasjonsvariable(
         logger.info(f"Andre klassifikasjonsvariable: {andre_klassifikasjonsvariable}")
 
     # Helper to deduplicate while preserving order
-    # def uniq(seq):
     def uniq(seq: list[str]) -> list[str]:
         seen = set()
         out = []
@@ -232,7 +231,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     except Exception as e:
         msg = f"❌Operasjonen latest_version_path for bydeldata feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Les parquet ----------
@@ -244,7 +242,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     except Exception as e:
         msg = f"❌Operasjonen innlesing av folkemengdefil for bydeler feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Summer til KLASS-aldersgrupperinger ----------
@@ -266,7 +263,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     except Exception as e:
         msg = f"❌Operasjonen summere_til_aldersgrupperinger for bydeler feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Summer over kjønn ----------
@@ -281,7 +277,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     except Exception as e:
         msg = f"❌Operasjonen summere_over_kjonn for bydeler feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Grupper over Oslo-bydelene ----------
@@ -298,7 +293,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     except Exception as e:
         msg = f"❌Operasjonen regionshierarki.hierarki for Oslo-bydeler feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Filtrer bort ettårige alderskoder ----------
@@ -331,7 +325,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     except Exception as e:
         msg = f"❌Operasjonen filtrering av alder 105-120 for bydeler feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     return folkemengde_31_12_b[
@@ -452,7 +445,6 @@ def _hent_folkemengde_kommune_31_12(
             df_svalbard_data_path = latest_version_path(
                 f"{filsti_input_svalbard}/svalbardbosatte_p{aar_inputmappe}-01-01"
             )
-        # Her må du be om hjelp fra Andreas
 
         df_svalbard_data = duckdb.query(f"""
             SELECT kjoenn AS kjonn,
@@ -531,7 +523,6 @@ def _hent_folkemengde_kommune_31_12(
     except Exception as e:
         msg = f"❌Operasjonen summere_over_kjonn feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         print(msg)
         return df_folkemengde_31_12, None
 
@@ -547,7 +538,6 @@ def _hent_folkemengde_kommune_31_12(
     except Exception as e:
         msg = f"❌Operasjonen hierarki feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         print(msg)
         return df_folkemengde_31_12, None
 
@@ -580,7 +570,6 @@ def _hent_folkemengde_kommune_31_12(
     except Exception as e:
         msg = f"❌Operasjonen filtrering av alder 105-120 feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         print(msg)
         return df_folkemengde_31_12, None
 
@@ -641,18 +630,11 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     except Exception as e:
         msg = f"❌Operasjonen _hent_folkemengde_kommune_31_12 feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     try:
         predefined_input = "kjonn, alder, to"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-            # _rename_variabel, _groupby_variable, df_sum_med_kjonn = (
-            #     summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
-            #         df_folkemengde_31_12,
-            #         hierarki_path=ALDERSHIERARKI_PATH,
-            #     )
-            # )
             df_sum_med_kjonn = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
                     df_folkemengde_31_12,
@@ -665,7 +647,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     except Exception as e:
         msg = f"❌Operasjonen summere_til_aldersgrupperinger feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -678,7 +659,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     except Exception as e:
         msg = f"❌Operasjonen summere_over_kjonn feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -698,7 +678,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
             f"feilet: {e}"
         )
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -711,7 +690,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     except Exception as e:
         msg = f"❌Operasjonen hierarki til KOSTRA-fylkesregioner/EAFK feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -744,7 +722,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     except Exception as e:
         msg = f"❌Operasjonen filtrering av alder 105-120 og F025-029 feilet: {e}"
         logger.warning(msg)
-        # warnings.warn(msg)
         raise RuntimeError(msg) from e
 
     return folkemengde_31_12_eafk
