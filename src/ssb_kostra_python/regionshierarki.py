@@ -261,7 +261,6 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
         }
     )
     komm_kostra_gr_df = komm_kostra_gr_df[["from", "to"]]
-    # display(komm_kostra_gr)
 
     nus: KlassClassification = KlassClassification(
         "131", language="nb", include_future=True
@@ -276,7 +275,6 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
         columns={"code_1": "from"}
     )
     klass_kommuner_landet["to"] = "EAK"
-    # display(klass_kommuner_landet)
 
     nus = KlassClassification("131", language="nb", include_future=True)
     nuskoder = nus.get_codes(f"{year}-01-01")
@@ -289,7 +287,6 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
         columns={"code_1": "from"}
     )
     klass_kommuner_u_oslo["to"] = "EAKUO"
-    # display(klass_kommuner_u_oslo)
 
     mapping_kommuner: pd.DataFrame = pd.concat(
         [
@@ -305,7 +302,6 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
 
 
 # %%
-# def hierarki_fra_kommune_til_fylkeskommune(year : str | int):
 def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     """Mapping fra kommune til fylkeskommune.
 
