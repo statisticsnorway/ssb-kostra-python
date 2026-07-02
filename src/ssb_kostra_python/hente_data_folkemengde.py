@@ -88,16 +88,16 @@ def hente_data_folkemengde(
         "ℹ️Dette problemet gjelder foreløpig bare kommuner og fylkeskommuner. For Oslo-bydelene har det ikke vært reform i KOSTRA-tidsserien.\n"
     )
     print(
-        "ℹ️Om du har skrevet funksjonen som dette - \033[1mhente_data_folkemengde(2026, 'bydel', True)\033[0m - har du ikke lagret datasettet i et objekt selv om det vises nederst."
+        f"ℹ️Om du har skrevet funksjonen som dette - \033[1mhente_data_folkemengde({aar}, {regionsnivaa}, True)\033[0m - har du ikke lagret datasettet i et objekt selv om det vises nederst."
     )
     print(
-        "ℹ️Du har i så fall et 2026-datasett for bydelene, og det siste argumentet \033[1mTrue\033[0m gjør at du får et testdatasett der befolkningsdataene fra 2025-filene er brukt.\n"
+        f"ℹ️Du har i så fall et {aar}-datasett for {regionsnivaa}, og det siste argumentet \033[1mTrue\033[0m gjør at du får et testdatasett der befolkningsdataene fra året før er brukt.\n"
     )
     print(
-        "ℹ️Men om du har skrevet funksjonen som dette - \033[1mtestdatasett = hente_testdata_folkemengde(2024, 'kommune')\033[0m - har du lagret datasettet som en dataframe."
+        f"ℹ️Men om du har skrevet funksjonen som dette - \033[1mtestdatasett = hente_testdata_folkemengde({aar}, {regionsnivaa})\033[0m - har du lagret datasettet som en dataframe."
     )
     print(
-        "Da har du her et kommunedatasett for 2024 med inputdata for 2024. Å skrive \033[1mdatasett = hente_data_folkemengde(2024, 'kommune')\033[0m og \033[1mdatasett = hente_data_folkemengde(2024, 'kommune', False)\033[0m  er likestilt."
+        f"Da har du her et kommunedatasett for {aar} med inputdata for {aar}. Å skrive \033[1mdatasett = hente_data_folkemengde({aar}, {regionsnivaa})\033[0m og \033[1mdatasett = hente_data_folkemengde({aar}, {regionsnivaa}, False)\033[0m  er likestilt."
     )
     print(
         "ℹ️Da vil derimot ikke testdatasettet vises. Skriv ganske enkelt \033[1mdisplay(datasett)\033[0m i tillegg, og så vil du få en visning."
