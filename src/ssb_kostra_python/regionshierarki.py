@@ -1,9 +1,11 @@
 # %%
-import logging
+# logger = logging.getLogger(__name__)
+from collections.abc import Callable
 from typing import Any
 from typing import cast
 
 import pandas as pd
+from fagfunksjoner import logger
 from klass import KlassClassification
 from klass import KlassCorrespondence
 from pandas.api.types import is_bool_dtype
@@ -11,9 +13,7 @@ from pandas.api.types import is_float_dtype
 from pandas.api.types import is_integer_dtype
 
 from ssb_kostra_python import hjelpefunksjoner
-
-logger = logging.getLogger(__name__)
-from collections.abc import Callable
+from ssb_kostra_python.titler_til_klasskoder import mapping_regionsnavn
 
 
 # %%
@@ -109,13 +109,17 @@ def _postprocess_combined(
     post_filter: Callable[[pd.DataFrame], pd.DataFrame] | None,
     rename_cols: dict[str, str],
     klassifikasjonsvariable: list[str],
+    add_region_names: bool,
 ) -> pd.DataFrame:
     df[klassifikasjonsvariable] = df[klassifikasjonsvariable].astype(str)
     if post_filter:
         df = post_filter(df)
     if rename_cols:
         df = df.rename(columns=rename_cols)
-    return df.reset_index(drop=True)
+    if add_region_names:
+        return mapping_regionsnavn(df.reset_index(drop=True))
+    else:
+        return df.reset_index(drop=True)
 
 
 def _print_dtype_report(
@@ -401,9 +405,10 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
 
 
 # %%
-# def hierarki_mapping(inputfil: pd.DataFrame, aggregeringstype: str | None = None) -> pd.DataFrame:
 def hierarki(
-    inputfil: pd.DataFrame, aggregeringstype: str | None = None
+    inputfil: pd.DataFrame,
+    aggregeringstype: str | None = None,
+    add_region_names: bool = False,
 ) -> pd.DataFrame:
     """Hierarkisk aggregering.
 
@@ -470,6 +475,12 @@ def hierarki(
     KeyError, ValueError
     """
     inputfil_copy = inputfil.copy()
+    region_names_list = ["kommuneregion_navn", "bydelsregion_navn", "fylkesregion_navn"]
+    if any(col in inputfil_copy.columns for col in region_names_list):
+        logger.info(
+            f"Datasettet ditt inneholder en kolonne for regionsnavn i tillegg til selve regionskodene. For at hierarkifunksjonen skal aggregere riktig, fjernes regions_navn-kolonnene {region_names_list} fra datasettet."
+        )
+        inputfil_copy.drop(columns=region_names_list, inplace=True, errors="ignore")
     if inputfil_copy["periode"].nunique() > 1:
         raise KeyError("Mer enn 1 periode i datasettet")
     inputfil_copy["periode"] = inputfil_copy["periode"].astype(str)
@@ -494,7 +505,7 @@ def hierarki(
     ].sum()
     df_combined = pd.concat([inputfil_copy, df_agg], ignore_index=True)
     return _postprocess_combined(
-        df_combined, post_filter, rename_cols, klassifikasjonsvariable
+        df_combined, post_filter, rename_cols, klassifikasjonsvariable, add_region_names
     )
 
 
@@ -523,7 +534,7 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
         display(df_kommune)
     """
     year: Any = inputfil["periode"].unique()[0]
-    hjelpefunksjoner.konvertere_komma_til_punktdesimal(inputfil)
+    hjelpefunksjoner._konvertere_komma_til_punktdesimal(inputfil)
     hjelpefunksjoner.format_fil(inputfil)
     mappingfil: pd.DataFrame = mapping_fra_kommune_til_fylkeskommune(year)
     mappingfil[["from", "to"]] = mappingfil[["to", "from"]]

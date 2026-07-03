@@ -1,5 +1,6 @@
 INPUT_PATCH_TARGET = "builtins.input"
 import pandas as pd
+from fagfunksjoner import logger
 
 from ssb_kostra_python import hjelpefunksjoner
 
@@ -128,9 +129,11 @@ def hente_data_folkemengde(
         )
 
         if folkemengde_kommune is None:
-            raise RuntimeError(
+            error_msg = (
                 f"Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
             )
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
         folkemengde_31_12 = folkemengde_kommune
 
@@ -139,28 +142,24 @@ def hente_data_folkemengde(
             int(kildeaar)
         )
     else:
-        raise ValueError(
-            "Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'.\n"
-            "Eksempel:\n"
-            "    hente_data_folkemengde(2024, 'bydel')\n"
-            "eller\n"
-            "    testdatasett = hente_data_folkemengde(2024, 'bydel')"
-        )
+        error_msg = "Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'. Eksempel: hente_data_folkemengde(2024, 'bydel') eller datasett = hente_data_folkemengde(2024, 'bydel')"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
     folkemengde_31_12_data = folkemengde_31_12.copy()
     if testdata:
         folkemengde_31_12_data.loc[
             folkemengde_31_12_data["periode"] == kildeaar, "periode"
         ] = str(aar)
-    print(
+    logger.info(
         f"\nℹ️Om du har kjørt funksjonen for eksempel slik - \033[1mhente_data_folkemengde({aar}, {regionsnivaa}, False)\033[0m - vil dataene vises under, med årgang {aar} i periodekolonnen, hentet fra et {kildeaar}-datasett."
     )
-    print(
+    logger.info(
         "ℹ️Siden du da har satt \033[1mFalse\033[0m for testdatasett, har du hentet befolkningsdata fra sky for det samme året som tabellen du har generert gjelder.\n"
     )
-    print(
+    logger.info(
         f"ℹ️Om du har kjørt den slik - \033[1mdatasett = hente_data_folkemengde({aar}, {regionsnivaa}, True)\033[0m - vil ikke dataene vises under, men datasettet er i dette eksemplet lagret med navnet \033[1mdatasett\033[0m, det vil si objektet til venstre for likhetstegnet. Bare legg til \033[1mdisplay(datasett)\033[0m for å se datasettet."
     )
-    print(
+    logger.info(
         f"ℹ️Du har i dette tilfellet satt \033[1mTrue\033[0m for testdatasett. Det vil si at dataene er hentet fra fila for året før {aar} for regionsnivået {regionsnivaa}, men at datasettet skal vise {aar} i periodekolonnen.\n"
     )
     return folkemengde_31_12_data

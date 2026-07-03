@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 
 from ssb_kostra_python import hjelpefunksjoner
+from ssb_kostra_python.hjelpefunksjoner import _konvertere_komma_til_punktdesimal
 from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
 from ssb_kostra_python.hjelpefunksjoner import format_fil
-from ssb_kostra_python.hjelpefunksjoner import konvertere_komma_til_punktdesimal
 
 
 class TestFormatFil:
@@ -124,7 +124,7 @@ class TestKonvertereKommaTilPunktdesimal:
     def test_converts_comma_decimal_to_float(self) -> None:
         df = pd.DataFrame({"a": ["1,5", "2,0", "3,25"]})
 
-        out = konvertere_komma_til_punktdesimal(df)
+        out = _konvertere_komma_til_punktdesimal(df)
 
         assert np.allclose(out["a"].to_numpy(), [1.5, 2.0, 3.25])
         assert pd.api.types.is_float_dtype(out["a"])
@@ -138,7 +138,7 @@ class TestKonvertereKommaTilPunktdesimal:
             }
         )
 
-        out = konvertere_komma_til_punktdesimal(df)
+        out = _konvertere_komma_til_punktdesimal(df)
 
         assert out["b"].tolist() == ["x", "y"]
         assert out["c"].tolist() == [10, 20]
@@ -146,7 +146,7 @@ class TestKonvertereKommaTilPunktdesimal:
     def test_converts_column_if_any_value_contains_comma(self) -> None:
         df = pd.DataFrame({"a": ["1,5", "2"]})
 
-        out = konvertere_komma_til_punktdesimal(df)
+        out = _konvertere_komma_til_punktdesimal(df)
 
         assert np.allclose(out["a"].to_numpy(), [1.5, 2.0])
         assert pd.api.types.is_float_dtype(out["a"])
@@ -155,7 +155,7 @@ class TestKonvertereKommaTilPunktdesimal:
         df = pd.DataFrame({"a": ["1,5", "2,0"]})
         df_before = df.copy(deep=True)
 
-        _ = konvertere_komma_til_punktdesimal(df)
+        _ = _konvertere_komma_til_punktdesimal(df)
 
         pd.testing.assert_frame_equal(df, df_before)
 

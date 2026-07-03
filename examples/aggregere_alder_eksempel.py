@@ -13,9 +13,11 @@
 # ---
 
 # %% [markdown]
-# ## I dette eksempelarket ser vi på hvordan vi aggregerer opp ettårige aldersgrupper til sammensatte KOSTRA-aldersgrupperinger.
-# ## Funksjonen vi bruker heter "summere_til_aldersgrupperinger". Denne ligger på ssb-kostra-python/src/funksjoner
-# ## Vi laster den inn med from ssb_kostra_python.summere_til_aldersgrupperinger import (summere_til_aldersgrupperinger,)
+# # I dette eksempelarket ser vi på hvordan vi aggregerer opp ettårige aldersgrupper til sammensatte KOSTRA-aldersgrupperinger.
+
+# %% [markdown]
+# Funksjonen vi bruker heter "summere_til_aldersgrupperinger". Denne ligger på **ssb-kostra-python/src/funksjoner**.
+# Vi laster den inn med from **ssb_kostra_python.summere_til_aldersgrupperinger import (summere_til_aldersgrupperinger,)**
 
 # %% [markdown]
 # ### Laster ned pakker
@@ -35,7 +37,9 @@ from ssb_kostra_python.summere_til_aldersgrupperinger import (
 
 # %% [markdown]
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
-# ### Du kan selv bestemme hvilket statistikkår tabellen skal gjelde ved å endre på "statistikkaar = 20XX"
+
+# %% [markdown]
+# Du kan selv bestemme hvilket statistikkår tabellen skal gjelde ved å endre på **statistikkaar = 20XX**.
 
 # %%
 # Bestemmer først statistikkår
@@ -50,17 +54,23 @@ folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
 display(folketall_bydeler)
 
 # %% [markdown]
-# ### Summerer opp datasettet "folketall_bydeler" til KOSTRA-aldersgrupperinger
-# ### Funksjonen trenger å vite klassifikasjonsvariablene for å aggregere riktig.
+# ### Summerer opp datasettet "folketall_bydeler" til KOSTRA-aldersgrupperinger med manuell inntasting av klassifikasjonsvariable.
+
+# %% [markdown]
+# Funksjonen trenger å vite klassifikasjonsvariablene for å aggregere riktig.
+# Når du aggregerer til KOSTRA-aldersgrupperinger, vil mappingfilen inneholde en klassifikasjonsvariabel **to**. Ikke glem å skrive inn denne også.
 
 # %%
 # Summerer til KOSTRA-aldersgrupperinger
 folketall_bydeler_alder = summere_til_aldersgrupperinger(folketall_bydeler)
 
 # %% [markdown]
-# #### Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
-# #### Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
-# #### Du forhåndsdefinerer klassifikasjonsvariablene i "predefined_input". Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
+# ### Summerer opp datasettet "folketall_bydeler" til KOSTRA-aldersgrupperinger med forhåndsdefinering av klassifikasjonsvariable.
+
+# %% [markdown]
+# Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
+# Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+# Du forhåndsdefinerer klassifikasjonsvariablene i **predefined_input**. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
 
 # %%
 predefined_input = "kjonn, alder, to"

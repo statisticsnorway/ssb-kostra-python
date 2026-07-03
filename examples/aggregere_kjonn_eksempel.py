@@ -13,9 +13,11 @@
 # ---
 
 # %% [markdown]
-# ### I dette eksempelarket ser vi på hvordan vi aggregerer opp antallet mennesker på kjønn i et datasett som fordeler på mann og kvinne.
-# ### Funksjonen vi bruker heter "summere_kjonn". Denne ligger på ssb-kostra-python/src/funksjoner.
-# ### Vi laster den inn med "from ssb_kostra_python import summere_kjonn".
+# # I dette eksempelarket ser vi på hvordan vi aggregerer opp antallet mennesker på kjønn i et datasett som fordeler på mann og kvinne.
+
+# %% [markdown]
+# Funksjonen vi bruker heter **summere_kjonn**. Denne ligger på **ssb-kostra-python/src/funksjoner**.
+# Vi laster den inn med **from ssb_kostra_python import summere_kjonn**.
 
 # %%
 import pandas as pd
@@ -43,6 +45,9 @@ folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
 # Viser datasettet.
 display(folketall_bydeler)
 
+# %% [markdown]
+# Når du kjører denne funksjonen, blir du bedt om å legge inn **øvrige klassifikasjonsvariable** utover **periode** og **region**. I dette datasettet har vi **kjonn** og **alder** i tillegg. Før dem inn i tekstfeltet, adskilt med komma.
+
 # %%
 # Kjører funksjonen. folketall_bydeler_sum_kjonn er det endelige datasettet som genereres.
 folketall_bydeler_sum_kjonn = summere_kjonn.summere_over_kjonn(folketall_bydeler)
@@ -51,8 +56,10 @@ display(folketall_bydeler_sum_kjonn)
 
 # %% [markdown]
 # ### Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
-# ### Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
-# ### Du forhåndsdefinerer klassifikasjonsvariablene i “predefined_input”. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
+
+# %% [markdown]
+# Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+# Du forhåndsdefinerer klassifikasjonsvariablene i “predefined_input”. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
 
 # %%
 predefined_input = "kjonn, alder"
@@ -62,3 +69,5 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
 
 # Viser datasettet
 display(folketall_bydeler_sum_kjonn)
+
+# %%

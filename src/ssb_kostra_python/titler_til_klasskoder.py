@@ -332,6 +332,7 @@ def mapping_regionsnavn(
 
     Denne funksjonen bør du bruke ETTER at du har utført hierarkiaggregeringen, og IKKE før.
     Grunnen til dette er at hierarkiaggregeringsfunksjonen fungerer til å aggregere regionskodene, men ikke regionsnavnene.
+    Om du trenger å se regionsnavn både før og etter regionsaggregering, kan du da feste regionsnavn i første omgang, fjerne dem i forkant av regionsaggregeringen, og feste dem igjen etter at regionsaggregeringen er utført.
 
     Slik bruker du funksjonen:
 

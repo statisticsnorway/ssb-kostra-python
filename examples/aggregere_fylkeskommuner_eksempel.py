@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -13,9 +13,11 @@
 # ---
 
 # %% [markdown]
-# ### I dette eksempelarket ser vi på hvordan vi aggregerer opp kommuner til fylkeskommunale KOSTRA-grupper.
-# ### Funksjonen vi bruker heter "regionshierarki". Denne ligger på kostra-fellesfunksjoner/fellesfunksjoner/src/funksjoner.
-# ### Vi laster den inn med "from functions.funksjoner import regionshierarki".
+# # I dette eksempelarket ser vi på hvordan vi aggregerer opp kommuner til fylkeskommunale KOSTRA-grupper.
+
+# %% [markdown]
+# Funksjonen vi bruker heter "regionshierarki". Denne ligger på **kostra-fellesfunksjoner/fellesfunksjoner/src/funksjoner**.
+# Vi laster den inn med **ssb_kostra_python.regionshierarki import hierarki**.
 
 # %%
 INPUT_PATCH_TARGET = "builtins.input"
@@ -28,11 +30,13 @@ from IPython.display import display  # for nice tables in notebooks
 from ssb_kostra_python.regionshierarki import hierarki
 
 # %% [markdown]
-# ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
-# ### Dataene kommer fra delt-bøtten til seksjon for befolkning.
-# ### Vi må bearbeide dataene litt slik at de blir likere dataene slik vi kjenner dem i KOMPIS.
-# ### Både de aggregerte kommunetabellene og fylkeskommunetabellene har sitt utspring i de delte kommunetabellene til seksjon for befolkning.
-# ### Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik: statistikkaar=20XX.
+# ## Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
+
+# %% [markdown]
+# Dataene kommer fra delt-bøtten til seksjon for befolkning.
+# Vi må bearbeide dataene litt slik at de blir likere dataene slik vi kjenner dem i KOMPIS.
+# Både de aggregerte kommunetabellene og fylkeskommunetabellene har sitt utspring i de delte kommunetabellene til seksjon for befolkning.
+# Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik: **statistikkaar=20XX**.
 
 # %%
 statistikkaar = 2017
@@ -57,28 +61,38 @@ df_folketall_kommuner = df_folketall_kommuner.groupby(
 display(df_folketall_kommuner)
 
 # %% [markdown]
-# ### Utfører aggregering til fylkeskommuner.
-# #### folketall_fylkeskommuner_KOSTRA = hierarki(df_folketall_kommuner, "kommune_til_fylkeskommune") betyr at funksjonen “hierarki” utføres på datasettet “df_folketall_kommuner” og lagres i folketall_fylkeskommuner_KOSTRA.
-# #### Funksjonen trenger å vite om alle klassifikasjonsvariablene i datasettet. Den identifiserer alltid periode- og regionsvariabelen. De øvrige, i dette tilfellet kjonn og alder må du føre inn selv, skilt fra hverandre med komma.
-# #### Når funksjonen aggregerer et kommunedatasett uten videre spesifikasjoner - folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner) - aggregeres kommunene opp til KOSTRA-kommunegrupperingene EAK, EAKUO, EKA og EKG. Om den spesifiseres slik - folketall_fylkeskommuner_KOSTRA = hierarki(df_folketall_kommuner, "kommune_til_fylkeskommune") - aggregeres de opp til fylkeskommuner, men kun til fylkeskommunene og ikke KOSTRA-grupperingene. Aggregering opp til KOSTRA-fylkeskommunegrupperinger må gjøres i et senere steg.
+# ## Utfører aggregering til fylkeskommuner.
+
+# %% [markdown]
+# `folketall_fylkeskommuner_KOSTRA = hierarki(df_folketall_kommuner, “kommune_til_fylkeskommune”)` betyr at funksjonen **hierarki** utføres på datasettet **df_folketall_kommuner** og lagres i **folketall_fylkeskommuner_KOSTRA**.
+#
+# Funksjonen trenger å vite om alle klassifikasjonsvariablene i datasettet. I KOMPIS identifiseres disse automatisk, men her må du utføre manuelt arbeid. Den identifiserer alltid periode- og regionsvariabelen. De øvrige, i dette tilfellet **kjonn** og **alder**, må du føre inn selv, skilt fra hverandre med komma.
+#
+# Når funksjonen aggregerer et kommunedatasett uten videre spesifikasjoner, slik - `folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner)` - aggregeres kommunene opp til KOSTRA-kommunegrupperingene EAK, EAKUO, EKA og EKG. Om den spesifiseres slik - `folketall_fylkeskommuner_KOSTRA = hierarki(df_folketall_kommuner, “kommune_til_fylkeskommune”)` - aggregeres de opp til fylkeskommuner, men kun til fylkeskommunene og ikke de fylkeskommunale KOSTRA-grupperingene. Aggregering opp til KOSTRA-fylkeskommunegrupperinger må gjøres i sin tur i et senere steg.
 
 # %%
 folketall_fylkeskommuner = hierarki(df_folketall_kommuner, "kommune_til_fylkeskommune")
 display(folketall_fylkeskommuner)
 
 # %% [markdown]
-# ### Vi har nå et fylkekommunedatasett som vi kan aggregere opp til de fylkeskommunale KOSTRA-grupperingene.
-# ### Vi utfører hierarkifunksjonen på nytt.
+# ## Vi har nå et fylkekommunedatasett som vi kan aggregere opp til de fylkeskommunale KOSTRA-grupperingene.
+
+# %% [markdown]
+# Vi utfører hierarkifunksjonen på nytt.
 
 # %%
 folketall_fylkeskommuner_KOSTRA = hierarki(folketall_fylkeskommuner)
 display(folketall_fylkeskommuner_KOSTRA)
 
 # %% [markdown]
-# #### Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
-# #### Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
-# #### Du forhåndsdefinerer klassifikasjonsvariablene i “predefined_input”. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
-# #### I dette tilfellet kjøres hierarkioperasjonen to ganger. Først må kommunedatasettet aggregeres opp til fylkeskommuner. Deretter må fylkeskommunedatasettet aggregeres opp til KOSTRA-fylkeskommunegrupperingene. I begge operasjonene er klassifikasjonsvariablene (i tillegg til periode og fylkesregion) "kjonn" og "alder", så vi trenger bare å definere dem én gang.
+# ## Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
+
+# %% [markdown]
+# Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+#
+# Du forhåndsdefinerer klassifikasjonsvariablene i **predefined_input**. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
+#
+# I dette eksempel kjøres hierarkioperasjonen to ganger. Først må kommunedatasettet aggregeres opp til fylkeskommuner. Deretter må fylkeskommunedatasettet aggregeres opp til KOSTRA-fylkeskommunegrupperingene. I begge operasjonene er klassifikasjonsvariablene (i tillegg til periode og fylkesregion) **kjonn** og **alder**, så vi trenger bare å definere dem én gang.
 
 # %%
 predefined_input = "kjonn, alder"

@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -94,8 +94,8 @@ instruks = avrunding.print_instruks_konverter_dtypes()
 # Lager mappingen
 dtype_mapping = {
     "klassifikasjonsvariabel": [],
-    "heltall": ["personer"],
-    "desimaltall_1_des": [],
+    "heltall": [],
+    "desimaltall_1_des": ["personer"],
     "desimaltall_2_des": [],
     "stringvar": ["periode", "bydelsregion", "kjonn", "alder"],
     "bool_var": [],
@@ -105,5 +105,30 @@ dtype_mapping = {
 folkemengde_kommune_2024, dtypes = avrunding.konverter_dtypes(
     folkemengde_kommune_2024, dtype_mapping
 )
+
+# %%
+df = pd.DataFrame(
+    {
+        "col1": ["1", "2", "3", "4", "5"],
+        "var1": [1.5, 2.5, 3.5, -1.5, -2.5],
+        "var2": [0.125, 0.575, 1.005, 1.275, 2.445],
+    }
+)
+display(df)
+# _round_half_up(df['var2'], 2)
+
+# %%
+# Lager mappingen
+dtype_mapping = {
+    "klassifikasjonsvariabel": [],
+    "heltall": [],
+    "desimaltall_1_des": [],
+    "desimaltall_2_des": ["var2"],
+    "stringvar": [],
+    "bool_var": [],
+}
+
+# Utfører avrundingen/konverteringen
+df, dtypes = avrunding.konverter_dtypes(df, dtype_mapping)
 
 # %%

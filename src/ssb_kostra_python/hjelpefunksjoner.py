@@ -172,7 +172,7 @@ def definere_klassifikasjonsvariable(
 
 
 # %%
-def konvertere_komma_til_punktdesimal(inputfil: pd.DataFrame) -> pd.DataFrame:
+def _konvertere_komma_til_punktdesimal(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Konvertere komma til punktdesimal i datasettet."""
     df = inputfil.copy()
     cols_with_commas = [
@@ -226,22 +226,24 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
             f"{bucket_inndata}/folkmengde_bydeler_p{statistikkaar}-12-31"
         )
 
-        print(f"✅Filsti funnet: {bucket_inndata_data_path}")
+        logger.info(f"✅Filsti funnet: {bucket_inndata_data_path}")
 
     except Exception as e:
         msg = f"❌Operasjonen latest_version_path for bydeldata feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Les parquet ----------
     try:
         folketall_bydeler = pd.read_parquet(bucket_inndata_data_path)
 
-        print("✅Operasjonen innlesing av folkemengdefil for bydeler ble gjennomført.")
+        logger.info(
+            "✅Operasjonen innlesing av folkemengdefil for bydeler ble gjennomført."
+        )
 
     except Exception as e:
         msg = f"❌Operasjonen innlesing av folkemengdefil for bydeler feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Summer til KLASS-aldersgrupperinger ----------
@@ -256,13 +258,13 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
                 )
             )
 
-        print(
+        logger.info(
             "✅Operasjonen summere_til_aldersgrupperinger for bydeler ble gjennomført."
         )
 
     except Exception as e:
         msg = f"❌Operasjonen summere_til_aldersgrupperinger for bydeler feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Summer over kjønn ----------
@@ -272,11 +274,11 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             df_sum_kjonn = summere_kjonn.summere_over_kjonn(df_sum_med_kjonn)
 
-        print("✅Operasjonen summere_over_kjonn for bydeler ble gjennomført.")
+        logger.info("✅Operasjonen summere_over_kjonn for bydeler ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen summere_over_kjonn for bydeler feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Grupper over Oslo-bydelene ----------
@@ -286,13 +288,13 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             folkemengde_31_12_b = regionshierarki.hierarki(df_sum_kjonn)
 
-        print(
+        logger.info(
             "✅Operasjonen regionshierarki.hierarki for Oslo-bydeler ble gjennomført."
         )
 
     except Exception as e:
         msg = f"❌Operasjonen regionshierarki.hierarki for Oslo-bydeler feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     # ---------- Filtrer bort ettårige alderskoder ----------
@@ -320,11 +322,13 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
             ~folkemengde_31_12_b["alder"].isin(aldre_som_fjernes)
         ]
 
-        print("✅Operasjonen filtrering av alder 105-120 for bydeler ble gjennomført.")
+        logger.info(
+            "✅Operasjonen filtrering av alder 105-120 for bydeler ble gjennomført."
+        )
 
     except Exception as e:
         msg = f"❌Operasjonen filtrering av alder 105-120 for bydeler feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     return folkemengde_31_12_b[
@@ -467,10 +471,12 @@ def _hent_folkemengde_kommune_31_12(
 
     # ---------- Ingen grunnlagsdata ----------
     if not dataframes:
-        raise FileNotFoundError(
+        error_msg = (
             f"❌Ingen data tilgjengelig for statistikkår {statistikkaar}.\n"
             + "\n".join(mangler)
         )
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
 
     # ---------- Kombiner grunnlagsdata ----------
     if len(dataframes) == 1:
@@ -482,10 +488,10 @@ def _hent_folkemengde_kommune_31_12(
         ["periode", "kommuneregion", "kjonn", "alder"], as_index=False
     )[["personer"]].sum()
 
-    print(f"Datagrunnlag for {statistikkaar}: {', '.join(kilder_brukt)} brukt.")
+    logger.info(f"Datagrunnlag for {statistikkaar}: {', '.join(kilder_brukt)} brukt.")
 
     if mangler:
-        print("Merk: Ett eller flere input manglet.")
+        logger.warning("Merk: Ett eller flere input manglet.")
         for m in mangler:
             print(f" - {m}")
 
@@ -503,7 +509,7 @@ def _hent_folkemengde_kommune_31_12(
                 )
             )
 
-        print("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
+        logger.info("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen summere_til_aldersgrupperinger feilet: {e}"
@@ -518,7 +524,7 @@ def _hent_folkemengde_kommune_31_12(
                 df_folkemengde_31_12_agg_alder
             )
 
-        print("✅Operasjonen summere_over_kjonn ble gjennomført.")
+        logger.info("✅Operasjonen summere_over_kjonn ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen summere_over_kjonn feilet: {e}"
@@ -533,12 +539,11 @@ def _hent_folkemengde_kommune_31_12(
                 df_folkemengde_31_12_agg_kjonn
             )
 
-        print("✅Operasjonen hierarki ble gjennomført.")
+        logger.info("✅Operasjonen hierarki ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen hierarki feilet: {e}"
         logger.warning(msg)
-        print(msg)
         return df_folkemengde_31_12, None
 
     try:
@@ -565,7 +570,7 @@ def _hent_folkemengde_kommune_31_12(
             )
         ]
 
-        print("✅Operasjonen filtrering av alder 105-120 ble gjennomført.")
+        logger.info("✅Operasjonen filtrering av alder 105-120 ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen filtrering av alder 105-120 feilet: {e}"
@@ -575,11 +580,11 @@ def _hent_folkemengde_kommune_31_12(
 
     if df_folkemengde_31_12_kostra_agg_filtrert is not None:
         if len(kilder_brukt) == 2:
-            print(
+            logger.info(
                 "\n✅Sluttresultat (KOSTRA-aggregert) er basert på begge datakilder: kommuner og svalbard."
             )
         else:
-            print(
+            logger.info(
                 f"\nℹ️Sluttresultat (KOSTRA-aggregert) er kun basert på én datakilde: {kilder_brukt[0]}."
             )
 
@@ -625,11 +630,11 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     """
     try:
         df_folkemengde_31_12, _ = _hent_folkemengde_kommune_31_12(statistikkaar)
-        print("✅Operasjonen _hent_folkemengde_kommune_31_12 ble gjennomført.")
+        logger.info("✅Operasjonen _hent_folkemengde_kommune_31_12 ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen _hent_folkemengde_kommune_31_12 feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -642,11 +647,11 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
                 )
             )
 
-        print("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
+        logger.info("✅Operasjonen summere_til_aldersgrupperinger ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen summere_til_aldersgrupperinger feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -654,11 +659,11 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             df_sum_kjonn = summere_kjonn.summere_over_kjonn(df_sum_med_kjonn)
 
-        print("✅Operasjonen summere_over_kjonn ble gjennomført.")
+        logger.info("✅Operasjonen summere_over_kjonn ble gjennomført.")
 
     except Exception as e:
         msg = f"❌Operasjonen summere_over_kjonn feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -668,7 +673,7 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
                 df_sum_kjonn, aggregeringstype="kommune_til_fylkeskommune"
             )
 
-        print(
+        logger.info(
             "✅Operasjonen hierarki med aggregeringstype='kommune_til_fylkeskommune' ble gjennomført."
         )
 
@@ -677,7 +682,7 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
             "Operasjonen hierarki med aggregeringstype='kommune_til_fylkeskommune' "
             f"feilet: {e}"
         )
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -685,11 +690,13 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             folkemengde_31_12_eafk = regionshierarki.hierarki(folkemengde_31_12_fk)
 
-        print("✅Operasjonen hierarki til KOSTRA-fylkesregioner/EAFK ble gjennomført.")
+        logger.info(
+            "✅Operasjonen hierarki til KOSTRA-fylkesregioner/EAFK ble gjennomført."
+        )
 
     except Exception as e:
         msg = f"❌Operasjonen hierarki til KOSTRA-fylkesregioner/EAFK feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     try:
@@ -717,11 +724,13 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
             ~folkemengde_31_12_eafk["alder"].isin(aldre_som_fjernes)
         ]
 
-        print("✅Operasjonen filtrering av alder 105-120 og F025-029 ble gjennomført.")
+        logger.info(
+            "✅Operasjonen filtrering av alder 105-120 og F025-029 ble gjennomført."
+        )
 
     except Exception as e:
         msg = f"❌Operasjonen filtrering av alder 105-120 og F025-029 feilet: {e}"
-        logger.warning(msg)
+        logger.error(msg)
         raise RuntimeError(msg) from e
 
     return folkemengde_31_12_eafk
