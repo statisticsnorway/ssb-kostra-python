@@ -14,6 +14,7 @@
 
 # %% [markdown]
 # # I dette eksempelarket ser vi på hvordan vi aggregerer opp kommuner til KOSTRA-grupper.
+# ## I dette eksemplet brukes befolkningsdata, men det du kan anvende funksjonen på dine egne kommunedata som du trenger å aggrere opp til KOSTRA-regionsgrupperinger.
 
 # %% [markdown]
 # Funksjonen vi bruker heter **regionshierarki**. Denne ligger på **kostra-fellesfunksjoner/fellesfunksjoner/src/funksjoner**.
@@ -60,15 +61,21 @@ df_folketall_kommuner = df_folketall_kommuner.groupby(
 
 display(df_folketall_kommuner)
 
+# %% [markdown]
+# ## Vi kan feste regionsnavn på regionskodene
+
 # %%
 df_folketall_kommuner_navn = mapping_regionsnavn(df_folketall_kommuner)
+display(df_folketall_kommuner_navn)
 
 # %% [markdown]
-# ### Utfører aggregering til KOSTRA-regionsgrupperinger (EAK, EAKUO, EKA, EKG) for bydelene
+# ## Utfører aggregering til KOSTRA-regionsgrupperinger (EAK, EAKUO, EKA, EKG) for kommunene
+# ### Du kan velge om datasettet skal inneholde regionsnavn etter aggregering.
 
 # %% [markdown]
-# `folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner)` betyr at funksjonen **hierarki** utføres på datasettet **df_folketall_kommuner** og lagres i folketall_kommuner_KOSTRA.
-# Funksjonen trenger å vite om alle klassifikasjonsvariablene i datasettet. Den identifiserer alltid **periode-** og **regionsvariabelen**. De øvrige, i dette tilfellet **kjonn** og **alder**, må du føre inn selv, skilt fra hverandre med komma.
+# `folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner_navn, add_region_names=True)` betyr at funksjonen **hierarki** utføres på datasettet **df_folketall_kommuner** og lagres i **folketall_kommuner_KOSTRA**. Om du presiserer at **add_region_names=True**, sørger du for at regionsnavnene inkluderes i datasettet etter hierarkioperasjonen. Om du ønsker regionsnavn i datasettet etter hierarki, må du presisere dette **også selv om datasettet inneholder regionsnavn før hierarkioperasjonen**. Dette er fordi hierarkioperasjonen ikke aggregerer regionsnavnene i tråd med en mapping, men fjerner regionsnavnene midlertidig før kodene aggregeres, og deretter legger dem på igjen. Om du setter **add_region_names=False**, vil det endelige datasettet ikke beholde regionsnavn, uansett om det inneholdt regionsnavn før hierarkioperasjonen eller ei. Du kan veksle mellom **True** og **False** i koden under for å se hvordan datasettet genereres på de to ulike måtene.
+#
+# Dersom funksjonen kjøres som vist under, vil den trenge å vite om alle klassifikasjonsvariablene i datasettet. Den identifiserer alltid **periode-** og **regionsvariabelen**. De øvrige, i dette tilfellet **kjonn** og **alder**, må du føre inn selv, skilt fra hverandre med komma.
 
 # %%
 folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner_navn, add_region_names=True)
@@ -78,7 +85,7 @@ display(folketall_kommuner_KOSTRA)
 # ## Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
 
 # %% [markdown]
-# Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+# Når du setter opp et fast produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
 # Du forhåndsdefinerer klassifikasjonsvariablene i **predefined_input**. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
 
 # %%

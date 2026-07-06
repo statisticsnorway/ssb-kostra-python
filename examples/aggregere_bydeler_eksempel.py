@@ -14,6 +14,7 @@
 
 # %% [markdown]
 # # I dette eksempelarket ser vi på hvordan vi aggregerer opp Oslo-bydeler til samlegrupperingen EAB for alle bydelene.
+# ## I dette eksemplet brukes befolkningsdata, men det du kan anvende funksjonen på dine egne bydelsdata som du trenger å aggregere opp til KOSTRA-regionsgrupperinger.
 
 # %% [markdown]
 # Funksjonen vi bruker heter “regionshierarki”. Denne ligger på **ssb_kostra_python/src/funksjoner**.
@@ -51,19 +52,16 @@ display(folketall_bydeler)
 # ## Utfører aggregering til KOSTRA-regionsgrupperinger (EAB) for bydelene
 
 # %% [markdown]
-# `folketall_bydeler_EAB = hierarki(folketall_bydeler)` vil si at funksjonen **“hierarki”** utføres på datasettet **“folketall_bydeler”** og lagres i **folketall_bydeler_EAB**.
+# `folketall_bydeler_EAB = hierarki(folketall_bydeler, , add_region_names=True)` vil si at funksjonen **“hierarki”** utføres på datasettet **“folketall_bydeler”** og lagres i **folketall_bydeler_EAB**. Om du presiserer at **add_region_names=True**, sørger du for at regionsnavnene inkluderes i datasettet etter hierarkioperasjonen. Om du ønsker regionsnavn i datasettet etter hierarki, må du presisere dette også selv om datasettet inneholder regionsnavn før hierarkioperasjonen. Dette er fordi hierarkioperasjonen ikke aggregerer regionsnavnene i tråd med en mapping, men fjerner regionsnavnene midlertidig før kodene aggregeres, og deretter legger dem på igjen. Om du setter **add_region_names=False**, vil det endelige datasettet ikke beholde regionsnavn, uansett om det inneholdt regionsnavn før hierarkioperasjonen eller ei. Du kan veksle mellom **True** og **False** i koden under for å se hvordan datasettet genereres på de to ulike måtene.
+#
 # Funksjonen trenger å vite om alle klassifikasjonsvariablene i datasettet. Den identifiserer alltid **periode- og regionsvariabelen**. De øvrige, i dette tilfellet **kjonn** og **alder**, må du føre inn selv, skilt fra hverandre med komma.
-
-# %%
-folketall_bydeler_EAB = hierarki(folketall_bydeler)
-display(folketall_bydeler_EAB)
 
 # %%
 folketall_bydeler_EAB_navn = hierarki(folketall_bydeler, add_region_names=True)
 display(folketall_bydeler_EAB_navn)
 
 # %% [markdown]
-# #### Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
+# ## Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
 
 # %% [markdown]
 # Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
@@ -73,6 +71,8 @@ display(folketall_bydeler_EAB_navn)
 predefined_input = "kjonn, alder"
 
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-    folketall_bydeler_EAB = hierarki(folketall_bydeler)
+    folketall_bydeler_EAB = hierarki(folketall_bydeler, add_region_names=True)
 
 display(folketall_bydeler_EAB)
+
+# %%
