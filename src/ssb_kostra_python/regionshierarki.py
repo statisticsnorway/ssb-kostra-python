@@ -5,7 +5,8 @@ from typing import Any
 from typing import cast
 
 import pandas as pd
-from fagfunksjoner import logger
+# from fagfunksjoner import logger
+from fagfunksjoner.fagfunksjoner_logger import logger
 from klass import KlassClassification
 from klass import KlassCorrespondence
 from pandas.api.types import is_bool_dtype
