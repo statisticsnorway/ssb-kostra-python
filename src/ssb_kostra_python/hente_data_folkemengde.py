@@ -1,6 +1,5 @@
 INPUT_PATCH_TARGET = "builtins.input"
 import pandas as pd
-# from fagfunksjoner import logger
 from fagfunksjoner.fagfunksjoner_logger import logger
 
 from ssb_kostra_python import hjelpefunksjoner
