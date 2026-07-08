@@ -12,7 +12,9 @@ from unittest.mock import patch
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 
-statistikkaar = 2019
+statistikkaar = 2020
+regionsnivaa = 'kommune'
+testdata = True
 
 
 # +
@@ -249,12 +251,10 @@ def hente_data_folkemengde(
 # This is how you run the code
 # testdatasett = hente_data_folkemengde(statistikkaar, "kommune", False)
 # display(testdatasett) 
-
-# +
-testdatasett = hente_data_folkemengde(statistikkaar, "kommune", False)
-
-display(testdatasett)
 # -
+
+testdatasett = hente_data_folkemengde(statistikkaar, "kommune", False)
+display(testdatasett)
 
 klassifikasjon = KlassClassification(103,language="nb",include_future=True,)
 display(klassifikasjon)
@@ -517,42 +517,47 @@ def hente_data_folkemengde(
     return folkemengde_31_12_data
 
 
+# -
+
+testdatasett = hente_data_folkemengde(statistikkaar, regionsnivaa, testdata)
+display(testdatasett) 
+
 # +
-if testdata and regionsnivaa in ("kommune", "bydel"):
-    mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
+# if testdata and regionsnivaa in ("kommune", "bydel"):
+#     mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
 
-    folkemengde_31_12_data = anvende_kommunereform(
-        inputfil=folkemengde_31_12_data,
-        mapping=mapping,
-        statistikkvariable=["personer"],
-        statistikkaar=statistikkaar,
-    )
+#     folkemengde_31_12_data = anvende_kommunereform(
+#         inputfil=folkemengde_31_12_data,
+#         mapping=mapping,
+#         statistikkvariable=["personer"],
+#         statistikkaar=statistikkaar,
+#     )
 
-    if regionsnivaa in ("kommune", "bydel"):
-        print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
+#     if regionsnivaa in ("kommune", "bydel"):
+#         print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
 
-    if regionsnivaa == "kommune":
-        mask = (
-            folkemengde_31_12_data["kommuneregion"]
-            .astype(str)
-            .str.match(r"^(EKG\d{2}|EKA\d{2}|EAK|EAKUO)$")
-        )
-    else:  # bydel
-        mask = (
-            folkemengde_31_12_data["kommuneregion"]
-            .astype(str)
-            == "EAB"
-        )
+#     if regionsnivaa == "kommune":
+#         mask = (
+#             folkemengde_31_12_data["kommuneregion"]
+#             .astype(str)
+#             .str.match(r"^(EKG\d{2}|EKA\d{2}|EAK|EAKUO)$")
+#         )
+#     else:  # bydel
+#         mask = (
+#             folkemengde_31_12_data["kommuneregion"]
+#             .astype(str)
+#             == "EAB"
+#         )
 
-    folkemengde_31_12_data_uten_agg = (
-        folkemengde_31_12_data.loc[~mask].copy()
-    )
+#     folkemengde_31_12_data_uten_agg = (
+#         folkemengde_31_12_data.loc[~mask].copy()
+#     )
 
-    predefined_input = "alder"
-    with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-        folkemengde_31_12_data = regionshierarki.hierarki(
-            folkemengde_31_12_data_uten_agg
-        )
+#     predefined_input = "alder"
+#     with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
+#         folkemengde_31_12_data = regionshierarki.hierarki(
+#             folkemengde_31_12_data_uten_agg
+#         )
 
-elif testdata:
-    folkemengde_31_12_data["periode"] = str(statistikkaar)
+# elif testdata:
+#     folkemengde_31_12_data["periode"] = str(statistikkaar)
