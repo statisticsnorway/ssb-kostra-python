@@ -1,4 +1,4 @@
-# from ssb_kostra_python.hente_data_folkemengde import hente_data_folkemengde
+from ssb_kostra_python.hente_data_folkemengde import hente_data_folkemengde
 
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
@@ -9,13 +9,6 @@ from ssb_kostra_python import regionshierarki
 
 INPUT_PATCH_TARGET = "builtins.input"
 from unittest.mock import patch
-
-statistikkaar = 2020
-regionsnivaa = "bydel"
-testdata = True
-
-mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
-display(mapping)
 
 
 # +
@@ -50,7 +43,7 @@ def mapping_mellom_aar(
         endringstekst = "fylkeskommuneendringer"
     else:
         raise ValueError(
-            "regionsnivaa må være 'bydel', 'kommune' eller 'fylkeskommune'."
+            "❌regionsnivaa må være 'bydel', 'kommune' eller 'fylkeskommune'."
         )
 
     try:
@@ -67,13 +60,13 @@ def mapping_mellom_aar(
 
     except Exception:
         logger.warning(
-            f"Ingen endringslogg funnet for {kildeaar}–{statistikkaar_int}. "
+            f"ℹ️Ingen endringslogg funnet for {kildeaar}–{statistikkaar_int}. "
             "Returnerer tom mapping."
         )
         return pd.DataFrame(columns=kolonner)
 
     if df_endringer is None or df_endringer.empty:
-        logger.info(f"Ingen {endringstekst} funnet for {kildeaar}–{statistikkaar_int}.")
+        logger.info(f"ℹ️Ingen {endringstekst} funnet for {kildeaar}–{statistikkaar_int}.")
         return pd.DataFrame(columns=kolonner)
 
     df_endringer = df_endringer.copy()
@@ -98,15 +91,11 @@ def mapping_mellom_aar(
 
     if manglende_kolonner:
         logger.warning(
-            f"Endringsloggen mangler forventede kolonner: {manglende_kolonner}"
+            f"❌Endringsloggen mangler forventede kolonner: {manglende_kolonner}"
         )
         return pd.DataFrame(columns=kolonner)
 
     return df_endringer[kolonner]
-
-
-# mapping = mapping_mellom_aar(statistikkaar)
-# display(mapping)
 
 
 def _regionkolonne(regionsnivaa: str) -> str:
@@ -117,7 +106,7 @@ def _regionkolonne(regionsnivaa: str) -> str:
     if regionsnivaa == "fylkeskommune":
         return "fylkesregion"
 
-    raise ValueError("regionsnivaa må være 'bydel', 'kommune' eller 'fylkeskommune'.")
+    raise ValueError("❌regionsnivaa må være 'bydel', 'kommune' eller 'fylkeskommune'.")
 
 
 def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
@@ -149,11 +138,11 @@ def anvende_kommunereform(
     df["periode"] = str(statistikkaar)
 
     kildeaar = str(int(statistikkaar) - 1)
-    logger.info(f"Kildeåret er {kildeaar}.")
+    logger.info(f"ℹ️Kildeåret er {kildeaar}.")
 
     if mapping is None or mapping.empty:
         logger.info(
-            f"Ingen regionendringer funnet mellom {kildeaar} og {statistikkaar}. "
+            f"ℹ️Ingen regionendringer funnet mellom {kildeaar} og {statistikkaar}. "
             "Kopierer region uendret og oppdaterer periode."
         )
         return df
@@ -166,6 +155,36 @@ def anvende_kommunereform(
         lambda x: _normaliser_regionkode(x, regionsnivaa)
     )
 
+    split_details = (
+        mapping.groupby("oldCode")["newCode"]
+        .apply(lambda x: sorted(set(x)))
+        .loc[lambda s: s.str.len() > 1]
+        .to_dict()
+    )
+
+    merger_details = (
+        mapping.groupby("newCode")["oldCode"]
+        .apply(lambda x: sorted(set(x)))
+        .loc[lambda s: s.str.len() > 1]
+        .to_dict()
+    )
+
+    if split_details:
+        logger.info(f"ℹ️Regionsplittinger funnet mellom {kildeaar} og {statistikkaar}: {split_details}")
+
+    if merger_details:
+        logger.info(f"ℹ️Regionssammenslåinger funnet mellom {kildeaar} og {statistikkaar}: {merger_details}")
+
+    changed_old_codes = set(mapping["oldCode"])
+    input_codes = set(df[regionkolonne])
+
+    unmapped_codes = sorted(input_codes - changed_old_codes)
+    if unmapped_codes:
+        logger.info(
+            f"ℹ️{len(unmapped_codes)} regioner finnes ikke i endringsloggen "
+            "og kopieres uendret."
+        )
+
     df_mapped = df.merge(
         mapping[["oldCode", "newCode"]],
         left_on=regionkolonne,
@@ -173,7 +192,9 @@ def anvende_kommunereform(
         how="left",
     )
 
-    df_mapped[regionkolonne] = df_mapped["newCode"].fillna(df_mapped[regionkolonne])
+    df_mapped[regionkolonne] = df_mapped["newCode"].fillna(
+        df_mapped[regionkolonne]
+    )
 
     df_mapped = df_mapped.drop(columns=["oldCode", "newCode"])
 
@@ -181,19 +202,24 @@ def anvende_kommunereform(
         col for col in df_mapped.columns if col not in statistikkvariable
     ]
 
-    duplicated_keys = df_mapped.duplicated(subset=klassifikasjonsvariable, keep=False)
+    duplicated_keys = df_mapped.duplicated(
+        subset=klassifikasjonsvariable, keep=False
+    )
 
     if duplicated_keys.any():
         logger.info(
-            "Dupliserte klassifikasjonsnøkler funnet etter regionendring. "
+            "ℹ️Dupliserte klassifikasjonsnøkler funnet etter regionendring. "
             "Aggregerer statistikkvariable."
         )
 
-        df_mapped = df_mapped.groupby(klassifikasjonsvariable, as_index=False)[
-            statistikkvariable
-        ].sum()
+        df_mapped = (
+            df_mapped.groupby(klassifikasjonsvariable, as_index=False)[
+                statistikkvariable
+            ]
+            .sum()
+        )
     else:
-        logger.info("Ingen aggregering nødvendig etter regionendring.")
+        logger.info("ℹ️Ingen aggregering nødvendig etter regionendring.")
 
     return df_mapped
 
@@ -212,11 +238,11 @@ def hente_data_folkemengde(
     if testdata:
         kildeaar = statistikkaar - 1
         logger.info(
-            f"Lager testdata for {statistikkaar} basert på data fra {kildeaar}."
+            f"ℹ️Lager testdata for {statistikkaar} basert på data fra {kildeaar}."
         )
     else:
         kildeaar = statistikkaar
-        logger.info(f"Henter reelle data for {statistikkaar}.")
+        logger.info(f"ℹ️Henter reelle data for {statistikkaar}.")
 
     if regionsnivaa == "bydel":
         folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_bydeler_31_12(kildeaar)
@@ -228,7 +254,7 @@ def hente_data_folkemengde(
 
         if folkemengde_kommune is None:
             raise RuntimeError(
-                f"Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
+                f"ℹ️Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
             )
 
         folkemengde_31_12 = folkemengde_kommune
@@ -240,82 +266,76 @@ def hente_data_folkemengde(
 
     else:
         raise ValueError(
-            "Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'."
+            "❌Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'."
         )
 
     folkemengde_31_12_data = folkemengde_31_12.copy()
-
-    if testdata and regionsnivaa == "kommune":
+    
+    if testdata:
         mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
-
+        
+    
         folkemengde_31_12_data = anvende_kommunereform(
             inputfil=folkemengde_31_12_data,
             mapping=mapping,
             statistikkvariable=["personer"],
             statistikkaar=statistikkaar,
+            regionsnivaa=regionsnivaa,
         )
+        logger.info("ℹ️Dette er endringsmappingen:\n")
+        display(mapping)
 
-        print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
-        folkemengde_31_12_data_uten_agg = folkemengde_31_12_data[
-            ~folkemengde_31_12_data["kommuneregion"]
+    if regionsnivaa == "kommune":
+        regionkolonne = "kommuneregion"
+        fjern_mask = (
+            folkemengde_31_12_data[regionkolonne]
             .astype(str)
             .str.match(r"^(EKG\d{2}|EKA\d{2}|EAK|EAKUO)$")
-        ].copy()
+        )
 
-        predefined_input = "alder"
-        with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-            folkemengde_31_12_data = regionshierarki.hierarki(
-                folkemengde_31_12_data_uten_agg
-            )
-        # display(folkemengde_31_12_data)
+    elif regionsnivaa == "bydel":
+        regionkolonne = "bydelsregion"
+        fjern_mask = (
+            folkemengde_31_12_data[regionkolonne]
+            .astype(str)
+            .eq("EAB")
+        )
 
-    elif testdata:
-        folkemengde_31_12_data["periode"] = str(statistikkaar)
+    elif regionsnivaa == "fylkeskommune":
+        regionkolonne = "fylkesregion"
+        fjern_mask = (
+            folkemengde_31_12_data[regionkolonne]
+            .astype(str)
+            .isin(["EAFK", "EAFKUO"])
+        )
+
+    print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
+
+    folkemengde_31_12_data_uten_agg = (
+        folkemengde_31_12_data.loc[~fjern_mask].copy()
+    )
+
+    predefined_input = "alder"
+    with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
+        folkemengde_31_12_data = regionshierarki.hierarki(
+            folkemengde_31_12_data_uten_agg
+        )
+
+    # elif testdata:
+    #     folkemengde_31_12_data["periode"] = str(statistikkaar)
 
     return folkemengde_31_12_data
-
-
 # -
 
-testdatasett = hente_data_folkemengde(statistikkaar, regionsnivaa, testdata)
+statistikkaar = 2020
+regionsnivaa = "kommune"
+testdata = True
+
+mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
+display(mapping)
+
+# testdatasett = hente_data_folkemengde(statistikkaar, regionsnivaa, testdata)
+testdatasett = hente_data_folkemengde(2017, 'kommune', testdata=True)
 display(testdatasett)
 
-# +
-# if testdata and regionsnivaa in ("kommune", "bydel"):
-#     mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
 
-#     folkemengde_31_12_data = anvende_kommunereform(
-#         inputfil=folkemengde_31_12_data,
-#         mapping=mapping,
-#         statistikkvariable=["personer"],
-#         statistikkaar=statistikkaar,
-#     )
-
-#     if regionsnivaa in ("kommune", "bydel"):
-#         print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
-
-#     if regionsnivaa == "kommune":
-#         mask = (
-#             folkemengde_31_12_data["kommuneregion"]
-#             .astype(str)
-#             .str.match(r"^(EKG\d{2}|EKA\d{2}|EAK|EAKUO)$")
-#         )
-#     else:  # bydel
-#         mask = (
-#             folkemengde_31_12_data["kommuneregion"]
-#             .astype(str)
-#             == "EAB"
-#         )
-
-#     folkemengde_31_12_data_uten_agg = (
-#         folkemengde_31_12_data.loc[~mask].copy()
-#     )
-
-#     predefined_input = "alder"
-#     with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-#         folkemengde_31_12_data = regionshierarki.hierarki(
-#             folkemengde_31_12_data_uten_agg
-#         )
-
-# elif testdata:
-#     folkemengde_31_12_data["periode"] = str(statistikkaar)

@@ -1,4 +1,4 @@
-# from ssb_kostra_python.hente_data_folkemengde import hente_data_folkemengde
+from ssb_kostra_python.hente_data_folkemengde import hente_data_folkemengde
 
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
