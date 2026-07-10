@@ -4,6 +4,15 @@ from fagfunksjoner.fagfunksjoner_logger import logger
 
 from ssb_kostra_python import hjelpefunksjoner
 
+# Til v2
+import pandas as pd
+from fagfunksjoner.fagfunksjoner_logger import logger
+from klass import KlassClassification
+from ssb_kostra_python import hjelpefunksjoner
+from ssb_kostra_python import regionshierarki
+INPUT_PATCH_TARGET = "builtins.input"
+from unittest.mock import patch
+
 
 def hente_data_folkemengde(
     aar: int, regionsnivaa: str, testdata: bool = False
@@ -163,3 +172,108 @@ def hente_data_folkemengde(
         f"ℹ️Du har i dette tilfellet satt \033[1mTrue\033[0m for testdatasett. Det vil si at dataene er hentet fra fila for året før {aar} for regionsnivået {regionsnivaa}, men at datasettet skal vise {aar} i periodekolonnen.\n"
     )
     return folkemengde_31_12_data
+
+
+def hente_data_folkemengde_v2(
+    aar: int, regionsnivaa: str, testdata: bool = False
+) -> pd.DataFrame:
+    """Henter folkemengdedata 31.12 for valgt år og regionsnivå.
+
+    Hvis testdata=True, hentes data fra året før, periode settes til aar,
+    og for kommuner anvendes eventuell kommunereform mellom kildeåret og aar.
+    """
+    regionsnivaa = regionsnivaa.lower()
+    statistikkaar = int(aar)
+
+    if testdata:
+        kildeaar = statistikkaar - 1
+        logger.info(
+            f"ℹ️Lager testdata for {statistikkaar} basert på data fra {kildeaar}."
+        )
+    else:
+        kildeaar = statistikkaar
+        logger.info(f"ℹ️Henter reelle data for {statistikkaar}.")
+
+    if regionsnivaa == "bydel":
+        folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_bydeler_31_12(kildeaar)
+
+    elif regionsnivaa == "kommune":
+        _, folkemengde_kommune = hjelpefunksjoner._hent_folkemengde_kommune_31_12(
+            kildeaar
+        )
+
+        if folkemengde_kommune is None:
+            raise RuntimeError(
+                f"ℹ️Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
+            )
+
+        folkemengde_31_12 = folkemengde_kommune
+
+    elif regionsnivaa == "fylkeskommune":
+        folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_fylkeskommune_31_12(
+            kildeaar
+        )
+
+    else:
+        raise ValueError(
+            "❌Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'."
+        )
+
+    folkemengde_31_12_data = folkemengde_31_12.copy()
+    
+    if testdata:
+        mapping = hjelpefunksjoner._mapping_mellom_aar(statistikkaar, regionsnivaa)
+        
+    
+        folkemengde_31_12_data = hjelpefunksjoner._anvende_kommunereform(
+            inputfil=folkemengde_31_12_data,
+            mapping=mapping,
+            statistikkvariable=["personer"],
+            statistikkaar=statistikkaar,
+            regionsnivaa=regionsnivaa,
+        )
+        logger.info("ℹ️Dette er endringsmappingen:\n")
+        display(mapping)
+
+    if regionsnivaa == "kommune":
+        regionkolonne = "kommuneregion"
+        fjern_mask = (
+            folkemengde_31_12_data[regionkolonne]
+            .astype(str)
+            .str.match(r"^(EKG\d{2}|EKA\d{2}|EAK|EAKUO)$")
+        )
+
+    elif regionsnivaa == "bydel":
+        regionkolonne = "bydelsregion"
+        fjern_mask = (
+            folkemengde_31_12_data[regionkolonne]
+            .astype(str)
+            .eq("EAB")
+        )
+
+    elif regionsnivaa == "fylkeskommune":
+        regionkolonne = "fylkesregion"
+        fjern_mask = (
+            folkemengde_31_12_data[regionkolonne]
+            .astype(str)
+            .isin(["EAFK", "EAFKUO"])
+        )
+
+    print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
+
+    folkemengde_31_12_data_uten_agg = (
+        folkemengde_31_12_data.loc[~fjern_mask].copy()
+    )
+
+    predefined_input = "alder"
+    with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
+        folkemengde_31_12_data = regionshierarki.hierarki(
+            folkemengde_31_12_data_uten_agg
+        )
+
+    # elif testdata:
+    #     folkemengde_31_12_data["periode"] = str(statistikkaar)
+
+    return folkemengde_31_12_data
+
+

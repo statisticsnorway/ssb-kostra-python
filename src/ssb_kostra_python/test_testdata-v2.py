@@ -12,14 +12,53 @@ from unittest.mock import patch
 
 
 # +
-def mapping_mellom_aar(
+def _mapping_mellom_aar(
     statistikkaar: int | str,
     regionsnivaa: str = "kommune",
 ) -> pd.DataFrame:
     statistikkaar_int = int(statistikkaar)
     kildeaar = str(statistikkaar_int - 1)
     regionsnivaa = regionsnivaa.lower()
-
+    """Henter endringsmapping mellom to påfølgende år for valgt regionsnivå.
+    
+    Funksjonen henter endringsloggen fra KLASS for overgangen mellom
+    kildeåret (t-1) og statistikkåret (t). Endringsloggen brukes ved
+    produksjon av testdatasett for å oversette regionkoder fra kildeåret
+    til statistikkåret.
+    
+    For bydeler returneres kun endringer som gjelder Oslo-bydeler
+    (regionkoder som starter med "03"). Dersom det ikke finnes relevante
+    endringer, returneres en tom DataFrame med forventede kolonner.
+    
+    Parametere
+    ----------
+    statistikkaar : int | str
+        Statistikkåret datasettet skal gjelde for.
+    
+    regionsnivaa : str, default="kommune"
+        Geografisk nivå det skal hentes endringsmapping for.
+        Gyldige verdier er "kommune", "bydel" og "fylkeskommune".
+    
+    Returverdi
+    ----------
+    pd.DataFrame
+        En DataFrame med én rad per registrerte regionendring og kolonnene
+    
+        - kildeaar
+        - oldCode
+        - oldName
+        - oldShortName
+        - statistikkaar
+        - newCode
+        - newName
+        - newShortName
+        - changeOccurred
+    
+        Returnerer en tom DataFrame med de samme kolonnene dersom ingen
+        relevante endringer finnes eller dersom endringsloggen ikke kan
+        hentes.
+    """
+    
     kolonner = [
         "kildeaar",
         "oldCode",
@@ -99,6 +138,28 @@ def mapping_mellom_aar(
 
 
 def _regionkolonne(regionsnivaa: str) -> str:
+    """Returnerer navnet på regionkolonnen for et gitt regionsnivå.
+
+    Parametere
+    ----------
+    regionsnivaa : str
+        Geografisk nivå. Gyldige verdier er "kommune", "bydel"
+        og "fylkeskommune".
+
+    Returverdi
+    ----------
+    str
+        Navnet på kolonnen som inneholder regionkodene:
+
+        - "kommuneregion" for kommuner
+        - "bydelsregion" for bydeler
+        - "fylkesregion" for fylkeskommuner
+
+    Reiser
+    ------
+    ValueError
+        Dersom regionsnivaa ikke er en gyldig verdi.
+    """
     if regionsnivaa == "kommune":
         return "kommuneregion"
     if regionsnivaa == "bydel":
@@ -110,6 +171,27 @@ def _regionkolonne(regionsnivaa: str) -> str:
 
 
 def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
+    """Normaliserer en regionkode til forventet strengformat.
+
+    Numeriske regionkoder konverteres til strenger med ledende nuller.
+    Bydelskoder formateres til seks sifre, mens kommune- og
+    fylkeskommunekoder formateres til fire sifre. Ikke-numeriske
+    regionkoder returneres uendret.
+
+    Parametere
+    ----------
+    verdi : object
+        Regionkode som skal normaliseres.
+
+    regionsnivaa : str
+        Geografisk nivå. Gyldige verdier er "kommune", "bydel"
+        og "fylkeskommune".
+
+    Returverdi
+    ----------
+    str
+        Den normaliserte regionkoden.
+    """
     kode = str(verdi).strip()
 
     if not kode.isdigit():
@@ -121,7 +203,7 @@ def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
     return kode.zfill(4)
 
 
-def anvende_kommunereform(
+def _anvende_kommunereform(
     inputfil: pd.DataFrame,
     mapping: pd.DataFrame | None,
     statistikkvariable: list[str],
@@ -131,6 +213,68 @@ def anvende_kommunereform(
     df = inputfil.copy()
     regionsnivaa = regionsnivaa.lower()
     regionkolonne = _regionkolonne(regionsnivaa)
+    """Anvender regionendringer på et testdatasett fra året før.
+
+    Funksjonen tilpasser et datasett fra kildeåret (t-1) til valgt
+    statistikkår (t) ved hjelp av en endringsmapping fra KLASS. Den kan
+    brukes for kommune-, bydels- og fylkeskommunenivå.
+
+    Regionkodene normaliseres til forventet lengde, og verdien i kolonnen
+    ``periode`` oppdateres til statistikkåret. Regioner som finnes i
+    endringsmappingen, får regionkoden erstattet med tilhørende ny kode.
+    Regioner som ikke finnes i mappingen, kopieres uendret.
+
+    Funksjonen identifiserer og logger både regionsplittinger, der én
+    tidligere regionkode er koblet til flere nye regionkoder, og
+    regionssammenslåinger, der flere tidligere regionkoder er koblet til
+    samme nye regionkode.
+
+    Etter at mappingen er anvendt, kontrolleres det om flere rader har fått
+    samme kombinasjon av klassifikasjonsvariabler. Slike rader aggregeres
+    ved å summere de angitte statistikkvariablene.
+
+    Parametere
+    ----------
+    inputfil : pd.DataFrame
+        Datasettet fra kildeåret som regionendringene skal anvendes på.
+        Datasettet må inneholde riktig regionkolonne for valgt regionsnivå
+        og en kolonne med navnet ``periode``.
+
+    mapping : pd.DataFrame | None
+        Endringsmapping mellom kildeåret og statistikkåret. Mappingen
+        forventes å inneholde kolonnene ``oldCode`` og ``newCode``.
+        Dersom mappingen er ``None`` eller tom, beholdes regionkodene
+        uendret, og bare ``periode`` oppdateres.
+
+    statistikkvariable : list[str]
+        Navn på de numeriske statistikkvariablene som skal summeres dersom
+        regionendringene fører til dupliserte klassifikasjonsnøkler.
+
+    statistikkaar : int | str
+        Året testdatasettet skal gjelde for. Kildeåret beregnes som
+        statistikkåret minus ett.
+
+    regionsnivaa : str
+        Geografisk nivå som mappingen skal anvendes på. Gyldige verdier er
+        ``"kommune"``, ``"bydel"`` og ``"fylkeskommune"``.
+
+    Returverdi
+    ----------
+    pd.DataFrame
+        Et nytt datasett der regionkodene er tilpasset statistikkåret,
+        ``periode`` er oppdatert, og eventuelle dupliserte
+        klassifikasjonsnøkler er aggregert.
+
+    Reiser
+    ------
+    ValueError
+        Dersom ``regionsnivaa`` ikke er ``"kommune"``, ``"bydel"`` eller
+        ``"fylkeskommune"``.
+
+    KeyError
+        Dersom forventet regionkolonne, ``oldCode``, ``newCode`` eller en
+        angitt statistikkvariabel mangler.
+    """
 
     df[regionkolonne] = df[regionkolonne].map(
         lambda x: _normaliser_regionkode(x, regionsnivaa)
@@ -138,7 +282,7 @@ def anvende_kommunereform(
     df["periode"] = str(statistikkaar)
 
     kildeaar = str(int(statistikkaar) - 1)
-    logger.info(f"ℹ️Kildeåret er {kildeaar}.")
+    logger.info(f"ℹ️Kildeåret for testdatasettet ditt er {kildeaar}.")
 
     if mapping is None or mapping.empty:
         logger.info(
@@ -224,7 +368,7 @@ def anvende_kommunereform(
     return df_mapped
 
 
-def hente_data_folkemengde(
+def hente_data_folkemengde_v2(
     aar: int, regionsnivaa: str, testdata: bool = False
 ) -> pd.DataFrame:
     """Henter folkemengdedata 31.12 for valgt år og regionsnivå.
@@ -272,10 +416,10 @@ def hente_data_folkemengde(
     folkemengde_31_12_data = folkemengde_31_12.copy()
     
     if testdata:
-        mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
+        mapping = _mapping_mellom_aar(statistikkaar, regionsnivaa)
         
     
-        folkemengde_31_12_data = anvende_kommunereform(
+        folkemengde_31_12_data = _anvende_kommunereform(
             inputfil=folkemengde_31_12_data,
             mapping=mapping,
             statistikkvariable=["personer"],
@@ -331,11 +475,11 @@ statistikkaar = 2020
 regionsnivaa = "kommune"
 testdata = True
 
-mapping = mapping_mellom_aar(statistikkaar, regionsnivaa)
+mapping = _mapping_mellom_aar(statistikkaar, regionsnivaa)
 display(mapping)
 
 # testdatasett = hente_data_folkemengde(statistikkaar, regionsnivaa, testdata)
-testdatasett = hente_data_folkemengde(2017, 'kommune', testdata=True)
+testdatasett = hente_data_folkemengde_v2(2018, 'kommune', testdata=True)
 display(testdatasett)
 
 
