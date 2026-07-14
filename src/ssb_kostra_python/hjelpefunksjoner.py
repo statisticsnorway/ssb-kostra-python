@@ -27,13 +27,13 @@ import duckdb
 from fagfunksjoner import latest_version_path
 from fagfunksjoner.fagfunksjoner_logger import logger
 
-from ssb_kostra_python import regionshierarki
-from ssb_kostra_python import summere_kjonn
-from ssb_kostra_python import summere_til_aldersgrupperinger
-
 # %%
 # Til v2
 from klass import KlassClassification
+
+from ssb_kostra_python import regionshierarki
+from ssb_kostra_python import summere_kjonn
+from ssb_kostra_python import summere_til_aldersgrupperinger
 
 
 # %%
@@ -750,30 +750,30 @@ def _mapping_mellom_aar(
     kildeaar = str(statistikkaar_int - 1)
     regionsnivaa = regionsnivaa.lower()
     """Henter endringsmapping mellom to påfølgende år for valgt regionsnivå.
-    
+
     Funksjonen henter endringsloggen fra KLASS for overgangen mellom
     kildeåret (t-1) og statistikkåret (t). Endringsloggen brukes ved
     produksjon av testdatasett for å oversette regionkoder fra kildeåret
     til statistikkåret.
-    
+
     For bydeler returneres kun endringer som gjelder Oslo-bydeler
     (regionkoder som starter med "03"). Dersom det ikke finnes relevante
     endringer, returneres en tom DataFrame med forventede kolonner.
-    
+
     Parametere
     ----------
     statistikkaar : int | str
         Statistikkåret datasettet skal gjelde for.
-    
+
     regionsnivaa : str, default="kommune"
         Geografisk nivå det skal hentes endringsmapping for.
         Gyldige verdier er "kommune", "bydel" og "fylkeskommune".
-    
+
     Returverdi
     ----------
     pd.DataFrame
         En DataFrame med én rad per registrerte regionendring og kolonnene
-    
+
         - kildeaar
         - oldCode
         - oldName
@@ -783,12 +783,12 @@ def _mapping_mellom_aar(
         - newName
         - newShortName
         - changeOccurred
-    
+
         Returnerer en tom DataFrame med de samme kolonnene dersom ingen
         relevante endringer finnes eller dersom endringsloggen ikke kan
         hentes.
     """
-    
+
     kolonner = [
         "kildeaar",
         "oldCode",
@@ -829,13 +829,15 @@ def _mapping_mellom_aar(
 
     except Exception:
         logger.warning(
-            f"ℹ️Ingen endringslogg funnet for {kildeaar}–{statistikkaar_int}. "
+            f"ℹ️Ingen endringslogg funnet for {kildeaar}-{statistikkaar_int}. "
             "Returnerer tom mapping."
         )
         return pd.DataFrame(columns=kolonner)
 
     if df_endringer is None or df_endringer.empty:
-        logger.info(f"ℹ️Ingen {endringstekst} funnet for {kildeaar}–{statistikkaar_int}.")
+        logger.info(
+            f"ℹ️Ingen {endringstekst} funnet for {kildeaar}-{statistikkaar_int}."
+        )
         return pd.DataFrame(columns=kolonner)
 
     df_endringer = df_endringer.copy()
@@ -849,7 +851,7 @@ def _mapping_mellom_aar(
         if df_endringer.empty:
             logger.info(
                 f"Ingen Oslo-bydelsendringer funnet for "
-                f"{kildeaar}–{statistikkaar_int}."
+                f"{kildeaar}-{statistikkaar_int}."
             )
             return pd.DataFrame(columns=kolonner)
 
@@ -901,7 +903,6 @@ def _regionkolonne(regionsnivaa: str) -> str:
     raise ValueError("❌regionsnivaa må være 'bydel', 'kommune' eller 'fylkeskommune'.")
 
 
-
 # %%
 def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
     """Normaliserer en regionkode til forventet strengformat.
@@ -925,6 +926,13 @@ def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
     str
         Den normaliserte regionkoden.
     """
+    regionsnivaa = regionsnivaa.lower()
+
+    if regionsnivaa not in {"kommune", "bydel", "fylkeskommune"}:
+        raise ValueError(
+            "❌regionsnivaa må være 'bydel', 'kommune' eller 'fylkeskommune'."
+        )
+
     kode = str(verdi).strip()
 
     if not kode.isdigit():
@@ -934,6 +942,16 @@ def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
         return kode.zfill(6)
 
     return kode.zfill(4)
+
+    # kode = str(verdi).strip()
+
+    # if not kode.isdigit():
+    #     return kode
+
+    # if regionsnivaa == "bydel":
+    #     return kode.zfill(6)
+
+    # return kode.zfill(4)
 
 
 # %%
@@ -1048,10 +1066,14 @@ def _anvende_kommunereform(
     )
 
     if split_details:
-        logger.info(f"ℹ️Regionsplittinger funnet mellom {kildeaar} og {statistikkaar}: {split_details}")
+        logger.info(
+            f"ℹ️Regionsplittinger funnet mellom {kildeaar} og {statistikkaar}: {split_details}"
+        )
 
     if merger_details:
-        logger.info(f"ℹ️Regionssammenslåinger funnet mellom {kildeaar} og {statistikkaar}: {merger_details}")
+        logger.info(
+            f"ℹ️Regionssammenslåinger funnet mellom {kildeaar} og {statistikkaar}: {merger_details}"
+        )
 
     changed_old_codes = set(mapping["oldCode"])
     input_codes = set(df[regionkolonne])
@@ -1070,9 +1092,7 @@ def _anvende_kommunereform(
         how="left",
     )
 
-    df_mapped[regionkolonne] = df_mapped["newCode"].fillna(
-        df_mapped[regionkolonne]
-    )
+    df_mapped[regionkolonne] = df_mapped["newCode"].fillna(df_mapped[regionkolonne])
 
     df_mapped = df_mapped.drop(columns=["oldCode", "newCode"])
 
@@ -1080,9 +1100,7 @@ def _anvende_kommunereform(
         col for col in df_mapped.columns if col not in statistikkvariable
     ]
 
-    duplicated_keys = df_mapped.duplicated(
-        subset=klassifikasjonsvariable, keep=False
-    )
+    duplicated_keys = df_mapped.duplicated(subset=klassifikasjonsvariable, keep=False)
 
     if duplicated_keys.any():
         logger.info(
@@ -1090,12 +1108,9 @@ def _anvende_kommunereform(
             "Aggregerer statistikkvariable."
         )
 
-        df_mapped = (
-            df_mapped.groupby(klassifikasjonsvariable, as_index=False)[
-                statistikkvariable
-            ]
-            .sum()
-        )
+        df_mapped = df_mapped.groupby(klassifikasjonsvariable, as_index=False)[
+            statistikkvariable
+        ].sum()
     else:
         logger.info("ℹ️Ingen aggregering nødvendig etter regionendring.")
 
