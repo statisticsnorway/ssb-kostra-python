@@ -976,7 +976,7 @@ def _anvende_kommunereform(
     endringsmappingen, får regionkoden erstattet med tilhørende ny kode.
     Regioner som ikke finnes i mappingen, kopieres uendret.
 
-    Funksjonen identifiserer og logger både regionsplittinger, der én
+    Funksjonen identifiserer og logger både regionsoppdelinger, der én
     tidligere regionkode er koblet til flere nye regionkoder, og
     regionssammenslåinger, der flere tidligere regionkoder er koblet til
     samme nye regionkode.
@@ -1067,7 +1067,7 @@ def _anvende_kommunereform(
 
     if split_details:
         logger.info(
-            f"ℹ️Regionsplittinger funnet mellom {kildeaar} og {statistikkaar}: {split_details}"
+            f"ℹ️Regionsoppdelinger funnet mellom {kildeaar} og {statistikkaar}: {split_details}"
         )
 
     if merger_details:

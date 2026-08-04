@@ -93,26 +93,32 @@ display(folketall_fylkeskommuner_KOSTRA)
 # ## Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
 
 # %% [markdown]
-# Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+# Når du setter opp et fast produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
 #
 # Du forhåndsdefinerer klassifikasjonsvariablene i **predefined_input**. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
 #
 # I dette eksemplet, som gjort over også stegvis, kjøres hierarkioperasjonen to ganger etter hverandre. Først må kommunedatasettet aggregeres opp til fylkeskommuner. Deretter må fylkeskommunedatasettet aggregeres opp til KOSTRA-fylkeskommunegrupperingene. I begge operasjonene er klassifikasjonsvariablene (i tillegg til periode og fylkesregion) **kjonn** og **alder**, så vi trenger bare å definere dem én gang.
 
 # %%
+# Definerer først klassifikasjonsvariablene (utenom periode- og regionsvariabel)
 predefined_input = "kjonn, alder"
 
+# Bruker patch (husk import: from unittest.mock import patch) til å kjøre funksjonen med de forhåndsdefinerte variablene.
+# Her aggregeres først kommunene til fylkeskommuner.
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     folketall_fylkeskommuner = hierarki(
         df_folketall_kommuner, "kommune_til_fylkeskommune", add_region_names=True
     )
+# Viser tabell
 display(folketall_fylkeskommuner)
 
-
+# Bruker patch (husk import: from unittest.mock import patch) til å kjøre funksjonen med de forhåndsdefinerte variablene.
+# Her aggregeres fylkeskommunene til KOSTRA-fylkeskommunegrupperinger.
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     folketall_fylkeskommuner_KOSTRA = hierarki(
         folketall_fylkeskommuner, add_region_names=True
     )
+# Viser tabell
 display(folketall_fylkeskommuner_KOSTRA)
 
 # %%

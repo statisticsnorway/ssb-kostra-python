@@ -1,5 +1,3 @@
-from ssb_kostra_python.hente_data_folkemengde import hente_data_folkemengde
-
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 from klass import KlassClassification
@@ -20,30 +18,30 @@ def _mapping_mellom_aar(
     kildeaar = str(statistikkaar_int - 1)
     regionsnivaa = regionsnivaa.lower()
     """Henter endringsmapping mellom to påfølgende år for valgt regionsnivå.
-    
+
     Funksjonen henter endringsloggen fra KLASS for overgangen mellom
     kildeåret (t-1) og statistikkåret (t). Endringsloggen brukes ved
     produksjon av testdatasett for å oversette regionkoder fra kildeåret
     til statistikkåret.
-    
+
     For bydeler returneres kun endringer som gjelder Oslo-bydeler
     (regionkoder som starter med "03"). Dersom det ikke finnes relevante
     endringer, returneres en tom DataFrame med forventede kolonner.
-    
+
     Parametere
     ----------
     statistikkaar : int | str
         Statistikkåret datasettet skal gjelde for.
-    
+
     regionsnivaa : str, default="kommune"
         Geografisk nivå det skal hentes endringsmapping for.
         Gyldige verdier er "kommune", "bydel" og "fylkeskommune".
-    
+
     Returverdi
     ----------
     pd.DataFrame
         En DataFrame med én rad per registrerte regionendring og kolonnene
-    
+
         - kildeaar
         - oldCode
         - oldName
@@ -53,12 +51,12 @@ def _mapping_mellom_aar(
         - newName
         - newShortName
         - changeOccurred
-    
+
         Returnerer en tom DataFrame med de samme kolonnene dersom ingen
         relevante endringer finnes eller dersom endringsloggen ikke kan
         hentes.
     """
-    
+
     kolonner = [
         "kildeaar",
         "oldCode",
@@ -105,7 +103,9 @@ def _mapping_mellom_aar(
         return pd.DataFrame(columns=kolonner)
 
     if df_endringer is None or df_endringer.empty:
-        logger.info(f"ℹ️Ingen {endringstekst} funnet for {kildeaar}–{statistikkaar_int}.")
+        logger.info(
+            f"ℹ️Ingen {endringstekst} funnet for {kildeaar}–{statistikkaar_int}."
+        )
         return pd.DataFrame(columns=kolonner)
 
     df_endringer = df_endringer.copy()
@@ -314,10 +314,14 @@ def _anvende_kommunereform(
     )
 
     if split_details:
-        logger.info(f"ℹ️Regionsplittinger funnet mellom {kildeaar} og {statistikkaar}: {split_details}")
+        logger.info(
+            f"ℹ️Regionsplittinger funnet mellom {kildeaar} og {statistikkaar}: {split_details}"
+        )
 
     if merger_details:
-        logger.info(f"ℹ️Regionssammenslåinger funnet mellom {kildeaar} og {statistikkaar}: {merger_details}")
+        logger.info(
+            f"ℹ️Regionssammenslåinger funnet mellom {kildeaar} og {statistikkaar}: {merger_details}"
+        )
 
     changed_old_codes = set(mapping["oldCode"])
     input_codes = set(df[regionkolonne])
@@ -336,9 +340,7 @@ def _anvende_kommunereform(
         how="left",
     )
 
-    df_mapped[regionkolonne] = df_mapped["newCode"].fillna(
-        df_mapped[regionkolonne]
-    )
+    df_mapped[regionkolonne] = df_mapped["newCode"].fillna(df_mapped[regionkolonne])
 
     df_mapped = df_mapped.drop(columns=["oldCode", "newCode"])
 
@@ -346,9 +348,7 @@ def _anvende_kommunereform(
         col for col in df_mapped.columns if col not in statistikkvariable
     ]
 
-    duplicated_keys = df_mapped.duplicated(
-        subset=klassifikasjonsvariable, keep=False
-    )
+    duplicated_keys = df_mapped.duplicated(subset=klassifikasjonsvariable, keep=False)
 
     if duplicated_keys.any():
         logger.info(
@@ -356,12 +356,9 @@ def _anvende_kommunereform(
             "Aggregerer statistikkvariable."
         )
 
-        df_mapped = (
-            df_mapped.groupby(klassifikasjonsvariable, as_index=False)[
-                statistikkvariable
-            ]
-            .sum()
-        )
+        df_mapped = df_mapped.groupby(klassifikasjonsvariable, as_index=False)[
+            statistikkvariable
+        ].sum()
     else:
         logger.info("ℹ️Ingen aggregering nødvendig etter regionendring.")
 
@@ -414,11 +411,10 @@ def hente_data_folkemengde_v2(
         )
 
     folkemengde_31_12_data = folkemengde_31_12.copy()
-    
+
     if testdata:
         mapping = _mapping_mellom_aar(statistikkaar, regionsnivaa)
-        
-    
+
         folkemengde_31_12_data = _anvende_kommunereform(
             inputfil=folkemengde_31_12_data,
             mapping=mapping,
@@ -439,25 +435,17 @@ def hente_data_folkemengde_v2(
 
     elif regionsnivaa == "bydel":
         regionkolonne = "bydelsregion"
-        fjern_mask = (
-            folkemengde_31_12_data[regionkolonne]
-            .astype(str)
-            .eq("EAB")
-        )
+        fjern_mask = folkemengde_31_12_data[regionkolonne].astype(str).eq("EAB")
 
     elif regionsnivaa == "fylkeskommune":
         regionkolonne = "fylkesregion"
         fjern_mask = (
-            folkemengde_31_12_data[regionkolonne]
-            .astype(str)
-            .isin(["EAFK", "EAFKUO"])
+            folkemengde_31_12_data[regionkolonne].astype(str).isin(["EAFK", "EAFKUO"])
         )
 
     print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
 
-    folkemengde_31_12_data_uten_agg = (
-        folkemengde_31_12_data.loc[~fjern_mask].copy()
-    )
+    folkemengde_31_12_data_uten_agg = folkemengde_31_12_data.loc[~fjern_mask].copy()
 
     predefined_input = "alder"
     with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
@@ -469,6 +457,8 @@ def hente_data_folkemengde_v2(
     #     folkemengde_31_12_data["periode"] = str(statistikkaar)
 
     return folkemengde_31_12_data
+
+
 # -
 
 statistikkaar = 2020
@@ -479,7 +469,5 @@ mapping = _mapping_mellom_aar(statistikkaar, regionsnivaa)
 display(mapping)
 
 # testdatasett = hente_data_folkemengde(statistikkaar, regionsnivaa, testdata)
-testdatasett = hente_data_folkemengde_v2(2018, 'kommune', testdata=True)
+testdatasett = hente_data_folkemengde_v2(2018, "kommune", testdata=True)
 display(testdatasett)
-
-

@@ -1,11 +1,10 @@
-from ssb_kostra_python.hente_data_folkemengde import hente_data_folkemengde
-
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 from klass import KlassClassification
 
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python import regionshierarki
+from ssb_kostra_python.hente_data_folkemengde import hente_data_folkemengde
 
 INPUT_PATCH_TARGET = "builtins.input"
 from unittest.mock import patch

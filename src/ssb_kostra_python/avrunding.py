@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -13,10 +13,13 @@
 # ---
 
 # %%
+from decimal import ROUND_HALF_UP
+from decimal import Decimal
+from decimal import InvalidOperation
+
 import numpy as np
 import pandas as pd
 
-# %%
 # import logging
 from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
@@ -24,18 +27,51 @@ from IPython.display import display  # for nice tables in notebooks
 
 # %%
 def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:
-    """Kommersiell avrunding (0.5 -> 1, -0.5 -> -1), også for desimaler.
+    """Runder kommersielt til valgt antall desimaler.
 
-    Fungerer på numpy-arrays eller pandas-Serier av tall.
+    Verdier som ligger nøyaktig midt mellom to mulige resultater,
+    rundes bort fra null:
+
+    1.005  -> 1.01
+    -1.005 -> -1.01
+
+    Manglende eller ugyldige verdier returneres som NaN.
     """
-    factor = 10**decimals
-    # Cast to float to avoid issues with Int64 etc.
-    v = pd.Series(pd.to_numeric(values, errors="coerce").astype(float))
-    arr = v.to_numpy(dtype=float)
-    # round half away from zero
-    rounded = np.sign(arr) * np.floor(np.abs(arr) * factor + 0.5) / factor
+    if decimals < 0:
+        raise ValueError("'decimals' kan ikke være negativ.")
 
-    return pd.Series(rounded, index=v.index, name=v.name)
+    numeric_values = pd.to_numeric(values, errors="coerce")
+
+    # Decimal("1")      ved 0 desimaler
+    # Decimal("0.1")    ved 1 desimal
+    # Decimal("0.01")   ved 2 desimaler
+    quantizer = Decimal("1").scaleb(-decimals)
+
+    def round_value(value: object) -> float:
+        if pd.isna(value):
+            return np.nan
+
+        try:
+            # str(value) er viktig. Decimal(value) ville tatt med
+            # floatens unøyaktige binære representasjon.
+            decimal_value = Decimal(str(value))
+            rounded_value = decimal_value.quantize(
+                quantizer,
+                rounding=ROUND_HALF_UP,
+            )
+            return float(rounded_value)
+
+        except (InvalidOperation, ValueError, TypeError):
+            return np.nan
+
+    rounded = numeric_values.map(round_value)
+
+    return pd.Series(
+        rounded,
+        index=values.index,
+        name=values.name,
+        dtype="float64",
+    )
 
 
 def print_instruks_konverter_dtypes() -> str:

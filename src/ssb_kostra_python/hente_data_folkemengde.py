@@ -2,14 +2,10 @@ INPUT_PATCH_TARGET = "builtins.input"
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 
-from ssb_kostra_python import hjelpefunksjoner
-
 # Til v2
-import pandas as pd
-from fagfunksjoner.fagfunksjoner_logger import logger
-from klass import KlassClassification
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python import regionshierarki
+
 INPUT_PATCH_TARGET = "builtins.input"
 from unittest.mock import patch
 
@@ -220,11 +216,10 @@ def hente_data_folkemengde_v2(
         )
 
     folkemengde_31_12_data = folkemengde_31_12.copy()
-    
+
     if testdata:
         mapping = hjelpefunksjoner._mapping_mellom_aar(statistikkaar, regionsnivaa)
-        
-    
+
         folkemengde_31_12_data = hjelpefunksjoner._anvende_kommunereform(
             inputfil=folkemengde_31_12_data,
             mapping=mapping,
@@ -245,25 +240,17 @@ def hente_data_folkemengde_v2(
 
     elif regionsnivaa == "bydel":
         regionkolonne = "bydelsregion"
-        fjern_mask = (
-            folkemengde_31_12_data[regionkolonne]
-            .astype(str)
-            .eq("EAB")
-        )
+        fjern_mask = folkemengde_31_12_data[regionkolonne].astype(str).eq("EAB")
 
     elif regionsnivaa == "fylkeskommune":
         regionkolonne = "fylkesregion"
         fjern_mask = (
-            folkemengde_31_12_data[regionkolonne]
-            .astype(str)
-            .isin(["EAFK", "EAFKUO"])
+            folkemengde_31_12_data[regionkolonne].astype(str).isin(["EAFK", "EAFKUO"])
         )
 
     print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
 
-    folkemengde_31_12_data_uten_agg = (
-        folkemengde_31_12_data.loc[~fjern_mask].copy()
-    )
+    folkemengde_31_12_data_uten_agg = folkemengde_31_12_data.loc[~fjern_mask].copy()
 
     predefined_input = "alder"
     with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
@@ -275,5 +262,3 @@ def hente_data_folkemengde_v2(
     #     folkemengde_31_12_data["periode"] = str(statistikkaar)
 
     return folkemengde_31_12_data
-
-

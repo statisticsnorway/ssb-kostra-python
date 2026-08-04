@@ -134,7 +134,7 @@ df_kommuner_med_kodenavn, sammendrag = kodelister_navn(
 display(df_kommuner_med_kodenavn)
 # -
 
-# # Test-eksempel med (lite) fiktivt testdata
+# # Test-eksempel med et lite og fiktivt testdatasett
 
 # Om du ikke har tilgang til delt-bøtten til seksjon for befolkning, kan du kjøre dette. Vi legger med vilje til noen ugyldige koder for klassifikasjonsvariablene **kommuneregion**, **kjonn** og **alder** for å se hva som skjer med mappingen.
 
