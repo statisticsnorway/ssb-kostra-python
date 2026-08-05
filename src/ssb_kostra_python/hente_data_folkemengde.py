@@ -1,8 +1,8 @@
 INPUT_PATCH_TARGET = "builtins.input"
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
+from IPython.display import display
 
-# Til v2
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python import regionshierarki
 
@@ -13,63 +13,133 @@ from unittest.mock import patch
 def hente_data_folkemengde(
     aar: int, regionsnivaa: str, testdata: bool = False
 ) -> pd.DataFrame:
-    """Henter et folkemengdedatasett 31.12 for angitt år og regionsnivå.
+    """Henter eller lager folkemengdedata per 31.12.
 
-    Funksjonen kan enten hente reelle folkemengdedata for året som er angitt,
-    eller lage et testdatasett for samme år basert på data fra foregående år.
-    Hvis testdata=True, hentes data fra år t-1, og verdien i kolonnen
-    'periode' endres til år t. Hvis testdata=False, hentes data fra år t
-    uten at periodeverdien endres.
+    Funksjonen henter et folkemengdedatasett for angitt år og regionsnivå.
+    Den kan enten hente reelle data for året eller lage et testdatasett for
+    året basert på de nyeste tilgjengelige dataene fra foregående år.
+
+    Hvis ``testdata=False``, hentes reelle data for året angitt i ``aar``.
+
+    Hvis ``testdata=True``, hentes data fra år t-1, mens datasettet tilpasses
+    år t. Verdien i kolonnen ``periode`` oppdateres til år t, og eventuell
+    geografisk reform mellom t-1 og t anvendes på datasettet.
 
     Parametere
     ----------
     aar : int
-        Året datasettet skal gjelde for.
+        Året det returnerte datasettet skal gjelde for.
 
     regionsnivaa : str
-        Geografisk nivå som datasettet skal hentes for.
+        Geografisk nivå for datasettet.
+
         Gyldige verdier er:
-        - 'bydel'
-        - 'kommune'
-        - 'fylkeskommune'
+
+        - ``"bydel"``
+        - ``"kommune"``
+        - ``"fylkeskommune"``
 
     testdata : bool, default False
-        Angir om funksjonen skal lage testdata.
-        Hvis False, hentes reelle data for året angitt i aar.
-        Hvis True, hentes data fra foregående år, mens periodekolonnen
-        oppdateres til året angitt i aar.
+        Angir om funksjonen skal hente reelle data eller lage testdata.
+
+        Hvis ``False``, hentes reelle data for året angitt i ``aar``.
+
+        Hvis ``True``, hentes data fra året før ``aar``. Deretter oppdateres
+        periodeverdien og datasettet tilpasses den geografiske strukturen
+        som gjelder i ``aar``.
 
     Returnerer
     ----------
     pandas.DataFrame
-        Et folkemengdedatasett for valgt år og regionsnivå. Hvis testdata=True,
-        er observasjonene hentet fra år t-1, men periodeverdien er endret til
-        år t. Hvis testdata=False, er observasjonene hentet fra år t.
+        Et folkemengdedatasett for valgt år og regionsnivå.
+
+        Hvis ``testdata=False``, inneholder datasettet reelle data for året
+        angitt i ``aar``.
+
+        Hvis ``testdata=True``, er statistikkverdiene basert på data fra
+        foregående år, men perioden og den geografiske inndelingen er
+        tilpasset året angitt i ``aar``.
+
+        Eksisterende KOSTRA-grupper fjernes før regionshierarkiet bygges opp
+        på nytt.
 
     Merknader
     ----------
-    Ved kommunereformer eller fylkesreformer mellom år t-1 og t vil et
-    testdatasett være basert på den gamle geografiske inndelingen. Dette kan
-    gi problemer ved sammenslåing med datasett som benytter ny
-    inndelingsstruktur.
+    Endringsmappingen som brukes ved ``testdata=True``, er en endringslogg
+    og ikke en fullstendig korrespondansetabell. Den inneholder derfor bare
+    regioner som faktisk har blitt endret mellom t-1 og t.
 
-    For Oslo-bydeler er dette foreløpig ikke et problem i KOSTRA-tidsserien.
+    Regioner som ikke finnes i endringsloggen, kopieres uendret til
+    testdatasettet.
+
+    Hvis det ikke har skjedd noen geografiske endringer mellom årene,
+    returneres den samme geografiske strukturen som i kildeåret, mens
+    ``periode`` oppdateres til året angitt i ``aar``.
+
+    Geografiske endringer behandles etter følgende regler:
+
+    En-til-en-endring
+        Hvis én region har én etterfølger, overføres observasjonene direkte
+        til den nye regionkoden. Dette gjelder både rene kodeendringer,
+        navneendringer og kombinerte kode- og navneendringer.
+
+    Oppdeling
+        Hvis en region deles opp i flere, kopieres alle
+        observasjonene fra den tidligere regionen til hver av de nye
+        regionene. Statistikkverdiene fordeles altså ikke mellom etterfølgerne.
+
+
+    Sammenslåing
+        Hvis flere tidligere regioner får samme nye regionkode, erstattes de
+        gamle kodene med den nye koden. Observasjoner som deretter har samme
+        kombinasjon av klassifikasjonsvariabler, aggregeres ved å summere
+        statistikkvariablene.
+
+    Mange-til-mange-endring
+        Hvis flere tidligere regioner inngår i flere nye regioner, behandles
+        dette som en kompleks reform. Funksjonen logger en tydelig advarsel,
+        fordi resultatet ikke nødvendigvis representerer en entydig
+        statistisk fordeling.
+
+    Testdataene skal først og fremst ha korrekt struktur slik at etterfølgende
+    programmer kan kjøres før reelle data for året er tilgjengelige.
+    Statistikktallene skal derfor ikke tolkes som anslag for den faktiske
+    folkemengden etter en geografisk reform.
 
     Eksempler
     ---------
-    Hent reelle data for bydeler i 2024:
+    Hent reelle bydelsdata for 2024:
 
-    datasett = hente_data_folkemengde(2024, "bydel")
+    >>> datasett = hente_data_folkemengde_v2(
+    ...     2024,
+    ...     "bydel",
+    ... )
 
-    Lag testdata for kommuner i 2026 basert på 2025-data:
+    Lag kommunetestdata for 2026 basert på data fra 2025:
 
-    testdatasett = hente_data_folkemengde(2026, "kommune", testdata=True)
-    display(testdatasett)
+    >>> testdatasett = hente_data_folkemengde_v2(
+    ...     2026,
+    ...     "kommune",
+    ...     testdata=True,
+    ... )
+
+    Lag fylkeskommunale testdata for 2026:
+
+    >>> testdatasett = hente_data_folkemengde_v2(
+    ...     2026,
+    ...     "fylkeskommune",
+    ...     testdata=True,
+    ... )
 
     Reiser
     ------
     ValueError
-        Hvis regionsnivaa ikke er 'bydel', 'kommune' eller 'fylkeskommune'.
+        Hvis ``regionsnivaa`` ikke er ``"bydel"``, ``"kommune"`` eller
+        ``"fylkeskommune"``.
+
+    RuntimeError
+        Hvis funksjonen ikke klarer å opprette det KOSTRA-aggregerte
+        kommunedatasettet for kildeåret.
     """
     print(
         "ℹ️Med denne funksjonen henter du et folkemengdedatasett 31.12 for året og regionsnivået du angir. \n"
@@ -112,72 +182,6 @@ def hente_data_folkemengde(
         "ℹ️Navnet til venstre for likhetstegnet er det du kaller den lagrede dataframen. Den kan du kalle det du vil. \n"
     )
 
-    if testdata:
-        kildeaar = str(aar - 1)
-        print(
-            f"ℹ️Du har satt regionsnivået til \033[1m{regionsnivaa}\033[0m. Du har satt årgang til \033[1m{aar}\033[0m. Befolkningsdataene hentes fra den foregående årgangen \033[1m{kildeaar}\033[0m. \033[1m{kildeaar}\033[0m byttes ut med \033[1m{aar}\033[0m i periodekolonnen.\n"
-        )
-    else:
-        kildeaar = str(aar)
-        print(
-            f"ℹ️Du har satt regionsnivået til \033[1m{regionsnivaa}\033[0m. Du har satt årgang til \033[1m{aar}\033[0m. Befolkningsdataene hentes fra den samme årgangen \033[1m{kildeaar}\033[0m. \n"
-        )
-
-    if regionsnivaa.lower() == "bydel":
-        folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_bydeler_31_12(
-            int(kildeaar)
-        )
-
-    elif regionsnivaa.lower() == "kommune":
-        _, folkemengde_kommune = hjelpefunksjoner._hent_folkemengde_kommune_31_12(
-            int(kildeaar)
-        )
-
-        if folkemengde_kommune is None:
-            error_msg = (
-                f"Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
-            )
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-
-        folkemengde_31_12 = folkemengde_kommune
-
-    elif regionsnivaa.lower() == "fylkeskommune":
-        folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_fylkeskommune_31_12(
-            int(kildeaar)
-        )
-    else:
-        error_msg = "Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'. Eksempel: hente_data_folkemengde(2024, 'bydel') eller datasett = hente_data_folkemengde(2024, 'bydel')"
-        logger.error(error_msg)
-        raise ValueError(error_msg)
-    folkemengde_31_12_data = folkemengde_31_12.copy()
-    if testdata:
-        folkemengde_31_12_data.loc[
-            folkemengde_31_12_data["periode"] == kildeaar, "periode"
-        ] = str(aar)
-    logger.info(
-        f"\nℹ️Om du har kjørt funksjonen for eksempel slik - \033[1mhente_data_folkemengde({aar}, {regionsnivaa}, False)\033[0m - vil dataene vises under, med årgang {aar} i periodekolonnen, hentet fra et {kildeaar}-datasett."
-    )
-    logger.info(
-        "ℹ️Siden du da har satt \033[1mFalse\033[0m for testdatasett, har du hentet befolkningsdata fra sky for det samme året som tabellen du har generert gjelder.\n"
-    )
-    logger.info(
-        f"ℹ️Om du har kjørt den slik - \033[1mdatasett = hente_data_folkemengde({aar}, {regionsnivaa}, True)\033[0m - vil ikke dataene vises under, men datasettet er i dette eksemplet lagret med navnet \033[1mdatasett\033[0m, det vil si objektet til venstre for likhetstegnet. Bare legg til \033[1mdisplay(datasett)\033[0m for å se datasettet."
-    )
-    logger.info(
-        f"ℹ️Du har i dette tilfellet satt \033[1mTrue\033[0m for testdatasett. Det vil si at dataene er hentet fra fila for året før {aar} for regionsnivået {regionsnivaa}, men at datasettet skal vise {aar} i periodekolonnen.\n"
-    )
-    return folkemengde_31_12_data
-
-
-def hente_data_folkemengde_v2(
-    aar: int, regionsnivaa: str, testdata: bool = False
-) -> pd.DataFrame:
-    """Henter folkemengdedata 31.12 for valgt år og regionsnivå.
-
-    Hvis testdata=True, hentes data fra året før, periode settes til aar,
-    og for kommuner anvendes eventuell kommunereform mellom kildeåret og aar.
-    """
     regionsnivaa = regionsnivaa.lower()
     statistikkaar = int(aar)
 
@@ -227,8 +231,27 @@ def hente_data_folkemengde_v2(
             statistikkaar=statistikkaar,
             regionsnivaa=regionsnivaa,
         )
-        logger.info("ℹ️Dette er endringsmappingen:\n")
-        display(mapping)
+        # logger.info("ℹ️Dette er endringsmappingen:\n")
+        # display(mapping)
+
+        # if mapping is None:
+        # if mapping.empty:
+        if mapping is None or mapping.empty:
+            logger.info(
+                "ℹ️Under vises endringsmappingen. ⇩ ⇩ Kun kolonneoverskrifter betyr at det ikke har funnet sted endringer mellom periodene.\n"
+            )
+            display(mapping)
+            logger.info(
+                f"ℹ️ ⇧ Tomt mappingdatasett ⇧. Altså ingen regionsendringer mellom {kildeaar} og {statistikkaar}.\n"
+            )
+        else:
+            logger.info(
+                "ℹ️Under vises endringsmappingen. ⇩ ⇩ Kun kolonneoverskrifter betyr at det ikke har funnet sted endringer mellom periodene.\n"
+            )
+            display(mapping)
+            logger.info(
+                f"ℹ️ ⇧ Mappingdatasettet ovenfor ⇧ viser endringer mellom {kildeaar} og {statistikkaar}.\n"
+            )
 
     if regionsnivaa == "kommune":
         regionkolonne = "kommuneregion"
@@ -258,7 +281,17 @@ def hente_data_folkemengde_v2(
             folkemengde_31_12_data_uten_agg
         )
 
-    # elif testdata:
-    #     folkemengde_31_12_data["periode"] = str(statistikkaar)
+    logger.info(
+        f"\nℹ️Om du har kjørt funksjonen for eksempel slik - \033[1mhente_data_folkemengde({aar}, {regionsnivaa}, False)\033[0m - vil dataene vises under, med årgang {aar} i periodekolonnen, hentet fra et {kildeaar}-datasett."
+    )
+    logger.info(
+        "ℹ️Siden du da har satt \033[1mFalse\033[0m for testdatasett, har du hentet befolkningsdata fra sky for det samme året som tabellen du har generert gjelder.\n"
+    )
+    logger.info(
+        f"ℹ️Om du har kjørt den slik - \033[1mdatasett = hente_data_folkemengde({aar}, {regionsnivaa}, True)\033[0m - vil ikke dataene vises under, men datasettet er i dette eksemplet lagret med navnet \033[1mdatasett\033[0m, det vil si objektet til venstre for likhetstegnet. Bare legg til \033[1mdisplay(datasett)\033[0m for å se datasettet."
+    )
+    logger.info(
+        f"ℹ️Du har i dette tilfellet satt \033[1mTrue\033[0m for testdatasett. Det vil si at dataene er hentet fra fila for året før {aar} for regionsnivået {regionsnivaa}, men at datasettet skal vise {aar} i periodekolonnen.\n"
+    )
 
     return folkemengde_31_12_data

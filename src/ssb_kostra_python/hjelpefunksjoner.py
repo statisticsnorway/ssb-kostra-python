@@ -1038,8 +1038,8 @@ def _anvende_kommunereform(
 
     if mapping is None or mapping.empty:
         logger.info(
-            f"ℹ️Ingen regionendringer funnet mellom {kildeaar} og {statistikkaar}. "
-            "Kopierer region uendret og oppdaterer periode."
+            f"ℹ️Ingen regionendringer funnet mellom {kildeaar} og {statistikkaar}. Kopierer region uendret og oppdaterer periode.\n"
+            # "Kopierer region uendret og oppdaterer periode."
         )
         return df
 

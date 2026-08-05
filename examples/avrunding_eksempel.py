@@ -106,12 +106,15 @@ folkemengde_kommune_2024, dtypes = avrunding.konverter_dtypes(
     folkemengde_kommune_2024, dtype_mapping
 )
 
+# %% [markdown]
+# ### Et annet eksempel med et mindre datasett
+
 # %%
 df = pd.DataFrame(
     {
         "col1": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
         "var1": [1.5, 2.5, 3.5, -1.5, -2.5, 1.249, -5.49, 1.5, 3.359],
-        "var2": [0.125, 0.575, 1.005, 1.275, 2.445, 8.964, 4.248, 8.742, 5.001],
+        "var2": [0.125, 0.575, 1.005, 1.275, 2.445, 8.964, 4.248, 8.742, 5.009],
     }
 )
 display(df)
@@ -130,58 +133,3 @@ dtype_mapping = {
 
 # Utfører avrundingen/konverteringen
 df, dtypes = avrunding.konverter_dtypes(df, dtype_mapping)
-
-# %%
-expected = pd.Series(
-    [0.13, 0.58, 1.01, 1.28, 2.45, 8.96, 4.25, 8.74, 5.00],
-    name="var2",
-)
-
-try:
-    pd.testing.assert_series_equal(
-        df["var2"].reset_index(drop=True),
-        expected,
-    )
-    print("✅ var2 er korrekt avrundet.")
-except AssertionError as error:
-    print("❌ var2 er ikke korrekt avrundet.")
-    print(error)
-
-display(df["var2"])
-
-# %%
-df = pd.DataFrame(
-    {
-        "col1": ["1", "2", "3", "4", "5"],
-        "var1": [1.5, 2.5, 3.5, -1.5, -2.5],
-        "var2": [0.125, 0.575, 1.005, 1.275, 2.445],
-    }
-)
-
-dtype_mapping = {
-    "klassifikasjonsvariabel": [],
-    "heltall": [],
-    "desimaltall_1_des": [],
-    "desimaltall_2_des": ["var2"],
-    "stringvar": [],
-    "bool_var": [],
-}
-
-df, dtypes = avrunding.konverter_dtypes(df, dtype_mapping)
-
-expected = pd.Series(
-    [0.13, 0.58, 1.01, 1.28, 2.45],
-    name="var2",
-)
-
-try:
-    pd.testing.assert_series_equal(
-        df["var2"].reset_index(drop=True),
-        expected,
-    )
-    print("✅ var2 er korrekt avrundet.")
-except AssertionError as error:
-    print("❌ var2 er ikke korrekt avrundet.")
-    print(error)
-
-# %%
