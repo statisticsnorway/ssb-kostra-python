@@ -965,6 +965,7 @@ def _anvende_kommunereform(
     df = inputfil.copy()
     regionsnivaa = regionsnivaa.lower()
     regionkolonne = _regionkolonne(regionsnivaa)
+
     """Anvender regionendringer på et testdatasett fra året før.
 
     Funksjonen tilpasser et datasett fra kildeåret (t-1) til valgt

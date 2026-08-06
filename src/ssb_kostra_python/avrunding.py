@@ -16,13 +16,12 @@
 from decimal import ROUND_HALF_UP
 from decimal import Decimal
 from decimal import InvalidOperation
+from typing import Any
 
 import numpy as np
 import pandas as pd
-
-# import logging
 from fagfunksjoner.fagfunksjoner_logger import logger
-from IPython.display import display  # for nice tables in notebooks
+from IPython.display import display
 
 
 # %%
@@ -42,18 +41,13 @@ def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:
 
     numeric_values = pd.to_numeric(values, errors="coerce")
 
-    # Decimal("1")      ved 0 desimaler
-    # Decimal("0.1")    ved 1 desimal
-    # Decimal("0.01")   ved 2 desimaler
     quantizer = Decimal("1").scaleb(-decimals)
 
-    def round_value(value: object) -> float:
+    def round_value(value: Any) -> float:
         if pd.isna(value):
             return np.nan
 
         try:
-            # str(value) er viktig. Decimal(value) ville tatt med
-            # floatens unøyaktige binære representasjon.
             decimal_value = Decimal(str(value))
             rounded_value = decimal_value.quantize(
                 quantizer,

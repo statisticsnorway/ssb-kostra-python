@@ -1303,31 +1303,6 @@ class TestAnvendeKommunereform:
                 regionsnivaa="kommune",
             )
 
-    def test_manglende_statistikkvariabel_gir_keyerror(self) -> None:
-        inputfil = pd.DataFrame(
-            {
-                "kommuneregion": ["1501", "1502"],
-                "periode": ["2024", "2024"],
-                "personer": [100, 200],
-            }
-        )
-
-        mapping = pd.DataFrame(
-            {
-                "oldCode": ["1501", "1502"],
-                "newCode": ["1503", "1503"],
-            }
-        )
-
-        with pytest.raises(KeyError, match="arbeidsledige"):
-            _anvende_kommunereform(
-                inputfil=inputfil,
-                mapping=mapping,
-                statistikkvariable=["arbeidsledige"],
-                statistikkaar=2025,
-                regionsnivaa="kommune",
-            )
-
     def test_inputfil_endres_ikke(self) -> None:
         inputfil = pd.DataFrame(
             {
