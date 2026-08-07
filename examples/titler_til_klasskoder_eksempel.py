@@ -25,7 +25,7 @@ from ssb_kostra_python.titler_til_klasskoder import mapping_regionsnavn
 
 # Dataene kommer fra delt-bøtten til seksjon for befolkning.
 # Vi må bearbeide dataene litt slik at de blir likere dataene slik vi kjenner dem i KOMPIS.
-# Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik: **statistikkaar=20XX**.
+# Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik: `statistikkaar=20XX`.
 
 # +
 statistikkaar = 2024
