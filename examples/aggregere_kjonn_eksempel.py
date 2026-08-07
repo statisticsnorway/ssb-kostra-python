@@ -17,7 +17,7 @@
 
 # %% [markdown]
 # Funksjonen vi bruker heter **summere_kjonn**. Denne ligger på **ssb-kostra-python/src/funksjoner**.
-# Vi laster den inn med **from ssb_kostra_python import summere_kjonn**.
+# Vi laster den inn med `from ssb_kostra_python import summere_kjonn`.
 
 # %%
 import pandas as pd
