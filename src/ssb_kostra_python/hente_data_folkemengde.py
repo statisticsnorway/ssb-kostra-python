@@ -203,7 +203,9 @@ def hente_data_folkemengde(
         )
 
         if folkemengde_kommune is None:
-            error_msg = f"Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
+            error_msg = (
+                f"Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
+            )
             logger.error(error_msg)
             raise RuntimeError(error_msg)
 
@@ -211,7 +213,12 @@ def hente_data_folkemengde(
 
     elif regionsnivaa == "fylkeskommune":
         folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_fylkeskommune_31_12(
-        error_msg = "❌Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'."
+            kildeaar
+        )
+    else:
+        error_msg = (
+            "❌Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'."
+        )
         logger.error(error_msg)
         raise ValueError(error_msg)
 

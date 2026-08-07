@@ -70,6 +70,8 @@ display(df_folketall_kommuner)
 # Funksjonen trenger å vite om alle klassifikasjonsvariablene i datasettet. I KOMPIS identifiseres disse automatisk, men her må du utføre manuelt arbeid. Den identifiserer alltid periode- og regionsvariabelen. De øvrige, i dette tilfellet **kjonn** og **alder**, må du føre inn selv, skilt fra hverandre med komma.
 #
 # Når funksjonen aggregerer et kommunedatasett uten videre spesifikasjoner, slik - `folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner)` - aggregeres kommunene opp til KOSTRA-kommunegrupperingene EAK, EAKUO, EKA og EKG. Om den spesifiseres slik - `folketall_fylkeskommuner_KOSTRA = hierarki(df_folketall_kommuner, “kommune_til_fylkeskommune”)` - aggregeres de opp til fylkeskommuner, men kun til fylkeskommunene og ikke de fylkeskommunale KOSTRA-grupperingene. Aggregering opp til KOSTRA-fylkeskommunegrupperinger må gjøres i sin tur i et senere steg.
+#
+# Om du presiserer til slutt at `add_region_names=True`, sørger du for at regionsnavnene inkluderes i datasettet etter hierarkioperasjonen. Om du ønsker regionsnavn i datasettet etter hierarki, må du presisere dette også selv om datasettet inneholder regionsnavn før hierarkioperasjonen. Dette er fordi hierarkioperasjonen ikke aggregerer regionsnavnene i tråd med en mapping, men fjerner regionsnavnene midlertidig før kodene aggregeres, og deretter legger dem på igjen. Om du setter `add_region_names=False`, vil det endelige datasettet ikke beholde regionsnavn, uansett om det inneholdt regionsnavn før hierarkioperasjonen eller ei. Du kan veksle mellom **True** og **False** i koden under for å se hvordan datasettet genereres på de to ulike måtene.
 
 # %%
 folketall_fylkeskommuner = hierarki(
