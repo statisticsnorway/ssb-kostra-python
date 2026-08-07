@@ -8,7 +8,7 @@
 #
 # ssb-kostra-python/src/ssb_kostra_python/**titler_til_klasskoder.py** fester KLASS-kodenavn på en hvilken som helst klassifikasjonsvariabel. Du kan gjøre dette for flere klassifikasjonsvariable samtidig. Men du må selv sørge for å **angi klass-id** for variabelen/variablene.
 #
-# Vi laster dem inn med **from ssb_kostra_python.titler_til_klasskoder import (kodelister_navn, mapping_regionsnavn)**.
+# Vi laster dem inn med `from ssb_kostra_python.titler_til_klasskoder import (kodelister_navn, mapping_regionsnavn)`.
 
 # Laster ned nødvendige pakker
 INPUT_PATCH_TARGET = "builtins.input"
