@@ -18,7 +18,7 @@
 
 # %% [markdown]
 # Funksjonen vi bruker heter **regionshierarki**. Denne ligger på **kostra-fellesfunksjoner/fellesfunksjoner/src/funksjoner**.
-# Vi laster den inn med **from ssb_kostra_python.regionshierarki import hierarki**.
+# Vi laster den inn med `from ssb_kostra_python.regionshierarki import hierarki`.
 
 # %%
 INPUT_PATCH_TARGET = "builtins.input"
