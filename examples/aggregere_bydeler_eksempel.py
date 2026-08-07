@@ -18,7 +18,7 @@
 
 # %% [markdown]
 # Funksjonen vi bruker heter “regionshierarki”. Denne ligger på **ssb_kostra_python/src/funksjoner**.
-# Vi laster den inn med **from ssb_kostra_python.regionshierarki import hierarki**.
+# Vi laster den inn med `from ssb_kostra_python.regionshierarki import hierarki`.
 
 # %%
 import pandas as pd
