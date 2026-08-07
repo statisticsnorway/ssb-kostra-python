@@ -63,7 +63,7 @@ display(df_folketall_kommuner)
 df_folketall_kommuner_formatert = format_fil(df_folketall_kommuner)
 display(df_folketall_kommuner_formatert)
 
-# ## Vi ser at "alder" har fått tresifrede koder. Vi fester regionsnavn på kodene.
+# Vi ser at "alder" har fått tresifrede koder. Vi fester regionsnavn på kodene.
 
 # Funksjonen ser etter **bydelsregion**, **kommuneregion** og **fylkesregion**.
 
