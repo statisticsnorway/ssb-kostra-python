@@ -39,7 +39,7 @@ from ssb_kostra_python.summere_til_aldersgrupperinger import (
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
 
 # %% [markdown]
-# Du kan selv bestemme hvilket statistikkår tabellen skal gjelde ved å endre på **statistikkaar = 20XX**.
+# Du kan selv bestemme hvilket statistikkår tabellen skal gjelde ved å endre på `statistikkaar = 20XX`.
 
 # %%
 # Bestemmer først statistikkår
