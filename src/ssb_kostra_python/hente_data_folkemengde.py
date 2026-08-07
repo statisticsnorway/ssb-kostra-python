@@ -203,9 +203,9 @@ def hente_data_folkemengde(
         )
 
         if folkemengde_kommune is None:
-            raise RuntimeError(
-                f"ℹ️Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
-            )
+            error_msg = f"Klarte ikke å lage KOSTRA-aggregert folkemengdefil for {kildeaar}."
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
         folkemengde_31_12 = folkemengde_kommune
 
