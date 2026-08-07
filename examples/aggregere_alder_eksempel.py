@@ -17,7 +17,7 @@
 
 # %% [markdown]
 # Funksjonen vi bruker heter "summere_til_aldersgrupperinger". Denne ligger på **ssb-kostra-python/src/funksjoner**.
-# Vi laster den inn med from **ssb_kostra_python.summere_til_aldersgrupperinger import (summere_til_aldersgrupperinger,)**
+# Vi laster den inn med `from ssb_kostra_python.summere_til_aldersgrupperinger import (summere_til_aldersgrupperinger,)`
 
 # %% [markdown]
 # ### Laster ned pakker
