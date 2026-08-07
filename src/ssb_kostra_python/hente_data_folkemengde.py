@@ -267,7 +267,7 @@ def hente_data_folkemengde(
             folkemengde_31_12_data[regionkolonne].astype(str).isin(["EAFK", "EAFKUO"])
         )
 
-    print("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
+    logger.info("✅Fjerner KOSTRA-grupperingene før de legges på igjen.")
 
     folkemengde_31_12_data_uten_agg = folkemengde_31_12_data.loc[~fjern_mask].copy()
 
