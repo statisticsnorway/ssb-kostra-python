@@ -70,7 +70,7 @@ display(df_folketall_kommuner_formatert)
 df_kommuner_regionsnavn = mapping_regionsnavn(df_folketall_kommuner_formatert)
 display(df_kommuner_regionsnavn)
 
-# ## Om vi ønsker å feste kodenavn på andre klassifikasjonsvariable enn regionene, kan vi bruke funksjonen under.
+# Om vi ønsker å feste kodenavn på andre klassifikasjonsvariable enn regionene, kan vi bruke funksjonen under.
 
 # Her må vi selv angi **hvilken variabel det gjelder, klass-id som hører til og hva den nye kolonnen med kodenavnene skal hete**. **select_level** settes til **1**. Det hele settes sammen til en såkalt mapping.
 #
