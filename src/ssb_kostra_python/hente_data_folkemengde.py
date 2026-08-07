@@ -211,13 +211,9 @@ def hente_data_folkemengde(
 
     elif regionsnivaa == "fylkeskommune":
         folkemengde_31_12 = hjelpefunksjoner._hent_folkemengde_fylkeskommune_31_12(
-            kildeaar
-        )
-
-    else:
-        raise ValueError(
-            "❌Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'."
-        )
+        error_msg = "❌Du må angi regionsnivå som 'bydel', 'kommune' eller 'fylkeskommune'."
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
     folkemengde_31_12_data = folkemengde_31_12.copy()
 
