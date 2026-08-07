@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -13,157 +13,61 @@
 # ---
 
 # %% [markdown]
-# ### I dette eksempelarket ser vi på hvordan vi aggregerer opp antallet mennesker på kjønn i et datasett som fordeler på mann og kvinne.
-# ### Funksjonen vi bruker heter "summere_kjonn". Denne ligger på kostra-fellesfunksjoner/fellesfunksjoner/src/funksjoner.
-# ### Vi laster den inn med "from functions.funksjoner import summere_kjonn".
+# # I dette eksempelarket ser vi på hvordan vi aggregerer opp antallet mennesker på kjønn i et datasett som fordeler på mann og kvinne.
+
+# %% [markdown]
+# Funksjonen vi bruker heter **summere_kjonn**. Denne ligger på **ssb-kostra-python/src/funksjoner**.
+# Vi laster den inn med `from ssb_kostra_python import summere_kjonn`.
 
 # %%
-from unittest.mock import patch
-
 import pandas as pd
+from fagfunksjoner import latest_version_path
 
 INPUT_PATCH_TARGET = "builtins.input"
+from unittest.mock import patch
+
 from IPython.display import display  # for nice tables in notebooks
 
-from ssb_kostra_python import avrunding
 from ssb_kostra_python import summere_kjonn
-from ssb_kostra_python import summere_til_aldersgrupperinger
 
 # %% [markdown]
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
 
 # %%
-folkemengde_kommune_2024 = pd.read_parquet(
-    "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/folkemengde_kommune_2024.parquet"
+# Bestemmer først statistikkår
+statistikkaar = 2024
+# Definerer en filsti. "latest_version_path" (pakke lastet ned over) sørger for å identifisere siste versjon av datasettet.
+filsti_folkemengde_bydeler = latest_version_path(
+    f"/buckets/delt-kostra-befolkning-delt/bydeler/{statistikkaar}/folkmengde_bydeler_p{statistikkaar}-12-31"
 )
+# Leser selve filen. Denne er lagret som en parquet-fil.
+folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
+# Viser datasettet.
+display(folketall_bydeler)
 
 # %% [markdown]
-# ### Videre utfører vi noen operasjoner med gjemt visning for å komme til funksjonen som skal gjennomgås.
-
-# %% [markdown]
-# <details>
-# <summary><b>Dette er også beskrevet andre steder og er ikke viktig her. (Men klikk for å vise)</b></summary>
-# ## Gjemt. Dobbeltklikk på den blå søylen til venstre for cellen for å åpne opp.
-# ### Nedenfor endrer vi variabeltypene. "personer" skal naturligvis være heltall, men klassifikasjonsvariablene må gjøres om fra heltall til string.
-# ### Det er en god idé å skrive ut instruksen for å se hvordan du skal lage mappingen. Dette gjør du med:
-# #### instruks = avrunding.print_instruks_konverter_dtypes()
-# ### Deretter utfører du selve avrundingen/konverteringen med:
-# #### df_avrundet, dtypes = avrunding.konverter_dtypes(df_som_skal_behandles, dtype_mapping) der
-# #### df_avrundet er det endelige datasettet, dtypes er de nye typene etter konvertering, df_som_skal_behandles er datasettet som skal behandles og dtype_mapping er mappingen du bestemmer.
-# </details>
-
-# %% [markdown]
-# <details>
-# <summary><b>Dette er også beskrevet andre steder og er ikke viktig her. (Men klikk for å vise)</b></summary>
-# ### Gjemt. Dobbeltklikk på den blå søylen til venstre for å åpne opp.
-# #### Her konverterer vi datatypene. Dette er tidligere vist i eksempelarket "avrunding_eksempel", og er ikke poenget med dette eksempelarket.
-# <details>
-
-# %% [markdown]
-# #### Kjør koden under. Output genereres, men blir ikke vist.
+# Når du kjører denne funksjonen, blir du bedt om å legge inn **øvrige klassifikasjonsvariable** utover **periode** og **region**. I dette datasettet har vi **kjonn** og **alder** i tillegg. Før dem inn i tekstfeltet, adskilt med komma.
 
 # %%
-# %%capture
-### Gjemt. Dobbeltklikk på den blå søylen til ventre for cellen for å åpne opp.
-# Skriver ut instruksen
-instruks = avrunding.print_instruks_konverter_dtypes()
-
-# Lager mappingen
-dtype_mapping = {
-    "heltall": ["personer"],
-    "desimaltall_1_des": [],
-    "desimaltall_2_des": [],
-    "stringvar": ["periode", "kommuneregion", "alder", "kjonn"],
-    "bool_var": [],
-}
-
-# %%capture
-# Utfører avrundingen/konverteringen
-folkemengde_kommune_2024, dtypes = avrunding.konverter_dtypes(
-    folkemengde_kommune_2024, dtype_mapping
-)
-
+# Kjører funksjonen. folketall_bydeler_sum_kjonn er det endelige datasettet som genereres.
+folketall_bydeler_sum_kjonn = summere_kjonn.summere_over_kjonn(folketall_bydeler)
+# Viser det genererte datasettet. Du vil se at kolonnen for kjønn er borte, for nå er kjønnene summert opp.
+display(folketall_bydeler_sum_kjonn)
 
 # %% [markdown]
-# <details>
-# <summary><b>Dette er også beskrevet andre steder og er ikke viktig her. (Men klikk for å vise)</b></summary>
-# ## Gjemt. Dobbeltklikk på den blå søylen til venstre for cellen for å åpne opp.
-# ## Her summerer vi opp de ettårige aldersgruppene til aggregerte KLASS-aldersgrupperinger.
-# #### ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# #### Vi trenger å hente ned en manuelt laget mappingfil som viser hvordan undergruppene settes sammen. Denne lagres som "hierarki_path".
-# #### Deretter bruker vi funksjonen "summere_til_aldersgrupperinger" til å utføre operasjonen.
-# #### Funksjonen ligger i en mappe som også heter "summere_til_aldersgrupperinger".
-# #### Argumentene i parentesen er først det opprinnelige datasettet, og deretter mappingfilen, så funksjonen blir seende slik ut:
-# ##### summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(folkemengde_kommune_2024, hierarki_path)
-# #### De tre objektene til venstre for likhetstegnet, her "rename_variabel", "groupby_variable" og "df_sum_med_kjonn" er outputen funksjonen genererer. Hva de kalles er uviktig, men rekkefølgen betyr noe.
-# #### Det første objektet viser til klassifikasjonsvariabelen "alder" (aldersvariabelen må hete "alder") som det SKAL summeres over, og det andre viser til de øvrige klassifikasjonsvariablene det IKKE skal summeres over.
-# #### Det tredje objektet er det endelige datasettet, som er det opprinnelige datasettet pluss KOSTRA-aldersgrupperingene. Funksjonen sørger for å spytte ut det endelige datasettet.
-# <details>
+# ### Det kan være slitsomt å måtte taste inn klassifikasjonsvariablene hver gang funksjonen kjøres.
 
 # %% [markdown]
-# #### ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-# %% [markdown]
-# <details>
-# <summary><b>Dette er også beskrevet andre steder og er ikke viktig her. (Men klikk for å vise)</b></summary>
-# ## Gjemt. Dobbeltklikk på den blå søylen til venstre for cellen for å åpne opp.
-# #### 1) I den første måten å gjøre det på må du angi manuelt klassifikasjonsvariablene i datasettet som behandles.
-# #### Vi må hente ned en fil som mapper de ettårige aldersgruppene i KOSTRA-aldersgrupperingene. Vi kaller denne "hierarki_path" her.
-# #### Datasettet som behandles er IKKE det opprinnelige datasettet alene, men et datasett slått sammen av det opprinnelige og mappingdatasettet "hierarki_path".
-# #### Du vil se når funksjonen kjøres at "to" også er identifisert som en variabel. Den må også angis som klassifikasjonsvariabel i tekstfeltet. I dette tilfellet blir klassifikasjonsvariablene du skal angi i tekstfeltet (uten anførselstegn og adskilt med komma):  kjonn, alder, to.
-# <details>
-
-# %% [markdown]
-# <details>
-# <summary><b>Dette er også beskrevet andre steder og er ikke viktig her. (Men klikk for å vise)</b></summary>
-# ## Gjemt. Dobbeltklikk på den blå søylen til venstre for cellen for å åpne opp.
-# #### 2) Du kan alternativt forhåndsdefinere klassifikasjonsvariablene slik at slipper å skrive inn i tekstfeltet.
-# #### Vi må hente ned en fil som mapper de ettårige aldersgruppene i KOSTRA-aldersgrupperingene. Vi kaller denne “hierarki_path” her.
-# #### Siden tekstfeltet etterspør klassifikasjonsvariablene utover periode og region, legger vi inn "kjonn", "alder" og "to" (ikke glem "to") inn i det forhåndsdefinerte objektet:
-# ##### predefined_input = "kjonn, alder, to"
-# <details>
-
-# %% [markdown]
-# #### Kjør koden under. Output genereres, men blir ikke vist.
-
-# %%
-# %%capture
-hierarki_path = "gs://ssb-dapla-felles-data-produkt-prod/kostra/eksempeldata/mapping_aldershierarki.parquet"
-
-predefined_input = "kjonn, alder, to"
-
-with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-    rename_variabel, groupby_variable, df_sum_med_kjonn = (
-        summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
-            folkemengde_kommune_2024, hierarki_path
-        )
-    )
-
-# %% [markdown]
-# ### Her er funksjonen som skal gjennomgås.
-# ### Summere over kjønnene
-
-# %% [markdown]
-# ### Som vist andre steder, kan dette gjøres på to måter, enten ved å føre klassifikasjonsvariablene manuelt inn i tekstfeltet, eller ved å forhåndsdefinere dem.
-# ### I det første eksemplet fører vi dem inn manuelt. Funksjonen identifiserer ['periode', 'kommuneregion', 'kjonn', 'alder', 'personer']. "kjonn" og "alder" de klassifikasjonsvasiablene som kommer i tillegg til de faste variablene for periode og region. Så da fører vi det inn i tekstfeltet, uten anførselstegn og med komma mellom.
-# ### Du vil se i det genererte datasettet at alderskolonnen har forsvunnet, for nå er kjønnene summert opp.
-
-# %%
-# Kjører funksjonen. df_sum_kjonn er det endelige datasettet som genereres.
-df_sum_kjonn = summere_kjonn.summere_over_kjonn(df_sum_med_kjonn)
-# Viser det genererte datasettet.
-display(df_sum_kjonn)
-
-# %% [markdown]
-# #### I dette eksemplet forhåndsdefinerer vi klassifikasjonsvariablene vi ellers hadde måttet føre inn i tekstfeltet.
-# #### Vi får det samme resultatet som i metoden over.
+# Når du setter opp et produksjonsløp og du vet hvilke klassifikasjonsvariable som inngår når funksjonen kjøres, kan du sette opp koden som vist under for å unngå dette.
+# Du forhåndsdefinerer klassifikasjonsvariablene i “predefined_input”. Deretter kopler du den opprinnelige funksjonen til de forhåndsdefinerte inputene som vist under. Funksjonen vil ta i bruk de forhåndsdefinerte inputene og kjøre uten å be deg taste dem inn.
 
 # %%
 predefined_input = "kjonn, alder"
 
 with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-    df_sum_kjonn = summere_kjonn.summere_over_kjonn(df_sum_med_kjonn)
+    folketall_bydeler_sum_kjonn = summere_kjonn.summere_over_kjonn(folketall_bydeler)
 
-display(df_sum_kjonn)
+# Viser datasettet
+display(folketall_bydeler_sum_kjonn)
 
 # %%

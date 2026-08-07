@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -14,6 +14,7 @@
 
 # %%
 import pandas as pd
+from fagfunksjoner.fagfunksjoner_logger import logger
 
 from ssb_kostra_python import hjelpefunksjoner
 
@@ -29,13 +30,13 @@ def summere_over_kjonn(inputfil: pd.DataFrame) -> pd.DataFrame:
         Datasettet summert over kjønn, eller originalt datasett hvis 'kjonn' ikke finnes.
     """
     if "kjonn" not in inputfil.columns:
-        print(
+        logger.info(
             "Kjønn er ikke en klassifikasjonsvariabel i datasettet. Ingen summering utføres."
         )
         return inputfil  # or return None, depending on your pipeline design
 
     inputfil_copy = inputfil.copy()
-    print("Kjønn er en klassifikasjonsvariabel i datasettet.")
+    logger.info("Kjønn er en klassifikasjonsvariabel i datasettet.")
 
     summeringsvariabel = ["kjonn"]
     alle_variable = inputfil.columns.tolist()
@@ -48,7 +49,7 @@ def summere_over_kjonn(inputfil: pd.DataFrame) -> pd.DataFrame:
         if x not in summeringsvariabel and x not in statistikkvariable
     ]
 
-    print(
+    logger.info(
         f"Summerer statistikkvariablen(e) {statistikkvariable} over variablene {summeringsvariabel}."
     )
 
@@ -56,8 +57,10 @@ def summere_over_kjonn(inputfil: pd.DataFrame) -> pd.DataFrame:
         groupby_variable, as_index=False, observed=True
     )[statistikkvariable].sum()
 
-    print(f"Datasettet har blitt summert over {summeringsvariabel}.")
-    print(f"Statistikkvariabelen(e) som har blitt summert er {statistikkvariable}.")
+    logger.info(f"Datasettet har blitt summert over {summeringsvariabel}.")
+    logger.info(
+        f"Statistikkvariabelen(e) som har blitt summert er {statistikkvariable}."
+    )
 
     return summert_over_kjonn
 

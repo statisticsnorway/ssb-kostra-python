@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -13,29 +13,59 @@
 # ---
 
 # %%
-import logging
+from decimal import ROUND_HALF_UP
+from decimal import Decimal
+from decimal import InvalidOperation
+from typing import Any
 
 import numpy as np
 import pandas as pd
-from IPython.display import display  # for nice tables in notebooks
-
-logger = logging.getLogger(__name__)
+from fagfunksjoner.fagfunksjoner_logger import logger
+from IPython.display import display
 
 
 # %%
 def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:
-    """Kommersiell avrunding (0.5 -> 1, -0.5 -> -1), også for desimaler.
+    """Runder kommersielt til valgt antall desimaler.
 
-    Fungerer på numpy-arrays eller pandas-Serier av tall.
+    Verdier som ligger nøyaktig midt mellom to mulige resultater,
+    rundes bort fra null:
+
+    1.005  -> 1.01
+    -1.005 -> -1.01
+
+    Manglende eller ugyldige verdier returneres som NaN.
     """
-    factor = 10**decimals
-    # Cast to float to avoid issues with Int64 etc.
-    v = pd.Series(pd.to_numeric(values, errors="coerce").astype(float))
-    arr = v.to_numpy(dtype=float)
-    # round half away from zero
-    rounded = np.sign(arr) * np.floor(np.abs(arr) * factor + 0.5) / factor
+    if decimals < 0:
+        raise ValueError("'decimals' kan ikke være negativ.")
 
-    return pd.Series(rounded, index=v.index, name=v.name)
+    numeric_values = pd.to_numeric(values, errors="coerce")
+
+    quantizer = Decimal("1").scaleb(-decimals)
+
+    def round_value(value: Any) -> float:
+        if pd.isna(value):
+            return np.nan
+
+        try:
+            decimal_value = Decimal(str(value))
+            rounded_value = decimal_value.quantize(
+                quantizer,
+                rounding=ROUND_HALF_UP,
+            )
+            return float(rounded_value)
+
+        except (InvalidOperation, ValueError, TypeError):
+            return np.nan
+
+    rounded = numeric_values.map(round_value)
+
+    return pd.Series(
+        rounded,
+        index=values.index,
+        name=values.name,
+        dtype="float64",
+    )
 
 
 def print_instruks_konverter_dtypes() -> str:
@@ -43,7 +73,7 @@ def print_instruks_konverter_dtypes() -> str:
     instruks = """ℹ️Bruk malen under for dtype_mapping. Du må angi denne mappingen i forkant for at funksjonen skal kunne konvertere variablene slik du ønsker.
 
     dtype_mapping = {
-        "klassifikasjonsvariabel":  ["var1", "var2"]         ℹ️Legg inn variablene du vil klassifikasjonsverdier
+        "klassifikasjonsvariabel":  ["var1", "var2"],        ℹ️Legg inn variablene du vil klassifikasjonsverdier
         "heltall":                  ["var3", "var4"],        ℹ️Legg inn variablene du vil runde av til heltall (kommersiell avrunding)
         "desimaltall_1_des":        ["var5", "var6"],        ℹ️Legg inn variablene du vil runde til 1 desimal
         "desimaltall_2_des":        ["var7", "var8"],        ℹ️Legg inn variablene du vil runde til 2 desimaler
@@ -83,6 +113,26 @@ def konverter_dtypes(
     - Variabler som ikke legges inn her, blir ikke endret.
     - Hvis du angir en variabel som ikke finnes i dataframen, får du en advarsel.
     - Du kan la lister stå tomme hvis ingen variabler skal konverteres i en gitt gruppe.
+
+    Du har for eksempel et datasett "df" med klassifikasjonsvariablene "periode", "bydelsregion" og "alder", og i tillegg tellevariabelen "personer".
+    Da lager du mappingen slik:
+
+    dtype_mapping = {
+        "klassifikasjonsvariabel":  ["periode", "bydelsregion", "alder"],
+        "heltall":                  ["personer"],
+        "desimaltall_1_des":        [],
+        "desimaltall_2_des":        [],
+        "stringvar":                [],
+        "bool_var":                 []}
+
+    Mappingen er ikke selve funksjonen, men info til funksjonen. Funksjonen skrives slik:
+
+    df_konvertert, dtypes = avrunding.konverter_dtypes(df, dtype_mapping)
+
+    Til venstre for likhetstegnet ser du to objekter. Det første, i dette tilfellet "df" er alltid det konverterte datasettet. Den andre, i dette tilfellet "dtypes"
+    er typekartleggingen etter konverteringen. I parentesen til høyre for likhetstegnet ser du argumentene, altså inputen/info til funksjonen. Det første er
+    datasettet som skal konverteres, i dette tilfellet "df". Det andre er mappingen, i dette tilfellet "dtype_mapping" der du har lagt inn variablene som skal
+    konverteres til de ulike typene.
     """
     df = df.copy()
     warnings = []

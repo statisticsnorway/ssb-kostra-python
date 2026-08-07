@@ -26,7 +26,26 @@
 
 ## Features
 
-- TODO
+### Oppsummering
+- Denne pakken er til bruk for KOSTRA-brukere og gjenskaper noen av funksjonene dere var vant med fra KOMPIS. Disse er ikke like smidige som dem som var tilgjengelige i KOMPIS, men de utfører i stor grad de samme oppgavene, og med litt tilvenning vil dere forhåpentligvis slippe å lage helt egne funksjoner for de vanligste operasjonene. Med denne pakken kan dere:
+
+### Funksjonene
+| Oppgave | /ssb-kostra-python/src/ssb_kostra_python/mappe.funksjon |
+|---|---|
+| Konvertere variabeltype/runde av med valgt antall desimaler | avrunding.konverter_dtypes |
+| Hente/lage folkemengdefil 31.12.20XX for bydeler (samme oppsett som i KOMPIS). Du kan hente årganger gamle årganger, samt generere datasett for det kommende året i testperioden. Du må angi år, regionsnivå og hvorvidt dette skal gjelde reelle data eller testdata. | hente_data_folkemengde.hente_data_folkemengde |
+| Hente/lage folkemengdefil 31.12.20XX for kommuner (samme oppsett som i KOMPIS). Du kan hente årganger gamle årganger, samt generere datasett for det kommende året i testperioden. Du må angi år, regionsnivå og hvorvidt dette skal gjelde reelle data eller testdata. | hente_data_folkemengde.hente_data_folkemengde |
+| Hente/lage folkemengdefil 31.12.20XX for fylkeskommuner (samme oppsett som i KOMPIS). Du kan hente årganger gamle årganger, samt generere datasett for det kommende året i testperioden. Du må angi år, regionsnivå og hvorvidt dette skal gjelde reelle data eller testdata. | hente_data_folkemengde.hente_data_folkemengde |
+| Aggregere bydelsdata til aggregert KOSTRA-regioner (EAB) | regionshierarki.hierarki (identifiserer riktig regionsnivå automatisk så lenge regionsvariabelen heter bydelsregion, kommuneregion eller fylkesregion, krever at du indentifiserer de øvrige klassifikasjonsvariablene i datasettet.) |
+| Aggregere kommunedata til aggregerte KOSTRA-regioner (EAK, EAKUO, EKA, EKG) | regionshierarki.hierarki (identifiserer riktig regionsnivå automatisk så lenge regionsvariabelen heter bydelsregion, kommuneregion eller fylkesregion, krever at du indentifiserer de øvrige klassifikasjonsvariablene i datasettet.) |
+| Aggregere fylkeskommunedata til aggregerte KOSTRA-regioner (EAFK, EAFKUO) | regionshierarki.hierarki (identifiserer riktig regionsnivå automatisk så lenge regionsvariabelen heter bydelsregion, kommuneregion eller fylkesregion, krever at du indentifiserer de øvrige klassifikasjonsvariablene i datasettet.) |
+| Summere et datasett med kjønnsvariabel over kjønnene | summere_kjonn.summere_over_kjonn |
+| Summere et datasett som er fordelt på ettårige aldersgrupperinger til aggregerte KOSTRA-aldersgrupperinger | summere_til_aldersgrupperinger.summere_til_aldersgrupperinger |
+| Feste en kolonne med titler til KLASS-koder (f.eks 0301 - Oslo) | titler_til_klasskoder.kodelister_navn |
+
+### Eksempelark
+Du finner eksempelark på [ssb-kostra-python/examples/](https://github.com/statisticsnorway/ssb-kostra-python/tree/main/examples). Der kan du kjøre gjennom funksjonene for å se hvordan det kan gjøres.
+
 
 ## Requirements
 
