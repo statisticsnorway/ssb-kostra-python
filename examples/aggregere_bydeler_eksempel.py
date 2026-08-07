@@ -35,7 +35,7 @@ from ssb_kostra_python.regionshierarki import hierarki
 # ## Først henter vi ned en folketallsfil som fordeler Oslo-befolkningen på kjønn, bydel og alder.
 
 # %% [markdown]
-# Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik: **statistikkaar=20XX**.
+# Om du ønsker å hente data for et annet år, kan du bare sette statistikkaar til noe annet, slik: `statistikkaar=20XX`.
 
 # %%
 # Definerer en filsti. "latest_version_path" (pakke lastet ned over) sørger for å identifisere siste versjon av datasettet.
