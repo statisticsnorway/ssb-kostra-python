@@ -43,11 +43,10 @@
 | Summere et datasett som er fordelt på ettårige aldersgrupperinger til aggregerte KOSTRA-aldersgrupperinger | ```python summere_til_aldersgrupperinger.summere_til_aldersgrupperinger``` |
 | Feste en kolonne med titler til KLASS-koder (f.eks 0301 - Oslo) | ```python titler_til_klasskoder.kodelister_navn``` |
 
-### Eksempelark
+## Eksempelark
 Du finner eksempelark på [ssb-kostra-python/examples/](https://github.com/statisticsnorway/ssb-kostra-python/tree/main/examples). Der kan du kjøre gjennom funksjonene for å se hvordan det kan gjøres.
 
-
-## Requirements
+## Programvarekrav
 For å bruke `ssb-kostra-python` må prosjektet ditt bruke:
 
 - Python 3.12 eller nyere
@@ -60,7 +59,18 @@ i terminalen:
 python --version
 ```
 
-## Installation
+## Tilganger til fellesbøtter
+Funksjonene henter filer fra fellesbøtter hos **S312 Befolkningsstatistikk** og **S212 Offentlige finanser**.
+
+Hos **S312** trenger du tilgang til:
+
+**folketall** ---> **ssb-bef-statistikk-data-delt-folketall-prod**
+
+Hos **S212** trenger du tilgang til:
+
+**kostra-befolkning-delt** ---> **ssb-off-fin-data-delt-kostra-befolkning-delt-prod**
+
+## Installasjon
 Pakken installeres med Poetry. Kjør følgende kommando i terminalen fra
 prosjektet der du ønsker å bruke pakken:
 
@@ -311,7 +321,7 @@ Velg:
 og kjør deretter importen på nytt.
 
 
-## Usage
+## Bruk
 På [ssb-kostra-python/examples/](https://github.com/statisticsnorway/ssb-kostra-python/tree/main/examples) finner
 du eksempel-notebooks som gjennomgår bruken av de ulike funksjonene.
 Please see the [Reference Guide] for details.
