@@ -235,7 +235,7 @@ def kodelister_navn(
         mappings: List of dictionaries. Each dict has the following keys::
             {
                 "code_col": "kommunenr",          # required
-                "klass_id": 131,                    # required
+                "klass_id": "131",                    # required
                 "name_col_out": "kommunenr_navn", # optional; default <code_col>_navn
                 "select_level": 1,                  # optional
             }

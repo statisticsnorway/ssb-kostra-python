@@ -590,7 +590,7 @@ class TestMappingMellomAar:
         )
 
         mock_klassification.assert_called_once_with(
-            131,
+            "131",
             language="nb",
             include_future=True,
         )
