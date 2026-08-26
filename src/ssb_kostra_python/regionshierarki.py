@@ -77,6 +77,7 @@ def _select_mapping(
         "'fylkeskommune_til_kostraregion', 'bydeler_til_EAB'."
     )
 
+
 def _validate_and_normalize_region_col(df: pd.DataFrame) -> tuple[str, pd.DataFrame]:
     region_cols = [
         c for c in ["kommuneregion", "fylkesregion", "bydelsregion"] if c in df.columns
@@ -99,6 +100,7 @@ def _validate_and_normalize_region_col(df: pd.DataFrame) -> tuple[str, pd.DataFr
         df[col] = df[col].astype(str).str.zfill(6)
     return col, df
 
+
 def _postprocess_combined(
     df: pd.DataFrame,
     post_filter: Callable[[pd.DataFrame], pd.DataFrame] | None,
@@ -115,6 +117,7 @@ def _postprocess_combined(
         return mapping_regionsnavn(df.reset_index(drop=True))
     else:
         return df.reset_index(drop=True)
+
 
 def _print_dtype_report(
     original: dict[str, Any],
@@ -150,6 +153,7 @@ def _print_dtype_report(
     else:
         print("\nNo dtype changes remain after restoration.")
 
+
 def _restore_dtype(result: Any, orig: Any) -> Any:
     if is_integer_dtype(orig):
         rounded = result.round(0)
@@ -166,6 +170,7 @@ def _restore_dtype(result: Any, orig: Any) -> Any:
         except TypeError:
             return (result != 0).astype(bool)
     return result
+
 
 def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     """Mapping av bydelene i Oslo.
@@ -188,6 +193,7 @@ def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     )
     klass_bydeler_oslo["to"] = "EAB"
     return klass_bydeler_oslo
+
 
 def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     """Mapping av kommunene til landet.
@@ -274,6 +280,7 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     mapping_kommuner["from"] = mapping_kommuner["from"].astype(str).str.zfill(4)
     return mapping_kommuner
 
+
 def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     """Mapping fra kommune til fylkeskommune.
 
@@ -307,6 +314,7 @@ def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
         komm_fylkeskommune_korr_df["to"].astype(str).str.zfill(4)
     )
     return komm_fylkeskommune_korr_df
+
 
 def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     """Mapping fra fylkeskommune til KOSTRA-region (EAFK).
@@ -368,6 +376,7 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
         ignore_index=True,
     )
     return fylkeskomm_kostraregion_korr
+
 
 def hierarki(
     inputfil: pd.DataFrame,
@@ -476,6 +485,7 @@ def hierarki(
         df_combined, post_filter, rename_cols, klassifikasjonsvariable, add_region_names
     )
 
+
 def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Legge fylkeskommunedata over på alle tilhørende kommuner.
 
@@ -530,6 +540,7 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
     df_merged = df_merged[klassifikasjonsvariable + statistikkvariable]
     return df_merged
 
+
 def _nullable_int_for(dtype: Any) -> Any:
     """Return a pandas nullable integer dtype matching the given dtype name.
 
@@ -559,6 +570,7 @@ def _nullable_int_for(dtype: Any) -> Any:
                 return unsigned_map[key]
         return pd.UInt64Dtype()
     return pd.Int64Dtype()
+
 
 def gjennomsnitt_aggregerte_regioner(
     df: pd.DataFrame,

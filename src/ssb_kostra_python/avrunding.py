@@ -51,6 +51,7 @@ def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:
         dtype="float64",
     )
 
+
 def print_instruks_konverter_dtypes() -> str:
     """Lager instruks for å lage mapping."""
     instruks = """ℹ️Bruk malen under for dtype_mapping. Du må angi denne mappingen i forkant for at funksjonen skal kunne konvertere variablene slik du ønsker.
@@ -71,6 +72,7 @@ def print_instruks_konverter_dtypes() -> str:
 
     print(instruks)
     return instruks
+
 
 def konverter_dtypes(
     df: pd.DataFrame, dtype_mapping: dict[str, list[str]]

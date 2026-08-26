@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display
@@ -5,10 +7,8 @@ from IPython.display import display
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python import regionshierarki
 
-from unittest.mock import patch
-
-
 INPUT_PATCH_TARGET = "builtins.input"
+
 
 def hente_data_folkemengde(
     aar: int, regionsnivaa: str, testdata: bool = False

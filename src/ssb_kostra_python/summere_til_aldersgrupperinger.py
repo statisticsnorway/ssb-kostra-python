@@ -5,8 +5,8 @@ from IPython.display import display  # for nice tables in notebooks
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python.hjelpefunksjoner import ALDERSHIERARKI_PATH
 
-
 INPUT_PATCH_TARGET = "builtins.input"
+
 
 def summere_til_aldersgrupperinger(
     inputfil: pd.DataFrame, hierarki_path: str = ALDERSHIERARKI_PATH
@@ -24,7 +24,7 @@ def summere_til_aldersgrupperinger(
     - Summerer statistikkvariabler (f.eks. antall personer) over aldersgrupper.
     - Bevarer øvrige klassifikasjonsvariabler (f.eks. periode, kjønn, region).
     - Returnerer et datasett som inneholder både originale aldre og aggregerte aldersgrupper.
-    
+
     Parametere
     ----------
     inputfil : pd.DataFrame

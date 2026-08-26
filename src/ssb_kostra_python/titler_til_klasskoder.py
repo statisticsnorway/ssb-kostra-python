@@ -1,10 +1,9 @@
 import re
+from typing import Any
 from typing import Literal
 
 import pandas as pd
 from klass import KlassClassification
-
-from typing import Any
 
 """Fest navn/tittel til klassifikasjonskoder basert på KLASS.
 
@@ -40,6 +39,7 @@ Merk:
 - Fjern i så fall navnekolonnene før aggregering. Etter aggregering kan du legge dem til igjen.
 """
 # ---------- internals ----------
+
 
 def _pick_level_columns(
     pivot_df: pd.DataFrame, level: int | None
@@ -165,6 +165,7 @@ def _attach_one_mapping(
 
 # ---------- public API ----------
 
+
 def kodelister_navn(
     df: pd.DataFrame,
     mappings: list[dict[str, Any]],
@@ -285,7 +286,7 @@ def kodelister_navn(
         Angir om funksjonen skal skrive ut diagnostiske meldinger under
         kjøringen.
 
-    Returns
+    Returns:
     -------
     tuple[pd.DataFrame, dict[str, Any]]
         En tuple som inneholder:
@@ -299,7 +300,7 @@ def kodelister_navn(
           ``code_col`` eller ``code_col|klass_id`` dersom det finnes
           duplikater.
 
-    Raises
+    Raises:
     ------
     ValueError
         Hvis kolonnen ``periode`` mangler, eller dersom datasettet
