@@ -1,5 +1,3 @@
-# %%
-# logger = logging.getLogger(__name__)
 from collections.abc import Callable
 from typing import Any
 from typing import cast
@@ -16,7 +14,6 @@ from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python.titler_til_klasskoder import mapping_regionsnavn
 
 
-# %%
 def _select_mapping(
     aggregeringstype: str | None, region_col: str, periode: str | int
 ) -> tuple[
@@ -80,7 +77,6 @@ def _select_mapping(
         "'fylkeskommune_til_kostraregion', 'bydeler_til_EAB'."
     )
 
-
 def _validate_and_normalize_region_col(df: pd.DataFrame) -> tuple[str, pd.DataFrame]:
     region_cols = [
         c for c in ["kommuneregion", "fylkesregion", "bydelsregion"] if c in df.columns
@@ -103,7 +99,6 @@ def _validate_and_normalize_region_col(df: pd.DataFrame) -> tuple[str, pd.DataFr
         df[col] = df[col].astype(str).str.zfill(6)
     return col, df
 
-
 def _postprocess_combined(
     df: pd.DataFrame,
     post_filter: Callable[[pd.DataFrame], pd.DataFrame] | None,
@@ -120,7 +115,6 @@ def _postprocess_combined(
         return mapping_regionsnavn(df.reset_index(drop=True))
     else:
         return df.reset_index(drop=True)
-
 
 def _print_dtype_report(
     original: dict[str, Any],
@@ -156,7 +150,6 @@ def _print_dtype_report(
     else:
         print("\nNo dtype changes remain after restoration.")
 
-
 def _restore_dtype(result: Any, orig: Any) -> Any:
     if is_integer_dtype(orig):
         rounded = result.round(0)
@@ -174,26 +167,6 @@ def _restore_dtype(result: Any, orig: Any) -> Any:
             return (result != 0).astype(bool)
     return result
 
-
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#   kernelspec:
-#     display_name: kostra-fellesfunksjoner
-#     language: python
-#     name: kostra-fellesfunksjoner
-# ---
-
-# %% [markdown]
-# ### Innhenting av filer til bruk
-
-
-# %%
-# def mapping_bydeler_oslo(year: str | int = "2015"):
 def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     """Mapping av bydelene i Oslo.
 
@@ -216,9 +189,6 @@ def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     klass_bydeler_oslo["to"] = "EAB"
     return klass_bydeler_oslo
 
-
-# %%
-# def hierarki_fra_kommune_til_landet(year : str | int):
 def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     """Mapping av kommunene til landet.
 
@@ -304,8 +274,6 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     mapping_kommuner["from"] = mapping_kommuner["from"].astype(str).str.zfill(4)
     return mapping_kommuner
 
-
-# %%
 def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     """Mapping fra kommune til fylkeskommune.
 
@@ -340,8 +308,6 @@ def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     )
     return komm_fylkeskommune_korr_df
 
-
-# %%
 def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     """Mapping fra fylkeskommune til KOSTRA-region (EAFK).
 
@@ -403,8 +369,6 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     )
     return fylkeskomm_kostraregion_korr
 
-
-# %%
 def hierarki(
     inputfil: pd.DataFrame,
     aggregeringstype: str | None = None,
@@ -512,8 +476,6 @@ def hierarki(
         df_combined, post_filter, rename_cols, klassifikasjonsvariable, add_region_names
     )
 
-
-# %%
 def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Legge fylkeskommunedata over på alle tilhørende kommuner.
 
@@ -568,8 +530,6 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
     df_merged = df_merged[klassifikasjonsvariable + statistikkvariable]
     return df_merged
 
-
-# %%
 def _nullable_int_for(dtype: Any) -> Any:
     """Return a pandas nullable integer dtype matching the given dtype name.
 
@@ -599,7 +559,6 @@ def _nullable_int_for(dtype: Any) -> Any:
                 return unsigned_map[key]
         return pd.UInt64Dtype()
     return pd.Int64Dtype()
-
 
 def gjennomsnitt_aggregerte_regioner(
     df: pd.DataFrame,
@@ -695,6 +654,3 @@ def gjennomsnitt_aggregerte_regioner(
         }
         return df, report
     return df
-
-
-# %%

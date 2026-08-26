@@ -1,18 +1,3 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.1
-#   kernelspec:
-#     display_name: ssb-kostra-python
-#     language: python
-#     name: ssb-kostra-python
-# ---
-
-# %%
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
@@ -20,10 +5,9 @@ from IPython.display import display  # for nice tables in notebooks
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python.hjelpefunksjoner import ALDERSHIERARKI_PATH
 
+
 INPUT_PATCH_TARGET = "builtins.input"
 
-
-# %%
 def summere_til_aldersgrupperinger(
     inputfil: pd.DataFrame, hierarki_path: str = ALDERSHIERARKI_PATH
 ) -> pd.DataFrame:
@@ -40,7 +24,7 @@ def summere_til_aldersgrupperinger(
     - Summerer statistikkvariabler (f.eks. antall personer) over aldersgrupper.
     - Bevarer øvrige klassifikasjonsvariabler (f.eks. periode, kjønn, region).
     - Returnerer et datasett som inneholder både originale aldre og aggregerte aldersgrupper.
-
+    
     Parametere
     ----------
     inputfil : pd.DataFrame
@@ -48,11 +32,11 @@ def summere_til_aldersgrupperinger(
         Forutsetter minst følgende kolonner:
 
         - ``periode`` (år)
-    - ``alder`` (3-sifret alderskode)
+        - ``alder`` (3-sifret alderskode)
         - én eller flere statistikkvariabler (f.eks. ``personer``)
 
     hierarki_path : str
-    Filsti til parquet-fil som inneholder aldershierarki.
+        Filsti til parquet-fil som inneholder aldershierarki.
         Forutsetter følgende kolonner:
 
         - ``periode`` : år
@@ -149,6 +133,3 @@ def summere_til_aldersgrupperinger(
 
     display(df_combined)
     return df_combined
-
-
-# %%

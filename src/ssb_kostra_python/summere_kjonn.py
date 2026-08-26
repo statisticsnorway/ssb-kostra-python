@@ -1,25 +1,9 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.3
-#   kernelspec:
-#     display_name: ssb-kostra-python
-#     language: python
-#     name: ssb-kostra-python
-# ---
-
-# %%
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 
 from ssb_kostra_python import hjelpefunksjoner
 
 
-# %%
 def summere_over_kjonn(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Summér statistikkvariabler over kjønn hvis 'kjonn' finnes i datasettet.
 
@@ -63,6 +47,3 @@ def summere_over_kjonn(inputfil: pd.DataFrame) -> pd.DataFrame:
     )
 
     return summert_over_kjonn
-
-
-# %%
