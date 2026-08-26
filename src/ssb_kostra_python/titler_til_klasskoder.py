@@ -304,9 +304,9 @@ def kodelister_navn(
 
 
 KLASS_IDS = {
-    "kommuneregion": 231,
-    "fylkesregion": 232,
-    "bydelsregion": 241,
+    "kommuneregion": "231",
+    "fylkesregion": "232",
+    "bydelsregion": "241",
 }
 TOKENS = {"nan", "<na>", "none", "nul", "null", "na", "n/a", ""}
 ZFILLS = {"kommuneregion": 4, "fylkesregion": 4, "bydelsregion": 6}
