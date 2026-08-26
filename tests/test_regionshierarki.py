@@ -559,3 +559,80 @@ class TestHierarki:
 
         mock_map.assert_called_once()
         mock_definer.assert_called_once()
+
+    def test_bydeler_til_EAB_bevarer_nan_nar_alle_verdier_mangler(
+        self, mocker: Any
+    ) -> None:
+        """Verify that an aggregate remains NaN when all values are missing."""
+        df = pd.DataFrame(
+            {
+                "periode": ["2025", "2025"],
+                "bydelsregion": ["030101", "030102"],
+                "personer": [float("nan"), float("nan")],
+            }
+        )
+
+        mock_map = mocker.patch(
+            "ssb_kostra_python.regionshierarki.mapping_bydeler_oslo"
+        )
+        mock_map.return_value = pd.DataFrame(
+            {
+                "from": ["030101", "030102"],
+                "to": ["EAB", "EAB"],
+            }
+        )
+
+        mock_definer = mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.definere_klassifikasjonsvariable"
+        )
+        mock_definer.return_value = (
+            ["periode", "bydelsregion"],
+            ["personer"],
+        )
+
+        out = hierarki(df)
+
+        eab_rows = out[out["bydelsregion"] == "EAB"]
+
+        assert len(eab_rows) == 1
+        assert pd.isna(eab_rows["personer"].iloc[0])
+
+        mock_map.assert_called_once()
+        mock_definer.assert_called_once()
+
+    def test_bydeler_til_EAB_summerer_til_null_nar_en_verdi_er_null(
+        self, mocker: Any
+    ) -> None:
+        """Verify that NaN + 0 aggregates to 0, not NaN."""
+        df = pd.DataFrame(
+            {
+                "periode": ["2025", "2025"],
+                "bydelsregion": ["030101", "030102"],
+                "personer": [float("nan"), 0],
+            }
+        )
+
+        mock_map = mocker.patch(
+            "ssb_kostra_python.regionshierarki.mapping_bydeler_oslo"
+        )
+        mock_map.return_value = pd.DataFrame(
+            {
+                "from": ["030101", "030102"],
+                "to": ["EAB", "EAB"],
+            }
+        )
+
+        mock_definer = mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.definere_klassifikasjonsvariable"
+        )
+        mock_definer.return_value = (
+            ["periode", "bydelsregion"],
+            ["personer"],
+        )
+
+        out = hierarki(df)
+
+        eab_rows = out[out["bydelsregion"] == "EAB"]
+
+        assert len(eab_rows) == 1
+        assert eab_rows["personer"].iloc[0] == 0

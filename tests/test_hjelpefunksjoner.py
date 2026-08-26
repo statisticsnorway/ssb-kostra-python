@@ -501,7 +501,7 @@ class TestMappingMellomAar:
         )
 
         mock_klassification.assert_called_once_with(
-            131,
+            "131",
             language="nb",
             include_future=True,
         )
@@ -542,9 +542,9 @@ class TestMappingMellomAar:
     @pytest.mark.parametrize(
         ("regionsnivaa", "forventet_klass_kode"),
         [
-            ("kommune", 131),
-            ("bydel", 103),
-            ("fylkeskommune", 127),
+            ("kommune", "131"),
+            ("bydel", "103"),
+            ("fylkeskommune", "127"),
         ],
     )
     def test_bruker_riktig_klass_kode_for_regionsnivaa(
@@ -590,7 +590,7 @@ class TestMappingMellomAar:
         )
 
         mock_klassification.assert_called_once_with(
-            131,
+            "131",
             language="nb",
             include_future=True,
         )
@@ -726,7 +726,7 @@ class TestMappingMellomAar:
         )
 
         mock_klassification.assert_called_once_with(
-            131,
+            "131",
             language="nb",
             include_future=True,
         )
