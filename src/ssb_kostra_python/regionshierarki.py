@@ -500,9 +500,13 @@ def hierarki(
         hjelpefunksjoner.definere_klassifikasjonsvariable(inputfil_copy)
     )
     df_merged[replace_col] = df_merged["to"]
-    df_agg = df_merged.groupby(klassifikasjonsvariable, as_index=False, observed=True)[
+    df_agg = df_merged.groupby(
+        klassifikasjonsvariable,
+        as_index=False,
+        observed=True,
+    )[
         statistikkvariable
-    ].sum()
+    ].sum(min_count=1)
     df_combined = pd.concat([inputfil_copy, df_agg], ignore_index=True)
     return _postprocess_combined(
         df_combined, post_filter, rename_cols, klassifikasjonsvariable, add_region_names

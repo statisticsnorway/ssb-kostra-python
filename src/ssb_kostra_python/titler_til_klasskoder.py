@@ -235,7 +235,7 @@ def kodelister_navn(
         mappings: List of dictionaries. Each dict has the following keys::
             {
                 "code_col": "kommunenr",          # required
-                "klass_id": 131,                    # required
+                "klass_id": "131",                    # required
                 "name_col_out": "kommunenr_navn", # optional; default <code_col>_navn
                 "select_level": 1,                  # optional
             }
@@ -304,9 +304,9 @@ def kodelister_navn(
 
 
 KLASS_IDS = {
-    "kommuneregion": 231,
-    "fylkesregion": 232,
-    "bydelsregion": 241,
+    "kommuneregion": "231",
+    "fylkesregion": "232",
+    "bydelsregion": "241",
 }
 TOKENS = {"nan", "<na>", "none", "nul", "null", "na", "n/a", ""}
 ZFILLS = {"kommuneregion": 4, "fylkesregion": 4, "bydelsregion": 6}

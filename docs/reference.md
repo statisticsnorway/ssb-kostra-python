@@ -27,14 +27,6 @@ ssb\_kostra\_python.avrunding module
 ssb\_kostra\_python.enkel\_editering module
 -------------------------------------------
 
-.. automodule:: ssb_kostra_python.enkel_editering
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-ssb\_kostra\_python.hjelpefunksjoner module
--------------------------------------------
-
 .. automodule:: ssb_kostra_python.hjelpefunksjoner
    :members:
    :show-inheritance:
