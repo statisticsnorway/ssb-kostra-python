@@ -72,12 +72,5 @@ ssb\_kostra\_python.titler\_til\_klasskoder module
    :show-inheritance:
    :undoc-members:
 
-ssb\_kostra\_python.validering module
--------------------------------------
-
-.. automodule:: ssb_kostra_python.validering
-   :members:
-   :show-inheritance:
-   :undoc-members:
 
 ```
