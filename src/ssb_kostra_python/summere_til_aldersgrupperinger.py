@@ -22,6 +22,7 @@ from ssb_kostra_python.hjelpefunksjoner import ALDERSHIERARKI_PATH
 
 INPUT_PATCH_TARGET = "builtins.input"
 
+
 # %%
 def summere_til_aldersgrupperinger(
     inputfil: pd.DataFrame, hierarki_path: str = ALDERSHIERARKI_PATH
