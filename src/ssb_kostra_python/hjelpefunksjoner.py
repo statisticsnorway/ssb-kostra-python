@@ -802,13 +802,13 @@ def _mapping_mellom_aar(
     ]
 
     if regionsnivaa == "kommune":
-        klass_kode = 131
+        klass_kode = "131"
         endringstekst = "kommuneendringer"
     elif regionsnivaa == "bydel":
-        klass_kode = 103
+        klass_kode = "103"
         endringstekst = "bydelsendringer"
     elif regionsnivaa == "fylkeskommune":
-        klass_kode = 127
+        klass_kode = "127"
         endringstekst = "fylkeskommuneendringer"
     else:
         raise ValueError(
