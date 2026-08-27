@@ -451,7 +451,7 @@ def hierarki(
     region_names_list = ["kommuneregion_navn", "bydelsregion_navn", "fylkesregion_navn"]
     if any(col in inputfil_copy.columns for col in region_names_list):
         logger.info(
-            f"Datasettet ditt inneholder en kolonne for regionsnavn i tillegg til selve regionskodene. For at hierarkifunksjonen skal aggregere riktig, fjernes regions_navn-kolonnene {region_names_list} fra datasettet."
+            f"Datasettet ditt inneholder en kolonne for regionsnavn i tillegg til selve regionskodene. For at hierarkifunksjonen skal aggregere riktig, fjernes region_navn-kolonnene {region_names_list} fra datasettet."
         )
         inputfil_copy.drop(columns=region_names_list, inplace=True, errors="ignore")
     if inputfil_copy["periode"].nunique() > 1:
