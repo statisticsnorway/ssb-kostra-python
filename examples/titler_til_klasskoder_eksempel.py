@@ -86,10 +86,14 @@ display(df_kommuner_regionsnavn)
 # {“code_col”: “alder”,
 # “klass_id”: 248,
 # “name_col_out”: “alder_navn”,
-# “select_level”: 1},]
+# “select_level”: 1},
+# {"code_col": "kjonn",
+# "klass_id": 2,
+# "name_col_out": "kjonn_navn",
+# "select_level": 1,},]
 # ```
 #
-# I mappingen over er variabelen **kommuneregion** koplet til kodeliste **231** i KLASS. Variabelen **alder** er koplet kodeliste **248**. Kodeliste **2** hører til **kjonn**.
+# I mappingen over er variabelen **kommuneregion** koplet til kodeliste **231** i KLASS. Variabelen **alder** er tilkoplet kodeliste **248**. Kodeliste **2** hører til **kjonn**.
 #
 # Så kommer selve funksjonen (to resultater) **`df_med_kodenavn, sammendrag =`** .
 #
