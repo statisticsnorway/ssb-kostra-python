@@ -52,6 +52,9 @@ display(folketall_bydeler)
 # Kjører funksjonen. folketall_bydeler_sum_kjonn er det endelige datasettet som genereres.
 folketall_bydeler_sum_kjonn = summere_kjonn.summere_over_kjonn(folketall_bydeler)
 # Viser det genererte datasettet. Du vil se at kolonnen for kjønn er borte, for nå er kjønnene summert opp.
+
+print("\n")
+print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler_sum_kjonn'.")
 display(folketall_bydeler_sum_kjonn)
 
 # %% [markdown]
@@ -68,6 +71,8 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     folketall_bydeler_sum_kjonn = summere_kjonn.summere_over_kjonn(folketall_bydeler)
 
 # Viser datasettet
+print("\n")
+print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler_sum_kjonn'.")
 display(folketall_bydeler_sum_kjonn)
 
 # %%
