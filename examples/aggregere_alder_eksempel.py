@@ -51,6 +51,8 @@ filsti_folkemengde_bydeler = latest_version_path(
 # Leser selve filen. Denne er lagret som en parquet-fil.
 folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
 # Viser datasettet.
+print("\n")
+print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler'.")
 display(folketall_bydeler)
 
 # %% [markdown]
@@ -79,6 +81,8 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     folketall_bydeler_alder = summere_til_aldersgrupperinger(folketall_bydeler)
 
 # Viser datasettet
+print("\n")
+print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler_alder'.")
 display(folketall_bydeler_alder)
 
 # %%
