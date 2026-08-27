@@ -234,11 +234,7 @@ def hente_data_folkemengde(
             statistikkaar=statistikkaar,
             regionsnivaa=regionsnivaa,
         )
-        # logger.info("ℹ️Dette er endringsmappingen:\n")
-        # display(mapping)
 
-        # if mapping is None:
-        # if mapping.empty:
         if mapping is None or mapping.empty:
             logger.info(
                 "ℹ️Under vises endringsmappingen. ⇩ ⇩ Kun kolonneoverskrifter betyr at det ikke har funnet sted endringer mellom periodene.\n"
@@ -294,7 +290,7 @@ def hente_data_folkemengde(
         f"ℹ️Om du har kjørt den slik - \033[1mdatasett = hente_data_folkemengde({aar}, {regionsnivaa}, True)\033[0m - vil ikke dataene vises under, men datasettet er i dette eksemplet lagret med navnet \033[1mdatasett\033[0m, det vil si objektet til venstre for likhetstegnet. Bare legg til \033[1mdisplay(datasett)\033[0m for å se datasettet."
     )
     logger.info(
-        f"ℹ️Du har i dette tilfellet satt \033[1mTrue\033[0m for testdatasett. Det vil si at dataene er hentet fra fila for året før {aar} for regionsnivået {regionsnivaa}, men at datasettet skal vise {aar} i periodekolonnen.\n"
+        f"ℹ️Du har i dette tilfellet satt \033[1mTrue\033[0m for testdatasett. Det vil si at dataene er hentet fra fila for året før {aar} for regionsnivået {regionsnivaa}, men at datasettet viser {aar} i periodekolonnen.\n"
     )
 
     return folkemengde_31_12_data

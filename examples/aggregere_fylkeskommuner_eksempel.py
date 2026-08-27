@@ -77,6 +77,9 @@ display(df_folketall_kommuner)
 folketall_fylkeskommuner = hierarki(
     df_folketall_kommuner, "kommune_til_fylkeskommune", add_region_names=True
 )
+
+print("\n")
+print("ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner'.")
 display(folketall_fylkeskommuner)
 
 # %% [markdown]
@@ -89,6 +92,9 @@ display(folketall_fylkeskommuner)
 folketall_fylkeskommuner_KOSTRA = hierarki(
     folketall_fylkeskommuner, add_region_names=True
 )
+
+print("\n")
+print("ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner_KOSTRA'.")
 display(folketall_fylkeskommuner_KOSTRA)
 
 # %% [markdown]
@@ -121,6 +127,8 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
         folketall_fylkeskommuner, add_region_names=True
     )
 # Viser tabell
+print("\n")
+print("ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner_KOSTRA'.")
 display(folketall_fylkeskommuner_KOSTRA)
 
 # %%
