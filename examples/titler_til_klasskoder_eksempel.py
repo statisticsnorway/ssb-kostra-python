@@ -67,8 +67,13 @@ display(df_folketall_kommuner_formatert)
 
 # Funksjonen ser etter **bydelsregion**, **kommuneregion** og **fylkesregion**.
 
+# +
 df_kommuner_regionsnavn = mapping_regionsnavn(df_folketall_kommuner_formatert)
+
+print("\n")
+print(f"ℹ️Det endelige datasettet er her 'df_kommuner_regionsnavn'.")
 display(df_kommuner_regionsnavn)
+# -
 
 # Om vi ønsker å feste kodenavn på andre klassifikasjonsvariable enn regionene, kan vi bruke funksjonen under.
 
@@ -135,6 +140,8 @@ df_kommuner_med_kodenavn, sammendrag = kodelister_navn(
     verbose=True,
 )
 
+print("\n")
+print(f"ℹ️Det endelige datasettet er her 'df_kommuner_med_kodenavn'.")
 display(df_kommuner_med_kodenavn)
 # -
 
