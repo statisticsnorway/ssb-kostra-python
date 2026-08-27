@@ -1,4 +1,5 @@
-INPUT_PATCH_TARGET = "builtins.input"
+from unittest.mock import patch
+
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display
@@ -7,7 +8,6 @@ from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python import regionshierarki
 
 INPUT_PATCH_TARGET = "builtins.input"
-from unittest.mock import patch
 
 
 def hente_data_folkemengde(

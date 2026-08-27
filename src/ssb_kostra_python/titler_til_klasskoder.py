@@ -1,25 +1,10 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.3
-#   kernelspec:
-#     display_name: ssb-kostra-python
-#     language: python
-#     name: ssb-kostra-python
-# ---
-
-# %%
 import re
+from typing import Any
 from typing import Literal
 
 import pandas as pd
 from klass import KlassClassification
 
-# %%
 """Fest navn/tittel til klassifikasjonskoder basert på KLASS.
 
 Denne modulen lar deg knytte lesbare navn (tittel) til koder i klassifikasjonsvariabler
@@ -54,9 +39,6 @@ Merk:
 - Fjern i så fall navnekolonnene før aggregering. Etter aggregering kan du legge dem til igjen.
 """
 # ---------- internals ----------
-
-
-from typing import Any
 
 
 def _pick_level_columns(
@@ -184,7 +166,6 @@ def _attach_one_mapping(
 # ---------- public API ----------
 
 
-# def attach_multiple_classification_names(
 def kodelister_navn(
     df: pd.DataFrame,
     mappings: list[dict[str, Any]],
@@ -193,62 +174,137 @@ def kodelister_navn(
     include_future: bool = True,
     verbose: bool = True,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
-    """Med denne funksjonen kan du feste kodenavn på klassifikasjonsvariablene i tråd med KLASS-kodelisten for det ENE året datasettet gjelder.
+    """Fester kodenavn til klassifikasjonsvariabler ved hjelp av KLASS.
 
-    Funksjonen lager en ekstra kolonne på datasettet ditt med kodenavnene. For at funksjonen skal fungere, må du gi informasjon om kolonnen til klassifikasjonsvariabelen, den
-    tilhørende KLASS-kodelisten, samt tittelen du ønsker på kolonnen med kodenavnene. Kolonnetittel er valgfritt, og dersom du ikke angir noe, blir kolonnetittelen automatisk satt til
-    "kolonne_navn". For eksempel blir "bydelsregion" satt til "bydelsregion_navn". Du lager da en såkalt mapping som vist under. Mappingen er en liste bestående av dictionaries, én for
-    hver variabel.
+    Funksjonen brukes på et datasett som gjelder for ett enkelt år.
+    Den legger til nye kolonner med kodenavn for valgte
+    klassifikasjonsvariabler i henhold til tilhørende KLASS-kodelister.
 
-    df: Datasettet må inneholde en periodevariabel kalt "periode" med én unik verdi, med andre ord kan ikke datasettet inneholde flere årganger.
+    Datasettet må inneholde en periodevariabel kalt ``periode`` med
+    nøyaktig én unik verdi. Datasettet kan altså ikke inneholde flere
+    årganger samtidig.
 
+    For hver klassifikasjonsvariabel som skal få kodenavn, må det oppgis
+    informasjon om:
 
-    Her er et eksempel. Vi har et datasett med klassifikasjonsvariablene "periode", "bydelsregion" og "alder" og statistikkvariabelen "personer". Vi ønsker å feste kodenavn på "bydelsregion"
-    og "alder". Bydelene er knyttet til KLASS-liste 241 og alder er tilknyttet KLASS-liste 248. "select_level" settes alltid til 1.
-    Først lager vi mappingen.
+    - hvilken kolonne som inneholder kodeverdiene
+    - hvilken KLASS-kodeliste som skal brukes
+    - hvilket navn den nye kolonnen med kodenavn skal ha
+    - eventuelt hvilket nivå som skal velges
 
-    mapping_klassifikasjonsvariable = [{"code_col": "bydelsregion", "klass_id": 241, "name_col_out": "bydelsregion_navn", "select_level": 1},
-                                       {"code_col": "alder",       "klass_id": 248, "name_col_out": "alder_navn", "select_level": 1},]
+    Denne informasjonen gis gjennom argumentet ``mappings``.
 
-    Når mappingen er laget, kjøres funksjonskoden slik:
+    Hvis ``name_col_out`` ikke oppgis, blir navnet på den nye kolonnen
+    automatisk satt til ``<code_col>_navn``.
 
-    df_med_kodenavn, sammendrag = titler_til_klasskoder.kodelister_navn(
-    df_uten_kodenavn,
-    mappings=mapping_klassifikasjonsvariable,
-    language="nb",
-    include_future=True,
-    verbose=True,
-    )
-    display(df_med_kodenavn)
+    Eksempel
+    --------
+    Anta at datasettet inneholder klassifikasjonsvariablene ``periode``,
+    ``bydelsregion`` og ``alder``, samt statistikkvariabelen ``personer``.
 
-    Funksjonen genererer to objekter til venstre for likhetstegnet. "df_med_kodenavn" er datasettet med kolonner for kodenavnene. Sammendraget av operasjonen ligger i "sammendrag".
-    I parentesen finner vi "df_uten_kodenavn", som er det opprinnelige datasettet. Mappingen ligger i "mappings", den definerte vi manuelt i forkant. Siden KLASS-kodene er lagret på tre språk,
-    velger vi i utgangspunktet "nb" for bokmål. "include_future" settes til "True" som en forhåndsinnstilling. Det samme gjelder "verbose", settes til "True". Til slutt kan vi sette
-    display(df_med_kodenavn) for å se det endelige datasettet.
+    Vi ønsker å feste kodenavn til ``bydelsregion`` og ``alder``.
+    Bydeler er knyttet til KLASS-liste 241, og alder er knyttet til
+    KLASS-liste 248.
 
+    Først lager vi mappingen::
 
-
-    Apply multiple (code_col, klass_id) mappings for the year in ``df['periode']``.
-
-    Args:
-        df: Must contain ``'periode'`` with exactly one unique year.
-        mappings: List of dictionaries. Each dict has the following keys::
+        mapping_klassifikasjonsvariable = [
             {
-                "code_col": "kommunenr",          # required
-                "klass_id": "131",                    # required
-                "name_col_out": "kommunenr_navn", # optional; default <code_col>_navn
-                "select_level": 1,                  # optional
-            }
-        language: Language code passed to KLASS. {"nb", "nn", "en"}, default "nb".
-        include_future: Whether to include future codes in KLASS. default True
-        verbose: Whether to print diagnostic messages. default True
+                "code_col": "bydelsregion",
+                "klass_id": 241,
+                "name_col_out": "bydelsregion_navn",
+                "select_level": 1,
+            },
+            {
+                "code_col": "alder",
+                "klass_id": 248,
+                "name_col_out": "alder_navn",
+                "select_level": 1,
+            },
+        ]
+
+    Deretter kjøres funksjonen slik::
+
+        df_med_kodenavn, sammendrag = (
+            titler_til_klasskoder.kodelister_navn(
+                df_uten_kodenavn,
+                mappings=mapping_klassifikasjonsvariable,
+                language="nb",
+                include_future=True,
+                verbose=True,
+            )
+        )
+
+        display(df_med_kodenavn)
+
+    Funksjonen returnerer to objekter:
+
+    - ``df_med_kodenavn`` er datasettet med nye kolonner for kodenavn.
+    - ``sammendrag`` inneholder diagnostisk informasjon om mappingene.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Datasettet som skal få kodenavn lagt til.
+
+        Datasettet må inneholde kolonnen ``periode`` med nøyaktig én
+        unik årgang.
+
+    mappings : list[dict[str, Any]]
+        Liste med dictionaries som beskriver hvilke
+        klassifikasjonsvariabler som skal kobles mot KLASS.
+
+        Hver dictionary kan inneholde følgende nøkler:
+
+        - ``code_col``:
+          Navnet på kolonnen som inneholder kodeverdiene.
+          Påkrevd.
+
+        - ``klass_id``:
+          ID-en til KLASS-kodelisten som skal brukes.
+          Påkrevd.
+
+        - ``name_col_out``:
+          Navnet på den nye kolonnen med kodenavn.
+          Valgfritt. Dersom den ikke oppgis, brukes
+          ``<code_col>_navn``.
+
+        - ``select_level``:
+          Nivå som skal velges fra KLASS.
+          Valgfritt.
+
+    language : {"nb", "nn", "en"}, default "nb"
+        Språket som skal brukes ved oppslag i KLASS.
+
+        ``"nb"`` betyr bokmål, ``"nn"`` betyr nynorsk og ``"en"``
+        betyr engelsk.
+
+    include_future : bool, default True
+        Angir om framtidige koder skal inkluderes i oppslaget mot KLASS.
+
+    verbose : bool, default True
+        Angir om funksjonen skal skrive ut diagnostiske meldinger under
+        kjøringen.
 
     Returns:
-        A tuple containing: ``df_out``: Original DF with each name column inserted right after its code column.
-            ``diag``: Per-pair diagnostics keyed by ``code_col`` (or ``code_col|klass_id`` if duplicates).
+    -------
+    tuple[pd.DataFrame, dict[str, Any]]
+        En tuple som inneholder:
+
+        - ``df_out``:
+          Det opprinnelige datasettet med nye navnekolonner lagt inn
+          rett etter tilhørende kodekolonne.
+
+        - ``diag``:
+          Diagnostisk informasjon per mapping, indeksert etter
+          ``code_col`` eller ``code_col|klass_id`` dersom det finnes
+          duplikater.
 
     Raises:
-        ValueError: If ``'periode'`` is missing or contains multiple unique years.
+    ------
+    ValueError
+        Hvis kolonnen ``periode`` mangler, eller dersom datasettet
+        inneholder mer enn én unik årgang.
     """
     # Validate 'periode' once
     if "periode" not in df.columns:
@@ -438,6 +494,3 @@ def mapping_regionsnavn(
         merged.drop(columns=[map_code_col], inplace=True)
 
     return merged
-
-
-# %%

@@ -1,18 +1,3 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.3
-#   kernelspec:
-#     display_name: ssb-kostra-python
-#     language: python
-#     name: ssb-kostra-python
-# ---
-
-# %%
 from decimal import ROUND_HALF_UP
 from decimal import Decimal
 from decimal import InvalidOperation
@@ -24,7 +9,6 @@ from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display
 
 
-# %%
 def _round_half_up(values: pd.Series, decimals: int = 0) -> pd.Series:
     """Runder kommersielt til valgt antall desimaler.
 

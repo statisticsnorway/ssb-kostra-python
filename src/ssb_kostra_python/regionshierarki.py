@@ -1,5 +1,3 @@
-# %%
-# logger = logging.getLogger(__name__)
 from collections.abc import Callable
 from typing import Any
 from typing import cast
@@ -16,7 +14,6 @@ from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python.titler_til_klasskoder import mapping_regionsnavn
 
 
-# %%
 def _select_mapping(
     aggregeringstype: str | None, region_col: str, periode: str | int
 ) -> tuple[
@@ -175,25 +172,6 @@ def _restore_dtype(result: Any, orig: Any) -> Any:
     return result
 
 
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#   kernelspec:
-#     display_name: kostra-fellesfunksjoner
-#     language: python
-#     name: kostra-fellesfunksjoner
-# ---
-
-# %% [markdown]
-# ### Innhenting av filer til bruk
-
-
-# %%
-# def mapping_bydeler_oslo(year: str | int = "2015"):
 def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     """Mapping av bydelene i Oslo.
 
@@ -217,8 +195,6 @@ def mapping_bydeler_oslo(year: str | int = "2015") -> pd.DataFrame:
     return klass_bydeler_oslo
 
 
-# %%
-# def hierarki_fra_kommune_til_landet(year : str | int):
 def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     """Mapping av kommunene til landet.
 
@@ -305,7 +281,6 @@ def mapping_fra_kommune_til_landet(year: str | int) -> pd.DataFrame:
     return mapping_kommuner
 
 
-# %%
 def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     """Mapping fra kommune til fylkeskommune.
 
@@ -341,7 +316,6 @@ def mapping_fra_kommune_til_fylkeskommune(year: str | int) -> pd.DataFrame:
     return komm_fylkeskommune_korr_df
 
 
-# %%
 def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     """Mapping fra fylkeskommune til KOSTRA-region (EAFK).
 
@@ -404,7 +378,6 @@ def mapping_fra_fylkeskommune_til_kostraregion(year: str | int) -> pd.DataFrame:
     return fylkeskomm_kostraregion_korr
 
 
-# %%
 def hierarki(
     inputfil: pd.DataFrame,
     aggregeringstype: str | None = None,
@@ -513,7 +486,6 @@ def hierarki(
     )
 
 
-# %%
 def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Legge fylkeskommunedata over på alle tilhørende kommuner.
 
@@ -569,7 +541,6 @@ def overfore_data_fra_fk_til_k(inputfil: pd.DataFrame) -> pd.DataFrame:
     return df_merged
 
 
-# %%
 def _nullable_int_for(dtype: Any) -> Any:
     """Return a pandas nullable integer dtype matching the given dtype name.
 
@@ -695,6 +666,3 @@ def gjennomsnitt_aggregerte_regioner(
         }
         return df, report
     return df
-
-
-# %%

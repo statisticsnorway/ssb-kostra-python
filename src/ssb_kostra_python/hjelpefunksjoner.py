@@ -1,34 +1,13 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.3
-#   kernelspec:
-#     display_name: ssb-kostra-python
-#     language: python
-#     name: ssb-kostra-python
-# ---
-
-# %%
+INPUT_PATCH_TARGET = "builtins.input"
 ALDERSHIERARKI_PATH = (
     "/buckets/delt-kostra-befolkning-delt/aldershierarki/mapping_aldershierarki.parquet"
 )
-
-
-import pandas as pd
-
-INPUT_PATCH_TARGET = "builtins.input"
 from unittest.mock import patch
 
 import duckdb
+import pandas as pd
 from fagfunksjoner import latest_version_path
 from fagfunksjoner.fagfunksjoner_logger import logger
-
-# %%
-# Til v2
 from klass import KlassClassification
 
 from ssb_kostra_python import regionshierarki
@@ -36,7 +15,6 @@ from ssb_kostra_python import summere_kjonn
 from ssb_kostra_python import summere_til_aldersgrupperinger
 
 
-# %%
 def format_fil(
     df_uformatert: pd.DataFrame,
 ) -> pd.DataFrame:
@@ -101,7 +79,6 @@ def format_fil(
     return df_formatert
 
 
-# %%
 def definere_klassifikasjonsvariable(
     inputfil: pd.DataFrame,
 ) -> tuple[list[str], list[str]]:
@@ -175,7 +152,6 @@ def definere_klassifikasjonsvariable(
     return klassifikasjonsvariable, statistikkvariable
 
 
-# %%
 def _konvertere_komma_til_punktdesimal(inputfil: pd.DataFrame) -> pd.DataFrame:
     """Konvertere komma til punktdesimal i datasettet."""
     df = inputfil.copy()
@@ -187,7 +163,6 @@ def _konvertere_komma_til_punktdesimal(inputfil: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# %%
 def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     """Henter, bearbeider og aggregerer folkemengdedata for bydeler per 31.12 for et gitt statistikkår.
 
@@ -340,7 +315,6 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     ].reset_index(drop=True)
 
 
-# %%
 def _hent_folkemengde_kommune_31_12(
     statistikkaar: str | int,
 ) -> tuple[pd.DataFrame, pd.DataFrame | None]:
@@ -595,8 +569,6 @@ def _hent_folkemengde_kommune_31_12(
     return df_folkemengde_31_12, df_folkemengde_31_12_kostra_agg_filtrert
 
 
-# %%
-# def hent_folkemengde_31_12_fk(statistikkaar: str | int) -> pd.DataFrame:
 def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFrame:
     """Henter, aggregerer og grupperer folkemengdedata per 31.12 for et gitt statistikkår.
 
@@ -740,8 +712,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
     return folkemengde_31_12_eafk
 
 
-# %%
-# Til v2
 def _mapping_mellom_aar(
     statistikkaar: int | str,
     regionsnivaa: str = "kommune",
@@ -869,7 +839,6 @@ def _mapping_mellom_aar(
     return df_endringer[kolonner]
 
 
-# %%
 def _regionkolonne(regionsnivaa: str) -> str:
     """Returnerer navnet på regionkolonnen for et gitt regionsnivå.
 
@@ -903,7 +872,6 @@ def _regionkolonne(regionsnivaa: str) -> str:
     raise ValueError("❌regionsnivaa må være 'bydel', 'kommune' eller 'fylkeskommune'.")
 
 
-# %%
 def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
     """Normaliserer en regionkode til forventet strengformat.
 
@@ -943,18 +911,7 @@ def _normaliser_regionkode(verdi: object, regionsnivaa: str) -> str:
 
     return kode.zfill(4)
 
-    # kode = str(verdi).strip()
 
-    # if not kode.isdigit():
-    #     return kode
-
-    # if regionsnivaa == "bydel":
-    #     return kode.zfill(6)
-
-    # return kode.zfill(4)
-
-
-# %%
 def _anvende_kommunereform(
     inputfil: pd.DataFrame,
     mapping: pd.DataFrame | None,

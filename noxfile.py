@@ -25,14 +25,14 @@ package = "ssb_kostra_python"
 python_versions = ["3.13", "3.12", "3.14"]
 python_versions_for_test = python_versions
 nox.needs_version = ">= 2025.2.9"
-nox.options.sessions = (
+nox.options.sessions = [
     "pre-commit",
     "mypy",
     "tests",
     "typeguard",
     "xdoctest",
     "docs-build",
-)
+]
 
 
 def install_poetry_groups(session: Session, *groups: str) -> None:
