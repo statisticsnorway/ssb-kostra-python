@@ -60,7 +60,7 @@ display(folketall_bydeler)
 folketall_bydeler_EAB_navn = hierarki(folketall_bydeler, add_region_names=True)
 
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler_EAB_navn'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_bydeler_EAB_navn'.")
 display(folketall_bydeler_EAB_navn)
 
 # %% [markdown]
@@ -77,7 +77,7 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     folketall_bydeler_EAB = hierarki(folketall_bydeler, add_region_names=True)
 
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler_EAB'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_bydeler_EAB'.")
 display(folketall_bydeler_EAB)
 
 # %%

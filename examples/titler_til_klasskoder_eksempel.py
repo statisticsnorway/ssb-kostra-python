@@ -71,7 +71,7 @@ display(df_folketall_kommuner_formatert)
 df_kommuner_regionsnavn = mapping_regionsnavn(df_folketall_kommuner_formatert)
 
 print("\n")
-print(f"ℹ️Det endelige datasettet er her 'df_kommuner_regionsnavn'.")
+print("ℹ️Det endelige datasettet er her 'df_kommuner_regionsnavn'.")
 display(df_kommuner_regionsnavn)
 # -
 
@@ -141,7 +141,7 @@ df_kommuner_med_kodenavn, sammendrag = kodelister_navn(
 )
 
 print("\n")
-print(f"ℹ️Det endelige datasettet er her 'df_kommuner_med_kodenavn'.")
+print("ℹ️Det endelige datasettet er her 'df_kommuner_med_kodenavn'.")
 display(df_kommuner_med_kodenavn)
 # -
 

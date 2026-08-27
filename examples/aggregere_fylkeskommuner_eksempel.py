@@ -79,7 +79,7 @@ folketall_fylkeskommuner = hierarki(
 )
 
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner'.")
 display(folketall_fylkeskommuner)
 
 # %% [markdown]
@@ -94,7 +94,7 @@ folketall_fylkeskommuner_KOSTRA = hierarki(
 )
 
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner_KOSTRA'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner_KOSTRA'.")
 display(folketall_fylkeskommuner_KOSTRA)
 
 # %% [markdown]
@@ -128,7 +128,7 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     )
 # Viser tabell
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner_KOSTRA'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_fylkeskommuner_KOSTRA'.")
 display(folketall_fylkeskommuner_KOSTRA)
 
 # %%

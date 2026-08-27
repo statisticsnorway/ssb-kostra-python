@@ -81,7 +81,7 @@ display(df_folketall_kommuner_navn)
 folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner_navn, add_region_names=True)
 
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_kommuner_KOSTRA'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_kommuner_KOSTRA'.")
 display(folketall_kommuner_KOSTRA)
 
 # %% [markdown]
@@ -98,7 +98,7 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
     folketall_kommuner_KOSTRA = hierarki(df_folketall_kommuner, add_region_names=True)
 
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_kommuner_KOSTRA'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_kommuner_KOSTRA'.")
 display(folketall_kommuner_KOSTRA)
 
 # %%

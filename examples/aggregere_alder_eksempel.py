@@ -52,7 +52,7 @@ filsti_folkemengde_bydeler = latest_version_path(
 folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
 # Viser datasettet.
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_bydeler'.")
 display(folketall_bydeler)
 
 # %% [markdown]
@@ -82,7 +82,7 @@ with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
 
 # Viser datasettet
 print("\n")
-print(f"ℹ️Det endelige datasettet heter her 'folketall_bydeler_alder'.")
+print("ℹ️Det endelige datasettet heter her 'folketall_bydeler_alder'.")
 display(folketall_bydeler_alder)
 
 # %%

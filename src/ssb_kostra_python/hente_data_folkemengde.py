@@ -234,7 +234,6 @@ def hente_data_folkemengde(
             statistikkaar=statistikkaar,
             regionsnivaa=regionsnivaa,
         )
-        
 
         if mapping is None or mapping.empty:
             logger.info(
