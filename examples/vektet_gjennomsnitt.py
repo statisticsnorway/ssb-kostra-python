@@ -13,7 +13,9 @@ from ssb_kostra_python.titler_til_klasskoder import mapping_regionsnavn
 
 from ssb_kostra_python.regionshierarki import _validate_and_normalize_region_col, _select_mapping, _postprocess_combined
 from fagfunksjoner.fagfunksjoner_logger import logger
+from ssb_kostra_python import summere_kjonn
 from typing import Any, cast
+import pandas as pd
 
 # +
 statistikkaar = 2024
@@ -202,8 +204,106 @@ display(
 
 display(rapport_nan["utelatte_observasjoner"])
 
+# +
+df_test_missing_weight = df_test.copy()
 
+df_test_missing_weight.loc[
+    df_test_missing_weight["kommuneregion"] == "4634",
+    "personer",
+] = np.nan
+
+display(
+    df_test_missing_weight.loc[
+        df_test_missing_weight["kommuneregion"] == "4634"
+    ]
+)
 # -
+
+resultat_missing_weight, rapport_missing_weight = (
+    vektet_gjennomsnitt_aggregerte_regioner(
+        inputfil=df_test_missing_weight,
+        statistikkvariable=[
+            "personer",
+            "formuesskatt_prosent",
+            "voldsdom_prosent",
+        ],
+        vektede_variable={
+            "formuesskatt_prosent": "personer",
+            "voldsdom_prosent": "personer",
+        },
+        decimals=2,
+        return_report=True,
+    )
+)
+
+# +
+display(
+    resultat_missing_weight.loc[
+        resultat_missing_weight["kommuneregion"] == "EKG14"
+    ]
+)
+
+display(
+    rapport_missing_weight["utelatte_observasjoner"]
+)
+# -
+
+df_test_flere_nan = df_test.copy()
+
+# +
+# 5026: target mangler, men vekten finnes
+df_test_flere_nan.loc[
+    df_test_flere_nan["kommuneregion"] == "5026",
+    "formuesskatt_prosent",
+] = np.nan
+
+# 4634: target finnes, men vekten mangler
+df_test_flere_nan.loc[
+    df_test_flere_nan["kommuneregion"] == "4634",
+    "personer",
+] = np.nan
+
+# 4218: både target og vekt mangler
+df_test_flere_nan.loc[
+    df_test_flere_nan["kommuneregion"] == "4218",
+    ["formuesskatt_prosent", "personer"],
+] = np.nan
+# -
+
+display(
+    df_test_flere_nan.loc[
+        df_test_flere_nan["kommuneregion"].isin(
+            ["5026", "4634", "4218"]
+        )
+    ]
+)
+
+# +
+resultat, rapport_flere_nan = (
+    vektet_gjennomsnitt_aggregerte_regioner(
+        inputfil=df_test_flere_nan,
+        statistikkvariable=[
+            "personer",
+            "formuesskatt_prosent",
+            "voldsdom_prosent",
+        ],
+        vektede_variable={
+            "formuesskatt_prosent": "personer",
+            "voldsdom_prosent": "personer",
+        },
+        decimals=2,
+        return_report=True,
+    )
+)
+
+display(rapport_flere_nan)
+display(resultat)
+# -
+
+display(rapport_flere_nan["utelatte_observasjoner"])
+
+display(rapport_flere_nan["utelatte_observasjoner"])
+
 
 def vektet_gjennomsnitt_aggregerte_regioner(
     inputfil: pd.DataFrame,
@@ -578,18 +678,57 @@ def vektet_gjennomsnitt_aggregerte_regioner(
             numerator_col,
             denominator_col,
         )
-
+        ###
         manglende_verdi = df[target_col].isna()
         manglende_vekt = df[weight_col].isna()
         excluded = manglende_verdi | manglende_vekt
-
+        
         if excluded.any():
-            logger.warning(
-                f"⚠️ '{target_col}' har {int(excluded.sum())} "
-                "observasjon(er) som ikke kan inngå i beregningen av "
-                "vektet gjennomsnitt."
-            )
-
+            kun_manglende_verdi = manglende_verdi & ~manglende_vekt
+            kun_manglende_vekt = ~manglende_verdi & manglende_vekt
+            mangler_begge = manglende_verdi & manglende_vekt
+        
+            antall_manglende_verdi = int(kun_manglende_verdi.sum())
+            antall_manglende_vekt = int(kun_manglende_vekt.sum())
+            antall_mangler_begge = int(mangler_begge.sum())
+            antall_utelatte = int(excluded.sum())
+        
+            warning_lines = [
+                f"⚠️ '{target_col}':",
+                (
+                    f"{antall_utelatte} observasjon(er) utelates fra "
+                    "beregningen av vektet gjennomsnitt:"
+                ),
+            ]
+        
+            if antall_manglende_verdi:
+                warning_lines.append(
+                    f"- {antall_manglende_verdi} med manglende verdi"
+                )
+        
+            if antall_manglende_vekt:
+                warning_lines.append(
+                    f"- {antall_manglende_vekt} med manglende vekt"
+                )
+        
+            if antall_mangler_begge:
+                warning_lines.append(
+                    f"- {antall_mangler_begge} med både manglende verdi og vekt"
+                )
+        
+            if antall_manglende_verdi or antall_mangler_begge:
+                warning_lines.extend(
+                    [
+                        "",
+                        (
+                            "Dersom en manglende verdi egentlig betyr 0, må "
+                            "inputdatasettet korrigeres før funksjonen kjøres."
+                        ),
+                    ]
+                )
+        
+            logger.warning("\n".join(warning_lines))
+        
             for idx in df.index[excluded]:
                 if manglende_verdi.loc[idx] and manglende_vekt.loc[idx]:
                     reason = "manglende verdi og vekt"
@@ -597,7 +736,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                     reason = "manglende verdi"
                 else:
                     reason = "manglende vekt"
-
+        
                 record: dict[str, Any] = {
                     "variabel": target_col,
                     "vektvariabel": weight_col,
@@ -606,30 +745,12 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                     "verdi": df.at[idx, target_col],
                     "vekt": df.at[idx, weight_col],
                 }
-
+        
                 for class_col in rapport_klassifikasjonsvariable:
                     record[class_col] = df.at[idx, class_col]
-
+        
                 excluded_records.append(record)
-
-            known_excluded_weight = df.loc[
-                manglende_verdi & df[weight_col].notna(),
-                weight_col,
-            ].sum(min_count=1)
-
-            included_weight = df.loc[
-                valid,
-                weight_col,
-            ].sum(min_count=1)
-
-            logger.warning(
-                f"Gyldig vekt for '{target_col}': "
-                f"{included_weight}. "
-                "Kjent vekt som utelates på grunn av manglende "
-                f"verdi: {known_excluded_weight}. "
-                "Dersom en manglende verdi egentlig betyr 0, må "
-                "inputdatasettet korrigeres før funksjonen kjøres."
-            )
+            ###
 
     for i, target_col in enumerate(gjennomsnittsvariable):
         count_col = f"__gjennomsnitt_{i}_antall"
