@@ -943,3 +943,235 @@ class TestVektetGjennomsnittAggregerteRegioner:
     
         assert kjonn_2["personer"] == 400.0
         assert kjonn_2["vektet_indeks"] == 35.0
+
+
+    def test_vis_rapport_styrer_visning_av_utelatte_observasjoner(
+        self, mocker
+    ):
+        input_df = pd.DataFrame(
+            {
+                "periode": ["2024", "2024"],
+                "kommuneregion": ["0101", "0102"],
+                "personer": [100.0, 300.0],
+                "vektet_indeks": [10.0, None],
+            }
+        )
+    
+        mapping = pd.DataFrame(
+            {
+                "from": ["0101", "0102"],
+                "to": ["EKA01", "EKA01"],
+            }
+        )
+    
+        mocker.patch(
+            "ssb_kostra_python.regionshierarki._select_mapping",
+            return_value=(
+                mapping,
+                "kommuneregion",
+                "kommuneregion",
+                None,
+                None,
+            ),
+        )
+    
+        mock_display = mocker.patch(
+            "ssb_kostra_python.regionshierarki.display"
+        )
+    
+        vektet_gjennomsnitt_aggregerte_regioner(
+            inputfil=input_df,
+            statistikkvariable=[
+                "personer",
+                "vektet_indeks",
+            ],
+            vektede_variable={
+                "vektet_indeks": "personer",
+            },
+            vis_rapport=False,
+        )
+    
+        mock_display.assert_not_called()
+    
+        vektet_gjennomsnitt_aggregerte_regioner(
+            inputfil=input_df,
+            statistikkvariable=[
+                "personer",
+                "vektet_indeks",
+            ],
+            vektede_variable={
+                "vektet_indeks": "personer",
+            },
+            vis_rapport=True,
+        )
+    
+        mock_display.assert_called_once()
+
+
+    def test_vanlig_gjennomsnitt_med_alle_verdier_manglende_rapporteres(
+        self, mocker
+    ):
+        input_df = pd.DataFrame(
+            {
+                "periode": ["2024", "2024"],
+                "kommuneregion": ["0101", "0102"],
+                "personer": [100.0, 300.0],
+                "vanlig_indeks": [np.nan, np.nan],
+            }
+        )
+    
+        mapping = pd.DataFrame(
+            {
+                "from": ["0101", "0102"],
+                "to": ["EKA01", "EKA01"],
+            }
+        )
+    
+        mocker.patch(
+            "ssb_kostra_python.regionshierarki._select_mapping",
+            return_value=(
+                mapping,
+                "kommuneregion",
+                "kommuneregion",
+                None,
+                None,
+            ),
+        )
+    
+        resultat, rapport = vektet_gjennomsnitt_aggregerte_regioner(
+            inputfil=input_df,
+            statistikkvariable=[
+                "personer",
+                "vanlig_indeks",
+            ],
+            gjennomsnittsvariable=["vanlig_indeks"],
+            return_report=True,
+        )
+    
+        aggregert = resultat.loc[
+            resultat["kommuneregion"] == "EKA01"
+        ].iloc[0]
+    
+        assert pd.isna(aggregert["vanlig_indeks"])
+    
+        problemer = rapport["aggregerte_problemer"]
+    
+        assert len(problemer) == 1
+        assert problemer.iloc[0]["variabel"] == "vanlig_indeks"
+        assert problemer.iloc[0]["region"] == "EKA01"
+        assert problemer.iloc[0]["grunn"] == "alle observasjoner mangler"
+
+    def test_tomme_rapporttabeller_beholder_forventede_kolonner(
+        self, mocker
+    ):
+        input_df = pd.DataFrame(
+            {
+                "periode": ["2024", "2024"],
+                "kommuneregion": ["0101", "0102"],
+                "personer": [100.0, 300.0],
+                "vektet_indeks": [10.0, 20.0],
+            }
+        )
+    
+        mapping = pd.DataFrame(
+            {
+                "from": ["0101", "0102"],
+                "to": ["EKA01", "EKA01"],
+            }
+        )
+    
+        mocker.patch(
+            "ssb_kostra_python.regionshierarki._select_mapping",
+            return_value=(
+                mapping,
+                "kommuneregion",
+                "kommuneregion",
+                None,
+                None,
+            ),
+        )
+    
+        _, rapport = vektet_gjennomsnitt_aggregerte_regioner(
+            inputfil=input_df,
+            statistikkvariable=[
+                "personer",
+                "vektet_indeks",
+            ],
+            vektede_variable={
+                "vektet_indeks": "personer",
+            },
+            return_report=True,
+        )
+    
+        utelatte = rapport["utelatte_observasjoner"]
+        problemer = rapport["aggregerte_problemer"]
+    
+        assert utelatte.empty
+        assert list(utelatte.columns) == [
+            "variabel",
+            "vektvariabel",
+            "region",
+            "grunn",
+            "verdi",
+            "vekt",
+            "periode",
+        ]
+    
+        assert problemer.empty
+        assert list(problemer.columns) == [
+            "variabel",
+            "region",
+            "grunn",
+        ]
+
+    def test_flere_perioder_gir_keyerror(self):
+        input_df = pd.DataFrame(
+            {
+                "periode": ["2024", "2025"],
+                "kommuneregion": ["0101", "0102"],
+                "personer": [100.0, 300.0],
+            }
+        )
+    
+        with pytest.raises(KeyError, match="Mer enn 1 periode"):
+            vektet_gjennomsnitt_aggregerte_regioner(
+                inputfil=input_df,
+                statistikkvariable=["personer"],
+            )
+
+    def test_manglende_periode_gir_valueerror(self):
+        input_df = pd.DataFrame(
+            {
+                "periode": ["2024", np.nan],
+                "kommuneregion": ["0101", "0102"],
+                "personer": [100.0, 300.0],
+            }
+        )
+    
+        with pytest.raises(
+            ValueError,
+            match="Kolonnen 'periode' inneholder manglende verdier",
+        ):
+            vektet_gjennomsnitt_aggregerte_regioner(
+                inputfil=input_df,
+                statistikkvariable=["personer"],
+            )
+
+    def test_variabel_kan_ikke_brukes_som_sin_egen_vekt(self):
+        df = pd.DataFrame(
+            {
+                "periode": ["2024", "2024"],
+                "kommuneregion": ["0301", "1101"],
+                "inntekt": [100.0, 200.0],
+            }
+        )
+    
+        with pytest.raises(
+            ValueError,
+            match="En variabel kan ikke brukes som sin egen vekt",
+        ):
+            vektet_gjennomsnitt_aggregerte_regioner(
+                inputfil=df,
+                statistikkvariable=["inntekt"],
+                vektede_variable={"inntekt": "inntekt"},
+            )
