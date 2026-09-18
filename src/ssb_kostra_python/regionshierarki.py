@@ -676,10 +676,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     vektede_variable: dict[str, str] | None = None,
     gjennomsnittsvariable: list[str] | None = None,
     aggregeringstype: str | None = None,
-    decimals: int | None = None,
-    restore_original_dtype: bool = False,
     add_region_names: bool = False,
-    vis_rapport: bool = False,
     return_report: bool = False,
 ) -> pd.DataFrame | tuple[pd.DataFrame, dict[str, Any]]:
     """Aggreger regioner med sum, gjennomsnitt og vektet gjennomsnitt.
@@ -753,27 +750,13 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     aggregeringstype:
         Samme regionale aggregeringstyper som brukes av ``hierarki``.
 
-    decimals:
-        Antall desimaler for beregnede gjennomsnitt. Dersom ``None``,
-        beholdes full beregnet presisjon.
-
-    restore_original_dtype:
-        Dersom ``True``, forsøkes opprinnelig dtype gjenopprettet for
-        gjennomsnittsvariablene. Standard er ``False`` fordi et gjennomsnitt
-        av heltall kan være et desimaltall.
-
     add_region_names:
         Dersom ``True``, legges regionsnavn til gjennom eksisterende
         etterbehandling.
-
-    vis_rapport:
-        Dersom ``True``, vises tabeller med utelatte observasjoner og
-        problemer på aggregert nivå dersom slike finnes. Standard er
-        ``False``.
     
     return_report:
         Dersom ``True``, returneres også en rapport som dictionary.
-        Rapporten inneholder informasjon om variabelbehandling og dtype,
+        Rapporten inneholder informasjon om variabelbehandling,
         samt DataFrame-objektene ``utelatte_observasjoner`` og
         ``aggregerte_problemer``.
 
@@ -1031,15 +1014,6 @@ def vektet_gjennomsnitt_aggregerte_regioner(
         f"Summeres: {summeres}"
     )
 
-    # Dtypes før beregning
-    gjennomsnittskolonner = list(
-        dict.fromkeys(vektede_kolonner + gjennomsnittsvariable)
-    )
-
-    original_dtypes: dict[str, Any] = cast(
-        dict[str, Any],
-        df[gjennomsnittskolonner].dtypes.to_dict(),
-    )
 
     # ---------------------------------------------------------
     # Midlertidige kolonner og rapport om utelatte observasjoner
@@ -1227,10 +1201,6 @@ def vektet_gjennomsnitt_aggregerte_regioner(
         denominator_col,
     ) in weighted_temp.items():
         result = df_agg[numerator_col] / df_agg[denominator_col]
-
-        if decimals is not None:
-            result = result.round(decimals)
-
         df_agg[target_col] = result
 
         ugyldig_nevner = (
@@ -1265,10 +1235,6 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     # ---------------------------------------------------------
     for target_col, count_col in mean_temp.items():
         result = df_agg[target_col] / df_agg[count_col]
-
-        if decimals is not None:
-            result = result.round(decimals)
-
         df_agg[target_col] = result
 
         ingen_observasjoner = df_agg[count_col].isna()
@@ -1313,26 +1279,6 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     )
 
     # ---------------------------------------------------------
-    # Dtype-håndtering
-    # ---------------------------------------------------------
-    post_op_dtypes: dict[str, Any] = cast(
-        dict[str, Any],
-        df_combined[gjennomsnittskolonner].dtypes.to_dict(),
-    )
-
-    if restore_original_dtype:
-        for col in gjennomsnittskolonner:
-            df_combined[col] = _restore_dtype(
-                df_combined[col],
-                original_dtypes[col],
-            )
-
-    final_dtypes: dict[str, Any] = cast(
-        dict[str, Any],
-        df_combined[gjennomsnittskolonner].dtypes.to_dict(),
-    )
-
-    # ---------------------------------------------------------
     # Samme etterbehandling som hierarki()
     # ---------------------------------------------------------
     df_combined = _postprocess_combined(
@@ -1366,20 +1312,19 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     )
 
 
-    if vis_rapport:
-        if excluded_df.empty and aggregerte_problemer_df.empty:
-            print(
-                "\n✅ Ingen utelatte observasjoner eller "
-                "aggregerte problemer å rapportere."
-            )
-    
-        if not excluded_df.empty:
-            print("\n⚠️ Utelatte observasjoner:")
-            display(excluded_df)
-    
-        if not aggregerte_problemer_df.empty:
-            print("\n⚠️ Aggregerte problemer:")
-            display(aggregerte_problemer_df)
+    if excluded_df.empty and aggregerte_problemer_df.empty:
+        print(
+            "\n✅ Ingen utelatte observasjoner eller "
+            "aggregerte problemer å rapportere."
+        )
+
+    if not excluded_df.empty:
+        print("\n⚠️ Utelatte observasjoner:")
+        display(excluded_df)
+
+    if not aggregerte_problemer_df.empty:
+        print("\n⚠️ Aggregerte problemer:")
+        display(aggregerte_problemer_df)
     
     if return_report:
         report: dict[str, Any] = {
@@ -1396,11 +1341,6 @@ def vektet_gjennomsnitt_aggregerte_regioner(
             },
             "utelatte_observasjoner": excluded_df,
             "aggregerte_problemer": aggregerte_problemer_df,
-            "dtype": {
-                "original": original_dtypes,
-                "post_op": post_op_dtypes,
-                "final": final_dtypes,
-            },
         }
     
         return df_combined, report
