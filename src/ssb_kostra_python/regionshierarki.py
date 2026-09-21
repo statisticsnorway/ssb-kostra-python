@@ -1,10 +1,10 @@
 from collections.abc import Callable
 from typing import Any
 from typing import cast
-from IPython.display import display
 
 import pandas as pd
 from fagfunksjoner.fagfunksjoner_logger import logger
+from IPython.display import display
 from klass import KlassClassification
 from klass import KlassCorrespondence
 from pandas.api.types import is_bool_dtype
@@ -753,7 +753,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     add_region_names:
         Dersom ``True``, legges regionsnavn til gjennom eksisterende
         etterbehandling.
-    
+
     return_report:
         Dersom ``True``, returneres også en rapport som dictionary.
         Rapporten inneholder informasjon om variabelbehandling,
@@ -794,25 +794,21 @@ def vektet_gjennomsnitt_aggregerte_regioner(
         df = df.drop(columns=region_names, errors="ignore")
 
     if "periode" not in df.columns:
-        raise KeyError(
-            "Datasettet mangler obligatorisk kolonne 'periode'."
-        )
-    
+        raise KeyError("Datasettet mangler obligatorisk kolonne 'periode'.")
+
     if df["periode"].isna().any():
-        raise ValueError(
-            "Kolonnen 'periode' inneholder manglende verdier."
-        )
-    
+        raise ValueError("Kolonnen 'periode' inneholder manglende verdier.")
+
     antall_perioder = df["periode"].nunique()
-    
+
     if antall_perioder == 0:
         raise ValueError(
             "Datasettet inneholder ingen observasjoner med gyldig periode."
         )
-    
+
     if antall_perioder > 1:
         raise KeyError("Mer enn 1 periode i datasettet")
-    
+
     df["periode"] = df["periode"].astype(str)
     periode = df["periode"].iloc[0]
 
@@ -833,9 +829,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     faste_klassifikasjonsvariable = ["periode", region_col]
 
     alle_klassifikasjonsvariable = list(
-        dict.fromkeys(
-            faste_klassifikasjonsvariable + klassifikasjonsvariable
-        )
+        dict.fromkeys(faste_klassifikasjonsvariable + klassifikasjonsvariable)
     )
 
     # ---------------------------------------------------------
@@ -843,9 +837,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     # ---------------------------------------------------------
     if statistikkvariable is None:
         statistikkvariable = [
-            col
-            for col in df.columns
-            if col not in alle_klassifikasjonsvariable
+            col for col in df.columns if col not in alle_klassifikasjonsvariable
         ]
         logger.info(
             "ℹ️ Statistikkvariable er ikke oppgitt eksplisitt. "
@@ -864,21 +856,15 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                 f"{manglende_statistikkvariable}"
             )
 
-        overlapp = sorted(
-            set(statistikkvariable) & set(alle_klassifikasjonsvariable)
-        )
+        overlapp = sorted(set(statistikkvariable) & set(alle_klassifikasjonsvariable))
         if overlapp:
             raise ValueError(
                 "Følgende variable er oppgitt både som klassifikasjonsvariable "
                 f"og statistikkvariable: {overlapp}"
             )
 
-        klassifiserte = set(alle_klassifikasjonsvariable) | set(
-            statistikkvariable
-        )
-        uklassifiserte = [
-            col for col in df.columns if col not in klassifiserte
-        ]
+        klassifiserte = set(alle_klassifikasjonsvariable) | set(statistikkvariable)
+        uklassifiserte = [col for col in df.columns if col not in klassifiserte]
 
         if uklassifiserte:
             raise ValueError(
@@ -892,9 +878,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     # ---------------------------------------------------------
     vektede_kolonner = list(vektede_variable.keys())
 
-    manglende_vektede = [
-        col for col in vektede_kolonner if col not in df.columns
-    ]
+    manglende_vektede = [col for col in vektede_kolonner if col not in df.columns]
     if manglende_vektede:
         raise KeyError(
             "Følgende variable som skal vektes finnes ikke i datasettet: "
@@ -902,16 +886,11 @@ def vektet_gjennomsnitt_aggregerte_regioner(
         )
 
     manglende_vekter = sorted(
-        {
-            weight
-            for weight in vektede_variable.values()
-            if weight not in df.columns
-        }
+        {weight for weight in vektede_variable.values() if weight not in df.columns}
     )
     if manglende_vekter:
         raise KeyError(
-            "Følgende vektvariable finnes ikke i datasettet: "
-            f"{manglende_vekter}"
+            f"Følgende vektvariable finnes ikke i datasettet: {manglende_vekter}"
         )
 
     manglende_gjennomsnittsvariable = [
@@ -923,22 +902,16 @@ def vektet_gjennomsnitt_aggregerte_regioner(
             f"{manglende_gjennomsnittsvariable}"
         )
 
-    overlapp_gjennomsnitt = sorted(
-        set(vektede_kolonner) & set(gjennomsnittsvariable)
-    )
+    overlapp_gjennomsnitt = sorted(set(vektede_kolonner) & set(gjennomsnittsvariable))
     if overlapp_gjennomsnitt:
         raise ValueError(
             "Samme variabel kan ikke beregnes både som vektet og vanlig "
             f"gjennomsnitt: {overlapp_gjennomsnitt}"
         )
 
-    spesialvariable = set(vektede_kolonner) | set(
-        gjennomsnittsvariable
-    )
+    spesialvariable = set(vektede_kolonner) | set(gjennomsnittsvariable)
 
-    ikke_statistikkvariable = sorted(
-        spesialvariable - set(statistikkvariable)
-    )
+    ikke_statistikkvariable = sorted(spesialvariable - set(statistikkvariable))
     if ikke_statistikkvariable:
         raise ValueError(
             "Variable som skal gjennomsnittsberegnes må også være definert "
@@ -949,11 +922,9 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     vektvariable = sorted(set(vektede_variable.values()))
 
     samme_variabel_og_vekt = sorted(
-        target
-        for target, weight in vektede_variable.items()
-        if target == weight
+        target for target, weight in vektede_variable.items() if target == weight
     )
-    
+
     if samme_variabel_og_vekt:
         raise ValueError(
             "En variabel kan ikke brukes som sin egen vekt. "
@@ -961,9 +932,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
             f"{samme_variabel_og_vekt}"
         )
 
-    vekt_ikke_statistikkvariable = sorted(
-        set(vektvariable) - set(statistikkvariable)
-    )
+    vekt_ikke_statistikkvariable = sorted(set(vektvariable) - set(statistikkvariable))
     if vekt_ikke_statistikkvariable:
         raise ValueError(
             "Vektvariable må være definert som statistikkvariable. "
@@ -974,9 +943,8 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     # Numerisk validering
     # ---------------------------------------------------------
     for col in statistikkvariable:
-        if (
-            not pd.api.types.is_numeric_dtype(df[col])
-            or pd.api.types.is_bool_dtype(df[col])
+        if not pd.api.types.is_numeric_dtype(df[col]) or pd.api.types.is_bool_dtype(
+            df[col]
         ):
             raise TypeError(
                 f"Statistikkvariabelen '{col}' må være numerisk. "
@@ -986,9 +954,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     for weight_col in vektvariable:
         if (df[weight_col].dropna() < 0).any():
             negative_regioner = (
-                df.loc[df[weight_col] < 0, region_col]
-                .astype(str)
-                .tolist()
+                df.loc[df[weight_col] < 0, region_col].astype(str).tolist()
             )
             raise ValueError(
                 f"Vektvariabelen '{weight_col}' inneholder negative verdier "
@@ -999,11 +965,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     # ---------------------------------------------------------
     # Vis hvordan brukerens valg tolkes
     # ---------------------------------------------------------
-    summeres = [
-        col
-        for col in statistikkvariable
-        if col not in spesialvariable
-    ]
+    summeres = [col for col in statistikkvariable if col not in spesialvariable]
 
     logger.info(
         "ℹ️ Variablene behandles slik:\n"
@@ -1014,7 +976,6 @@ def vektet_gjennomsnitt_aggregerte_regioner(
         f"Summeres: {summeres}"
     )
 
-
     # ---------------------------------------------------------
     # Midlertidige kolonner og rapport om utelatte observasjoner
     # ---------------------------------------------------------
@@ -1024,14 +985,10 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     excluded_records: list[dict[str, Any]] = []
 
     rapport_klassifikasjonsvariable = [
-        col
-        for col in alle_klassifikasjonsvariable
-        if col != region_col
+        col for col in alle_klassifikasjonsvariable if col != region_col
     ]
 
-    for i, (target_col, weight_col) in enumerate(
-        vektede_variable.items()
-    ):
+    for i, (target_col, weight_col) in enumerate(vektede_variable.items()):
         numerator_col = f"__vektet_{i}_teller"
         denominator_col = f"__vektet_{i}_nevner"
 
@@ -1044,9 +1001,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
 
         valid = df[target_col].notna() & df[weight_col].notna()
 
-        df[numerator_col] = (
-            df[target_col] * df[weight_col]
-        ).where(valid)
+        df[numerator_col] = (df[target_col] * df[weight_col]).where(valid)
 
         df[denominator_col] = df[weight_col].where(valid)
 
@@ -1055,21 +1010,21 @@ def vektet_gjennomsnitt_aggregerte_regioner(
             numerator_col,
             denominator_col,
         )
-        
+
         manglende_verdi = df[target_col].isna()
         manglende_vekt = df[weight_col].isna()
         excluded = manglende_verdi | manglende_vekt
-        
+
         if excluded.any():
             kun_manglende_verdi = manglende_verdi & ~manglende_vekt
             kun_manglende_vekt = ~manglende_verdi & manglende_vekt
             mangler_begge = manglende_verdi & manglende_vekt
-        
+
             antall_manglende_verdi = int(kun_manglende_verdi.sum())
             antall_manglende_vekt = int(kun_manglende_vekt.sum())
             antall_mangler_begge = int(mangler_begge.sum())
             antall_utelatte = int(excluded.sum())
-        
+
             warning_lines = [
                 f"⚠️ '{target_col}':",
                 (
@@ -1077,22 +1032,18 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                     "beregningen av vektet gjennomsnitt:"
                 ),
             ]
-        
+
             if antall_manglende_verdi:
-                warning_lines.append(
-                    f"- {antall_manglende_verdi} med manglende verdi"
-                )
-        
+                warning_lines.append(f"- {antall_manglende_verdi} med manglende verdi")
+
             if antall_manglende_vekt:
-                warning_lines.append(
-                    f"- {antall_manglende_vekt} med manglende vekt"
-                )
-        
+                warning_lines.append(f"- {antall_manglende_vekt} med manglende vekt")
+
             if antall_mangler_begge:
                 warning_lines.append(
                     f"- {antall_mangler_begge} med både manglende verdi og vekt"
                 )
-        
+
             if antall_manglende_verdi or antall_mangler_begge:
                 warning_lines.extend(
                     [
@@ -1103,9 +1054,9 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                         ),
                     ]
                 )
-        
+
             logger.warning("\n".join(warning_lines))
-        
+
             for idx in df.index[excluded]:
                 if manglende_verdi.loc[idx] and manglende_vekt.loc[idx]:
                     reason = "manglende verdi og vekt"
@@ -1113,7 +1064,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                     reason = "manglende verdi"
                 else:
                     reason = "manglende vekt"
-        
+
                 record: dict[str, Any] = {
                     "variabel": target_col,
                     "vektvariabel": weight_col,
@@ -1122,12 +1073,11 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                     "verdi": df.at[idx, target_col],
                     "vekt": df.at[idx, weight_col],
                 }
-        
+
                 for class_col in rapport_klassifikasjonsvariable:
                     record[class_col] = df.at[idx, class_col]
-        
+
                 excluded_records.append(record)
-            
 
     for i, target_col in enumerate(gjennomsnittsvariable):
         count_col = f"__gjennomsnitt_{i}_antall"
@@ -1140,20 +1090,13 @@ def vektet_gjennomsnitt_aggregerte_regioner(
 
         valid = df[target_col].notna()
 
-        df[count_col] = (
-            valid.astype("float64")
-            .replace(0.0, float("nan"))
-        )
+        df[count_col] = valid.astype("float64").replace(0.0, float("nan"))
 
         temp_cols.append(count_col)
         mean_temp[target_col] = count_col
 
         if (~valid).any():
-            manglende_regioner = (
-                df.loc[~valid, region_col]
-                .astype(str)
-                .tolist()
-            )
+            manglende_regioner = df.loc[~valid, region_col].astype(str).tolist()
             logger.warning(
                 f"⚠️ '{target_col}' har manglende verdier for "
                 f"{int((~valid).sum())} observasjoner. "
@@ -1164,12 +1107,10 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     # ---------------------------------------------------------
     # Bruk samme regionale mapping som hierarki()
     # ---------------------------------------------------------
-    mappingfil, join_col, replace_col, post_filter, rename_cols = (
-        _select_mapping(
-            aggregeringstype,
-            region_col,
-            periode,
-        )
+    mappingfil, join_col, replace_col, post_filter, rename_cols = _select_mapping(
+        aggregeringstype,
+        region_col,
+        periode,
     )
 
     df_merged = df.merge(
@@ -1181,9 +1122,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
 
     df_merged[replace_col] = df_merged["to"]
 
-    aggregeringskolonner = list(
-        dict.fromkeys(statistikkvariable + temp_cols)
-    )
+    aggregeringskolonner = list(dict.fromkeys(statistikkvariable + temp_cols))
 
     df_agg = df_merged.groupby(
         alle_klassifikasjonsvariable,
@@ -1203,16 +1142,11 @@ def vektet_gjennomsnitt_aggregerte_regioner(
         result = df_agg[numerator_col] / df_agg[denominator_col]
         df_agg[target_col] = result
 
-        ugyldig_nevner = (
-            df_agg[denominator_col].isna()
-            | (df_agg[denominator_col] == 0)
-        )
+        ugyldig_nevner = df_agg[denominator_col].isna() | (df_agg[denominator_col] == 0)
 
         if ugyldig_nevner.any():
             problem_regioner = (
-                df_agg.loc[ugyldig_nevner, region_col]
-                .astype(str)
-                .tolist()
+                df_agg.loc[ugyldig_nevner, region_col].astype(str).tolist()
             )
 
             logger.warning(
@@ -1241,9 +1175,7 @@ def vektet_gjennomsnitt_aggregerte_regioner(
 
         if ingen_observasjoner.any():
             problem_regioner = (
-                df_agg.loc[ingen_observasjoner, region_col]
-                .astype(str)
-                .tolist()
+                df_agg.loc[ingen_observasjoner, region_col].astype(str).tolist()
             )
 
             logger.warning(
@@ -1261,16 +1193,12 @@ def vektet_gjennomsnitt_aggregerte_regioner(
                     }
                 )
 
-    
-
     # ---------------------------------------------------------
     # Fjern hjelpekolonner før original + aggregert kombineres
     # ---------------------------------------------------------
     df_agg = df_agg.drop(columns=temp_cols)
 
-    original_columns = (
-        alle_klassifikasjonsvariable + statistikkvariable
-    )
+    original_columns = alle_klassifikasjonsvariable + statistikkvariable
     df_original = df[original_columns].copy()
 
     df_combined = pd.concat(
@@ -1311,7 +1239,6 @@ def vektet_gjennomsnitt_aggregerte_regioner(
         ],
     )
 
-
     if excluded_df.empty and aggregerte_problemer_df.empty:
         print(
             "\n✅ Ingen utelatte observasjoner eller "
@@ -1325,24 +1252,20 @@ def vektet_gjennomsnitt_aggregerte_regioner(
     if not aggregerte_problemer_df.empty:
         print("\n⚠️ Aggregerte problemer:")
         display(aggregerte_problemer_df)
-    
+
     if return_report:
         report: dict[str, Any] = {
             "variabelbehandling": {
-                "klassifikasjonsvariable": (
-                    alle_klassifikasjonsvariable
-                ),
+                "klassifikasjonsvariable": (alle_klassifikasjonsvariable),
                 "statistikkvariable": statistikkvariable,
                 "vektede_variable": vektede_variable,
-                "gjennomsnittsvariable": (
-                    gjennomsnittsvariable
-                ),
+                "gjennomsnittsvariable": (gjennomsnittsvariable),
                 "summeres": summeres,
             },
             "utelatte_observasjoner": excluded_df,
             "aggregerte_problemer": aggregerte_problemer_df,
         }
-    
+
         return df_combined, report
-    
+
     return df_combined

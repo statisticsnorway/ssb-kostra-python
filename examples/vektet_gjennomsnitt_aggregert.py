@@ -1,20 +1,14 @@
 # +
 INPUT_PATCH_TARGET = "builtins.input"
-from unittest.mock import patch
 
 import duckdb
+import numpy as np
 from fagfunksjoner import latest_version_path
 from IPython.display import display  # for nice tables in notebooks
 
-from ssb_kostra_python.regionshierarki import hierarki
-from ssb_kostra_python.titler_til_klasskoder import mapping_regionsnavn
-
-from ssb_kostra_python.regionshierarki import _validate_and_normalize_region_col, _select_mapping, _postprocess_combined, vektet_gjennomsnitt_aggregerte_regioner
-from fagfunksjoner.fagfunksjoner_logger import logger
 from ssb_kostra_python import summere_kjonn
-from typing import Any, cast
-import pandas as pd
-import numpy as np
+from ssb_kostra_python.regionshierarki import vektet_gjennomsnitt_aggregerte_regioner
+
 # -
 
 # ## Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
@@ -49,7 +43,9 @@ display(df_folketall_kommuner)
 
 # +
 # Kjører funksjonen. folketall_bydeler_sum_kjonn er det endelige datasettet som genereres.
-df_folketall_kommuner_sum_kjonn = summere_kjonn.summere_over_kjonn(df_folketall_kommuner)
+df_folketall_kommuner_sum_kjonn = summere_kjonn.summere_over_kjonn(
+    df_folketall_kommuner
+)
 # Viser det genererte datasettet. Du vil se at kolonnen for kjønn er borte, for nå er kjønnene summert opp.
 
 print("\n")
@@ -61,8 +57,8 @@ display(df_folketall_kommuner_sum_kjonn)
 
 # +
 df_folketall_kommuner_summert_over_kjonn = df_folketall_kommuner_sum_kjonn.groupby(
-        ['periode', 'kommuneregion'], as_index=False, observed=True
-    )['personer'].sum()
+    ["periode", "kommuneregion"], as_index=False, observed=True
+)["personer"].sum()
 
 display(df_folketall_kommuner_summert_over_kjonn)
 # -
@@ -75,9 +71,7 @@ rng = np.random.default_rng(seed=42)
 
 df_test = df_folketall_kommuner_summert_over_kjonn.copy()
 
-df_test["formuesskatt_prosent"] = (
-    rng.integers(0, 26, size=len(df_test)) / 10
-)
+df_test["formuesskatt_prosent"] = rng.integers(0, 26, size=len(df_test)) / 10
 
 df_test["voldsdom_prosent"] = rng.integers(
     0,
@@ -118,7 +112,7 @@ display(df_test.dtypes)
 #     return_report=True,
 # )
 # ```
-# Funksjonen returnerer to objekter. **resultat_visning** er datasettet etter behandling. **return_report** er en oppsummering av prosedyren. Oppsummeringen kan påpeke lite eller mye, avhengig av datasettet som ble brukt i funksjonen. Det ser vi på i neste eksempel. **inputfil** er naturligvis datasettet som skal behandles. **klassifikasjonsvariable** er klassifikasjonsvariablene utenom **periode** og **kommuneregion**. I dette datasettet finnes det ingen slike. Det spiller ingen rolle om du lar feltet stå tomt eller om du legger det inn. I **statistikkvariable** legger du inn statistikkvariablene. I **gjennomsnittsvariable** legger du inn variablene du ønsker å beregne **uvektet gjennomsnitt** av. I dette datasettet er det satt til **antall_avisbud**. I **vektede_variable** må du angi variablene som skal få **vektet gjennomsnitt** på aggregerte regioner, og du må også angi vektvariabelen. For eksempel beregnes det vektede gjennomsnittet av **formuesskatt_prosent** og **voldsdom_prosent** og vekten som brukes er **personer**. **aggregeringstype** kan stort sett stå tom, som ```aggregeringstype = None```, fordi funksjonen automatisk identifiserer regionsnivået på navnet **kommuneregion**, og aggregerer opp til EKA, EKG og EAK(UO). I visse tilfeller er det ønskelig å aggregere videre opp til fylkeskommuneregionsnivå, med EAFK(UO), og denne valgmuligheten er reservert disse tilfellene. 
+# Funksjonen returnerer to objekter. **resultat_visning** er datasettet etter behandling. **return_report** er en oppsummering av prosedyren. Oppsummeringen kan påpeke lite eller mye, avhengig av datasettet som ble brukt i funksjonen. Det ser vi på i neste eksempel. **inputfil** er naturligvis datasettet som skal behandles. **klassifikasjonsvariable** er klassifikasjonsvariablene utenom **periode** og **kommuneregion**. I dette datasettet finnes det ingen slike. Det spiller ingen rolle om du lar feltet stå tomt eller om du legger det inn. I **statistikkvariable** legger du inn statistikkvariablene. I **gjennomsnittsvariable** legger du inn variablene du ønsker å beregne **uvektet gjennomsnitt** av. I dette datasettet er det satt til **antall_avisbud**. I **vektede_variable** må du angi variablene som skal få **vektet gjennomsnitt** på aggregerte regioner, og du må også angi vektvariabelen. For eksempel beregnes det vektede gjennomsnittet av **formuesskatt_prosent** og **voldsdom_prosent** og vekten som brukes er **personer**. **aggregeringstype** kan stort sett stå tom, som ```aggregeringstype = None```, fordi funksjonen automatisk identifiserer regionsnivået på navnet **kommuneregion**, og aggregerer opp til EKA, EKG og EAK(UO). I visse tilfeller er det ønskelig å aggregere videre opp til fylkeskommuneregionsnivå, med EAFK(UO), og denne valgmuligheten er reservert disse tilfellene.
 
 # +
 resultat = vektet_gjennomsnitt_aggregerte_regioner(
@@ -140,7 +134,7 @@ resultat = vektet_gjennomsnitt_aggregerte_regioner(
     return_report=False,
 )
 
-display(resultat) 
+display(resultat)
 
 
 # + endofcell="--"
@@ -168,9 +162,7 @@ df_test_flere_nan.loc[
 
 display(
     df_test_flere_nan.loc[
-        df_test_flere_nan["kommuneregion"].isin(
-            ["5026", "4634", "4218"]
-        )
+        df_test_flere_nan["kommuneregion"].isin(["5026", "4634", "4218"])
     ]
 )
 
@@ -178,9 +170,9 @@ display(df_test_flere_nan)
 # --
 
 # +
-#resultat, rapport = vektet_gjennomsnitt_aggregerte_regioner(
+# resultat, rapport = vektet_gjennomsnitt_aggregerte_regioner(
 # resultat, rapport= vektet_gjennomsnitt_aggregerte_regioner(
-resultat= vektet_gjennomsnitt_aggregerte_regioner(
+resultat = vektet_gjennomsnitt_aggregerte_regioner(
     inputfil=df_test_flere_nan,
     klassifikasjonsvariable=[],
     statistikkvariable=[
@@ -202,7 +194,7 @@ resultat= vektet_gjennomsnitt_aggregerte_regioner(
 
 # display(return_report)
 print("ℹ️Endelig datasett:")
-display(resultat) 
+display(resultat)
 # display(rapport)
 
 
@@ -213,5 +205,3 @@ display(df_test.dtypes)
 print("Etter at NaN er lagt inn:")
 display(df_test_flere_nan.dtypes)
 # -
-
-
