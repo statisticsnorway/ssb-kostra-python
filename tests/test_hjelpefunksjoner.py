@@ -9,6 +9,7 @@ from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python.hjelpefunksjoner import _konvertere_komma_til_punktdesimal
 from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
 from ssb_kostra_python.hjelpefunksjoner import format_fil
+from ssb_kostra_python.hjelpefunksjoner import finn_befolkningsbucket
 
 
 class TestFormatFil:
@@ -159,9 +160,48 @@ class TestKonvertereKommaTilPunktdesimal:
 
         pd.testing.assert_frame_equal(df, df_before)
 
+class TestFinnBefolkningsbucket:
+    def test_finner_egen_bucket(self, mocker: Any) -> None:
+        mock_exists = mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.Path.exists",
+            side_effect=[True],
+        )
+
+        resultat = finn_befolkningsbucket()
+
+        assert resultat == "/buckets/delt-kostra-befolkning-delt"
+        assert mock_exists.call_count == 1
+
+    def test_finner_delt_bucket_nar_egen_ikke_finnes(self, mocker: Any) -> None:
+        mock_exists = mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.Path.exists",
+            side_effect=[False, True],
+        )
+
+        resultat = finn_befolkningsbucket()
+
+        assert resultat == "/buckets/shared/off-fin/kostra-befolkning-delt"
+        assert mock_exists.call_count == 2
+
+    def test_feiler_nar_ingen_bucket_finnes(self, mocker: Any) -> None:
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.Path.exists",
+            return_value=False,
+        )
+
+        with pytest.raises(
+            FileNotFoundError,
+            match="Fant ikke delt-bøtten",
+        ):
+            finn_befolkningsbucket()
 
 class TestHentFolkemengdeBydeler3112:
     def test_hent_folkemengde_bydeler_success(self, mocker: Any) -> None:
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
+            return_value="/buckets/delt-kostra-befolkning-delt",
+        )
+        
         mock_latest_version_path = mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",

@@ -1,7 +1,5 @@
+from pathlib import Path
 INPUT_PATCH_TARGET = "builtins.input"
-ALDERSHIERARKI_PATH = (
-    "/buckets/delt-kostra-befolkning-delt/aldershierarki/mapping_aldershierarki.parquet"
-)
 from unittest.mock import patch
 
 import duckdb
@@ -13,6 +11,23 @@ from klass import KlassClassification
 from ssb_kostra_python import regionshierarki
 from ssb_kostra_python import summere_kjonn
 from ssb_kostra_python import summere_til_aldersgrupperinger
+
+
+def finn_befolkningsbucket() -> str:
+    """Finner tilgjengelig filsti til delt-bøtten til off-fin (S212 KOSTRA Befolkning)."""
+
+    mulige_stier = [
+        Path("/buckets/delt-kostra-befolkning-delt"),
+        Path("/buckets/shared/off-fin/kostra-befolkning-delt"),
+    ]
+
+    for sti in mulige_stier:
+        if sti.exists():
+            return str(sti)
+
+    raise FileNotFoundError(
+        "Fant ikke delt-bøtten til off-fin (S212 KOSTRA Befolkning)."
+    )
 
 
 def format_fil(
@@ -199,7 +214,8 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
     # ---------- Hent filsti ----------
     try:
         statistikkaar = str(statistikkaar)
-        bucket_inndata = f"/buckets/delt-kostra-befolkning-delt/bydeler/{statistikkaar}"
+
+        bucket_inndata = f"{finn_befolkningsbucket()}/bydeler/{statistikkaar}"
 
         bucket_inndata_data_path = latest_version_path(
             f"{bucket_inndata}/folkmengde_bydeler_p{statistikkaar}-12-31"
@@ -232,8 +248,7 @@ def _hent_folkemengde_bydeler_31_12(statistikkaar: str | int) -> pd.DataFrame:
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
             df_sum_med_kjonn = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
-                    folketall_bydeler,
-                    hierarki_path=ALDERSHIERARKI_PATH,
+                    folketall_bydeler
                 )
             )
 
@@ -479,11 +494,9 @@ def _hent_folkemengde_kommune_31_12(
     try:
         predefined_input = "kjonn, alder, to"
         with patch(INPUT_PATCH_TARGET, return_value=predefined_input):
-
             df_folkemengde_31_12_agg_alder = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
-                    df_folkemengde_31_12,
-                    hierarki_path=ALDERSHIERARKI_PATH,
+                    df_folkemengde_31_12
                 )
             )
 
@@ -619,7 +632,6 @@ def _hent_folkemengde_fylkeskommune_31_12(statistikkaar: str | int) -> pd.DataFr
             df_sum_med_kjonn = (
                 summere_til_aldersgrupperinger.summere_til_aldersgrupperinger(
                     df_folkemengde_31_12,
-                    hierarki_path=ALDERSHIERARKI_PATH,
                 )
             )
 

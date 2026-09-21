@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.3
+#       jupytext_version: 1.19.5
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -31,6 +31,11 @@ from unittest.mock import patch
 
 from IPython.display import display  # for nice tables in notebooks
 
+# from ssb_kostra_python.summere_til_aldersgrupperinger import (
+#     summere_til_aldersgrupperinger,
+# )
+
+# %%
 from ssb_kostra_python.summere_til_aldersgrupperinger import (
     summere_til_aldersgrupperinger,
 )
@@ -54,6 +59,11 @@ folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
 print("\n")
 print("ℹ️Det endelige datasettet heter her 'folketall_bydeler'.")
 display(folketall_bydeler)
+
+# %%
+resultat = summere_til_aldersgrupperinger(
+    inputfil=folketall_bydeler
+)
 
 # %% [markdown]
 # ### Summerer opp datasettet "folketall_bydeler" til KOSTRA-aldersgrupperinger med manuell inntasting av klassifikasjonsvariable.
