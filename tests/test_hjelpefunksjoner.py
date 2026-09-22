@@ -8,8 +8,8 @@ import pytest
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python.hjelpefunksjoner import _konvertere_komma_til_punktdesimal
 from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
-from ssb_kostra_python.hjelpefunksjoner import format_fil
 from ssb_kostra_python.hjelpefunksjoner import finn_befolkningsbucket
+from ssb_kostra_python.hjelpefunksjoner import format_fil
 
 
 class TestFormatFil:
@@ -160,6 +160,7 @@ class TestKonvertereKommaTilPunktdesimal:
 
         pd.testing.assert_frame_equal(df, df_before)
 
+
 class TestFinnBefolkningsbucket:
     def test_finner_egen_bucket(self, mocker: Any) -> None:
         mock_exists = mocker.patch(
@@ -195,13 +196,14 @@ class TestFinnBefolkningsbucket:
         ):
             finn_befolkningsbucket()
 
+
 class TestHentFolkemengdeBydeler3112:
     def test_hent_folkemengde_bydeler_success(self, mocker: Any) -> None:
         mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
             return_value="/buckets/delt-kostra-befolkning-delt",
         )
-        
+
         mock_latest_version_path = mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",

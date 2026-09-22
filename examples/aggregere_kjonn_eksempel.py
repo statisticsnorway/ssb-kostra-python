@@ -41,7 +41,8 @@ statistikkaar = 2024
 befolkningsbucket = finn_befolkningsbucket()
 filsti_folkemengde_bydeler = latest_version_path(
     f"{befolkningsbucket}/bydeler/{statistikkaar}/"
-    f"folkmengde_bydeler_p{statistikkaar}-12-31")
+    f"folkmengde_bydeler_p{statistikkaar}-12-31"
+)
 
 # Leser selve filen. Denne er lagret som en parquet-fil.
 folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)

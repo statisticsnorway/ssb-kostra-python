@@ -1,4 +1,5 @@
 from pathlib import Path
+
 INPUT_PATCH_TARGET = "builtins.input"
 from unittest.mock import patch
 
@@ -15,7 +16,6 @@ from ssb_kostra_python import summere_til_aldersgrupperinger
 
 def finn_befolkningsbucket() -> str:
     """Finner tilgjengelig filsti til delt-bøtten til off-fin (S212 KOSTRA Befolkning)."""
-
     mulige_stier = [
         Path("/buckets/delt-kostra-befolkning-delt"),
         Path("/buckets/shared/off-fin/kostra-befolkning-delt"),

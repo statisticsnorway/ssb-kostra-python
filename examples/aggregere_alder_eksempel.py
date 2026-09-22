@@ -31,9 +31,7 @@ from unittest.mock import patch
 
 from IPython.display import display  # for nice tables in notebooks
 
-# from ssb_kostra_python.summere_til_aldersgrupperinger import (
-#     summere_til_aldersgrupperinger,
-# )
+from ssb_kostra_python.hjelpefunksjoner import finn_befolkningsbucket
 
 # %%
 from ssb_kostra_python.summere_til_aldersgrupperinger import (
@@ -50,8 +48,11 @@ from ssb_kostra_python.summere_til_aldersgrupperinger import (
 # Bestemmer først statistikkår
 statistikkaar = 2024
 # Definerer en filsti. "latest_version_path" (pakke lastet ned over) sørger for å identifisere siste versjon av datasettet.
+befolkningsbucket = finn_befolkningsbucket()
+
 filsti_folkemengde_bydeler = latest_version_path(
-    f"/buckets/delt-kostra-befolkning-delt/bydeler/{statistikkaar}/folkmengde_bydeler_p{statistikkaar}-12-31"
+    f"{befolkningsbucket}/bydeler/{statistikkaar}/"
+    f"folkmengde_bydeler_p{statistikkaar}-12-31"
 )
 # Leser selve filen. Denne er lagret som en parquet-fil.
 folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
@@ -61,9 +62,7 @@ print("ℹ️Det endelige datasettet heter her 'folketall_bydeler'.")
 display(folketall_bydeler)
 
 # %%
-resultat = summere_til_aldersgrupperinger(
-    inputfil=folketall_bydeler
-)
+resultat = summere_til_aldersgrupperinger(inputfil=folketall_bydeler)
 
 # %% [markdown]
 # ### Summerer opp datasettet "folketall_bydeler" til KOSTRA-aldersgrupperinger med manuell inntasting av klassifikasjonsvariable.
