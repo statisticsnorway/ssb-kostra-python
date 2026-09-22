@@ -105,7 +105,7 @@ def _validate_and_normalize_region_col(df: pd.DataFrame) -> tuple[str, pd.DataFr
 def _postprocess_combined(
     df: pd.DataFrame,
     post_filter: Callable[[pd.DataFrame], pd.DataFrame] | None,
-    rename_cols: dict[str, str],
+    rename_cols: dict[str, str] | None,
     klassifikasjonsvariable: list[str],
     add_region_names: bool,
 ) -> pd.DataFrame:
