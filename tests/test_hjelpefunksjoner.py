@@ -165,7 +165,9 @@ class TestFinnBefolkningsbucket:
     def test_finner_egen_bucket(self, mocker: Any) -> None:
         mock_exists = mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.Path.exists",
-            side_effect=[True],
+            autospec=True,
+            side_effect=lambda path: str(path)
+            == "/buckets/delt-kostra-befolkning-delt",
         )
 
         resultat = finn_befolkningsbucket()
@@ -176,7 +178,9 @@ class TestFinnBefolkningsbucket:
     def test_finner_delt_bucket_nar_egen_ikke_finnes(self, mocker: Any) -> None:
         mock_exists = mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.Path.exists",
-            side_effect=[False, True],
+            autospec=True,
+            side_effect=lambda path: str(path)
+            == "/buckets/shared/off-fin/kostra-befolkning-delt",
         )
 
         resultat = finn_befolkningsbucket()
