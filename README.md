@@ -42,6 +42,7 @@
 | Summere et datasett med kjønnsvariabel over kjønnene | ```python summere_kjonn.summere_over_kjonn``` |
 | Summere et datasett som er fordelt på ettårige aldersgrupperinger til aggregerte KOSTRA-aldersgrupperinger | ```python summere_til_aldersgrupperinger.summere_til_aldersgrupperinger``` |
 | Feste en kolonne med titler til KLASS-koder (f.eks 0301 - Oslo) | ```python titler_til_klasskoder.kodelister_navn``` |
+| Aggregere data til aggregerte KOSTRA-regioner med summering, uvektet gjennomsnitt og/eller vektet gjennomsnitt | ```python regionshierarki.vektet_gjennomsnitt_aggregerte_regioner``` (lar deg angi hvilke statistikkvariable som skal summeres, beregnes som uvektet gjennomsnitt eller beregnes som vektet gjennomsnitt, og hvilken variabel som skal brukes som vekt.) |
 
 ## Eksempelark
 Du finner eksempelark på [ssb-kostra-python/examples/](https://github.com/statisticsnorway/ssb-kostra-python/tree/main/examples). Der kan du kjøre gjennom funksjonene for å se hvordan det kan gjøres.
