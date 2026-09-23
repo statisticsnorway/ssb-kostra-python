@@ -67,9 +67,15 @@ Hos **S312** trenger du tilgang til:
 
 **folketall** ---> **ssb-bef-statistikk-data-delt-folketall-prod**
 
+Teamet som deler bøtten med deg er **bef-statistikk**. Kortnavnet på delt-bøtten er **folketall**. Dette må du angi når du åpner en ny tjeneste og skal ha tilgang til de delte filene. 
+
 Hos **S212** trenger du tilgang til:
 
 **kostra-befolkning-delt** ---> **ssb-off-fin-data-delt-kostra-befolkning-delt-prod**
+
+Teamet som deler bøtten med deg er **off-fin**. Kortnavnet på delt-bøtten er **kostra-befolkning-delt**. Dette må du angi når du åpner en ny tjeneste og skal ha tilgang til de delte filene.
+
+
 
 ## Installasjon
 Pakken installeres med Poetry. Kjør følgende kommando i terminalen fra
