@@ -301,6 +301,11 @@ class TestHentFolkemengdeBydeler3112:
 
     def test_feil_i_read_parquet_gir_runtimeerror(self, mocker: Any) -> None:
         mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
+            return_value="/buckets/delt-kostra-befolkning-delt",
+        )
+        
+        mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",
         )
@@ -316,6 +321,11 @@ class TestHentFolkemengdeBydeler3112:
             hjelpefunksjoner._hent_folkemengde_bydeler_31_12(2024)
 
     def test_filtrerer_bort_aldre_105_til_120(self, mocker: Any) -> None:
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
+            return_value="/buckets/delt-kostra-befolkning-delt",
+        )
+        
         mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",
