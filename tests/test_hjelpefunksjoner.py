@@ -304,7 +304,7 @@ class TestHentFolkemengdeBydeler3112:
             "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
             return_value="/buckets/delt-kostra-befolkning-delt",
         )
-        
+
         mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",
@@ -325,7 +325,7 @@ class TestHentFolkemengdeBydeler3112:
             "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
             return_value="/buckets/delt-kostra-befolkning-delt",
         )
-        
+
         mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",
