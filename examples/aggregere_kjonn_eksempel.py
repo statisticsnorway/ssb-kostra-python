@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.3
+#       jupytext_version: 1.19.5
 #   kernelspec:
 #     display_name: ssb-kostra-python
 #     language: python
@@ -29,6 +29,7 @@ from unittest.mock import patch
 from IPython.display import display  # for nice tables in notebooks
 
 from ssb_kostra_python import summere_kjonn
+from ssb_kostra_python.hjelpefunksjoner import finn_befolkningsbucket
 
 # %% [markdown]
 # ### Henter først inn et datasett vi kan jobbe med, som inneholder befolkning fordelt på region, kjønn og alder.
@@ -37,9 +38,12 @@ from ssb_kostra_python import summere_kjonn
 # Bestemmer først statistikkår
 statistikkaar = 2024
 # Definerer en filsti. "latest_version_path" (pakke lastet ned over) sørger for å identifisere siste versjon av datasettet.
+befolkningsbucket = finn_befolkningsbucket()
 filsti_folkemengde_bydeler = latest_version_path(
-    f"/buckets/delt-kostra-befolkning-delt/bydeler/{statistikkaar}/folkmengde_bydeler_p{statistikkaar}-12-31"
+    f"{befolkningsbucket}/bydeler/{statistikkaar}/"
+    f"folkmengde_bydeler_p{statistikkaar}-12-31"
 )
+
 # Leser selve filen. Denne er lagret som en parquet-fil.
 folketall_bydeler = pd.read_parquet(filsti_folkemengde_bydeler)
 # Viser datasettet.

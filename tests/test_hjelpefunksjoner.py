@@ -8,6 +8,7 @@ import pytest
 from ssb_kostra_python import hjelpefunksjoner
 from ssb_kostra_python.hjelpefunksjoner import _konvertere_komma_til_punktdesimal
 from ssb_kostra_python.hjelpefunksjoner import definere_klassifikasjonsvariable
+from ssb_kostra_python.hjelpefunksjoner import finn_befolkningsbucket
 from ssb_kostra_python.hjelpefunksjoner import format_fil
 
 
@@ -160,8 +161,72 @@ class TestKonvertereKommaTilPunktdesimal:
         pd.testing.assert_frame_equal(df, df_before)
 
 
+class TestFinnBefolkningsbucket:
+    def test_finner_egen_bucket(self, mocker: Any) -> None:
+        egen_bucket = mocker.MagicMock()
+        egen_bucket.exists.return_value = True
+        egen_bucket.__str__.return_value = "/buckets/delt-kostra-befolkning-delt"
+
+        delt_bucket = mocker.MagicMock()
+
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.Path",
+            side_effect=[egen_bucket, delt_bucket],
+        )
+
+        resultat = finn_befolkningsbucket()
+
+        assert resultat == "/buckets/delt-kostra-befolkning-delt"
+        egen_bucket.exists.assert_called_once()
+        delt_bucket.exists.assert_not_called()
+
+    def test_finner_delt_bucket_nar_egen_ikke_finnes(self, mocker: Any) -> None:
+        egen_bucket = mocker.MagicMock()
+        egen_bucket.exists.return_value = False
+
+        delt_bucket = mocker.MagicMock()
+        delt_bucket.exists.return_value = True
+        delt_bucket.__str__.return_value = (
+            "/buckets/shared/off-fin/kostra-befolkning-delt"
+        )
+
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.Path",
+            side_effect=[egen_bucket, delt_bucket],
+        )
+
+        resultat = finn_befolkningsbucket()
+
+        assert resultat == "/buckets/shared/off-fin/kostra-befolkning-delt"
+        egen_bucket.exists.assert_called_once()
+        delt_bucket.exists.assert_called_once()
+
+    def test_feiler_nar_ingen_bucket_finnes(self, mocker: Any) -> None:
+        egen_bucket = mocker.MagicMock()
+        egen_bucket.exists.return_value = False
+
+        delt_bucket = mocker.MagicMock()
+        delt_bucket.exists.return_value = False
+
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.Path",
+            side_effect=[egen_bucket, delt_bucket],
+        )
+
+        with pytest.raises(
+            FileNotFoundError,
+            match="Fant ikke delt-bøtten",
+        ):
+            finn_befolkningsbucket()
+
+
 class TestHentFolkemengdeBydeler3112:
     def test_hent_folkemengde_bydeler_success(self, mocker: Any) -> None:
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
+            return_value="/buckets/delt-kostra-befolkning-delt",
+        )
+
         mock_latest_version_path = mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",
@@ -259,6 +324,11 @@ class TestHentFolkemengdeBydeler3112:
 
     def test_feil_i_read_parquet_gir_runtimeerror(self, mocker: Any) -> None:
         mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
+            return_value="/buckets/delt-kostra-befolkning-delt",
+        )
+
+        mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",
         )
@@ -274,6 +344,11 @@ class TestHentFolkemengdeBydeler3112:
             hjelpefunksjoner._hent_folkemengde_bydeler_31_12(2024)
 
     def test_filtrerer_bort_aldre_105_til_120(self, mocker: Any) -> None:
+        mocker.patch(
+            "ssb_kostra_python.hjelpefunksjoner.finn_befolkningsbucket",
+            return_value="/buckets/delt-kostra-befolkning-delt",
+        )
+
         mocker.patch(
             "ssb_kostra_python.hjelpefunksjoner.latest_version_path",
             return_value="/fake/path/data.parquet",

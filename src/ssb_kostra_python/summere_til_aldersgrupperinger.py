@@ -3,13 +3,13 @@ from fagfunksjoner.fagfunksjoner_logger import logger
 from IPython.display import display  # for nice tables in notebooks
 
 from ssb_kostra_python import hjelpefunksjoner
-from ssb_kostra_python.hjelpefunksjoner import ALDERSHIERARKI_PATH
 
 INPUT_PATCH_TARGET = "builtins.input"
 
 
 def summere_til_aldersgrupperinger(
-    inputfil: pd.DataFrame, hierarki_path: str = ALDERSHIERARKI_PATH
+    inputfil: pd.DataFrame,
+    hierarki_path: str | None = None,
 ) -> pd.DataFrame:
     """Aggregerer individbaserte aldersverdier til forhåndsdefinerte aldersgrupper.
 
@@ -35,8 +35,10 @@ def summere_til_aldersgrupperinger(
         - ``alder`` (3-sifret alderskode)
         - én eller flere statistikkvariabler (f.eks. ``personer``)
 
-    hierarki_path : str
+    hierarki_path : str | None
         Filsti til parquet-fil som inneholder aldershierarki.
+        Hvis None, finnes standardstien til aldershierarkiet automatisk
+        via delt-bøtten til off-fin.
         Forutsetter følgende kolonner:
 
         - ``periode`` : år
@@ -65,6 +67,12 @@ def summere_til_aldersgrupperinger(
     - Aldershierarkiet forventes å være entydig per periode og alder.
     - Funksjonen forutsetter at hjelpefunksjoner håndterer korrekt identifikasjon av klassifikasjons- og statistikkvariabler.
     """
+    if hierarki_path is None:
+        hierarki_path = (
+            f"{hjelpefunksjoner.finn_befolkningsbucket()}"
+            "/aldershierarki/mapping_aldershierarki.parquet"
+        )
+
     aldershierarki: pd.DataFrame = pd.read_parquet(hierarki_path)
     logger.info("Formatting hierarchy file.")
     aldershierarki = hjelpefunksjoner.format_fil(aldershierarki)
