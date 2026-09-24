@@ -67,7 +67,7 @@ Hos **S312** trenger du tilgang til:
 
 **folketall** ---> **ssb-bef-statistikk-data-delt-folketall-prod**
 
-Teamet som deler bøtten med deg er **bef-statistikk**. Kortnavnet på delt-bøtten er **folketall**. Dette må du angi når du åpner en ny tjeneste og skal ha tilgang til de delte filene. 
+Teamet som deler bøtten med deg er **bef-statistikk**. Kortnavnet på delt-bøtten er **folketall**. Dette må du angi når du åpner en ny tjeneste og skal ha tilgang til de delte filene.
 
 Hos **S212** trenger du tilgang til:
 
