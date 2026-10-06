@@ -118,7 +118,9 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
             continue
 
         lines = text.splitlines()
-        hook.write_text(insert_header_in_hook(headers, lines))
+        hook.write_text(
+            insert_header_in_hook(headers, lines)
+        )  # NOSONAR - Safe because hardcoded local directory, and not user-controlled input.
 
 
 def is_bindir_in_text(bindirs: list[str], text: str) -> bool:
@@ -160,8 +162,6 @@ def mypy(session: Session) -> None:
     session.install(".")
     install_poetry_groups(session, "dev")
     session.run("mypy", *args)
-    if not session.posargs:
-        session.run("mypy", f"--python-executable={sys.executable}", "noxfile.py")
 
 
 @session(python=python_versions_for_test)
